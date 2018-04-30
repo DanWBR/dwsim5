@@ -73,6 +73,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningsAsErrors>
     </WarningsAsErrors>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AODL">

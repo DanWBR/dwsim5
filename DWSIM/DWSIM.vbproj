@@ -65,7 +65,6 @@
     <Prefer32Bit>false</Prefer32Bit>
     <Optimize>false</Optimize>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>Full</DebugType>
@@ -109,6 +108,7 @@
     <RemoveIntegerChecks>true</RemoveIntegerChecks>
     <Prefer32Bit>false</Prefer32Bit>
     <Optimize>false</Optimize>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'x86|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -121,6 +121,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <Prefer32Bit>false</Prefer32Bit>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'x86|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -132,6 +133,8 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <Prefer32Bit>false</Prefer32Bit>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>false</DefineTrace>
   </PropertyGroup>
   <PropertyGroup>
     <OptionExplicit>On</OptionExplicit>
@@ -151,6 +154,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>false</DefineTrace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -163,6 +168,7 @@
     <DebugType>Full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'x86|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -173,6 +179,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AeroWizard, Version=2.0.2.27955, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">
@@ -288,8 +295,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>References\Nini.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
     <Reference Include="Python.Runtime, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>References\Python.Runtime.dll</HintPath>
@@ -299,7 +304,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
@@ -313,11 +318,19 @@
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
-    <Reference Include="System.XML" />
+    <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
     <Reference Include="Yeppp.CLR.Bundle">
       <HintPath>..\packages\Yeppp.CLR.Bundle.1.0.1-prerelease\lib\net20\Yeppp.CLR.Bundle.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore">
+      <HintPath>References\PresentationCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <HintPath>References\PresentationFramework.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -590,7 +603,7 @@
     <Compile Include="Forms\Flowsheet Analysis\FormOptimization.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\FormReportConfig.designer.vb">
+    <Compile Include="Forms\FormReportConfig.Designer.vb">
       <DependentUpon>FormReportConfig.vb</DependentUpon>
     </Compile>
     <Compile Include="Forms\FormReportConfig.vb">
@@ -833,7 +846,7 @@
     <Compile Include="Forms\FormPropSelection.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\FormUNIFACRegression.designer.vb">
+    <Compile Include="Forms\FormUNIFACRegression.Designer.vb">
       <DependentUpon>FormUNIFACRegression.vb</DependentUpon>
     </Compile>
     <Compile Include="Forms\FormUNIFACRegression.vb">
@@ -1431,7 +1444,6 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <LastGenOutput>DWSIM1.Designer.vb</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="My Project\licenses.licx" />
     <EmbeddedResource Include="Tools\Assay Manager\FormAssayManager.de.resx">
       <DependentUpon>FormAssayManager.vb</DependentUpon>
     </EmbeddedResource>
@@ -2406,40 +2418,6 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>if "$(ConfigurationName)"=="Debug" (
-
-xcopy "$(SolutionDir)PlatformFiles\Common\*" "$(TargetDir)" /E /Y /F /D
-xcopy "$(SolutionDir)PlatformFiles\Windows\CoolProp.dll" "$(TargetDir)" /E /Y /F /D
-
-) else if "$(PlatformName)"=="x64" (
-
-xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows\" /E /Y /F /D
-xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\macOS\" /E /Y /F /D
-xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Linux\" /E /Y /F /D
-
-del "$(SolutionDir)DistPackages\Windows\DWSIM.vshost.*"
-del "$(SolutionDir)DistPackages\Windows\*.tmp"
-
-del "$(SolutionDir)DistPackages\macOS\DWSIM.vshost.*"
-del "$(SolutionDir)DistPackages\macOS\*.tmp"
-
-del "$(SolutionDir)DistPackages\Linux\DWSIM.vshost.*"
-del "$(SolutionDir)DistPackages\Linux\*.tmp"
-
-) else if "$(PlatformName)"=="x86" (
-
-xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_32\" /E /Y /F /D
-
-del "$(SolutionDir)DistPackages\Windows_32\DWSIM.vshost.*"
-del "$(SolutionDir)DistPackages\Windows_32\*.tmp"
-
-)</PostBuildEvent>
-  </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -2458,13 +2436,13 @@ del "$(SolutionDir)DistPackages\Windows_32\*.tmp"
   -->
   <Target Name="RemoveDesignTimeFacadesBeforeSGen" BeforeTargets="GenerateSerializationAssemblies">
     <ItemGroup>
-      <ReferencePath Remove="@(_DesignTimeFacadeAssemblies_Names->'%(OriginalIdentity)')" />
+      <ReferencePath Remove="@(_DesignTimeFacadeAssemblies_Names-&gt;'%(OriginalIdentity)')" />
     </ItemGroup>
     <Message Importance="normal" Text="Removing DesignTimeFacades from ReferencePath before running SGen." />
   </Target>
   <Target Name="ReAddDesignTimeFacadesBeforeSGen" AfterTargets="GenerateSerializationAssemblies">
     <ItemGroup>
-      <ReferencePath Include="@(_DesignTimeFacadeAssemblies_Names->'%(OriginalIdentity)')" />
+      <ReferencePath Include="@(_DesignTimeFacadeAssemblies_Names-&gt;'%(OriginalIdentity)')" />
     </ItemGroup>
     <Message Importance="normal" Text="Adding back DesignTimeFacades from ReferencePath now that SGen has run." />
   </Target>

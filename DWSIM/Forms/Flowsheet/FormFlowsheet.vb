@@ -2824,7 +2824,7 @@ Public Class FormFlowsheet
 
     End Sub
 
-    Private Sub PropriedadesDasSubstânciasToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PropriedadesDasSubstânciasToolStripMenuItem.Click
+    Private Sub PropriedadesDasSubstanciasToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PropriedadesDasSubstanciasToolStripMenuItem.Click
         Dim frmpc As New FormPureComp With {.Flowsheet = Me}
         frmpc.ShowDialog(Me)
     End Sub
@@ -3072,7 +3072,7 @@ Public Class FormFlowsheet
         Me.FormSurface.FlowsheetDesignSurface.Invalidate()
     End Sub
 
-    Private Sub AssistenteDeCriaçãoDeSubstânciasToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AssistenteDeCriaçãoDeSubstânciasToolStripMenuItem.Click
+    Private Sub AssistenteDeCriacaoDeSubstânciasToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AssistenteDeCriacaoDeSubstanciasToolStripMenuItem.Click
 
         FrmStSim1.loaded = False
 

@@ -27,7 +27,6 @@
     <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036,42353,42354,42355</NoWarn>
     <RemoveIntegerChecks>true</RemoveIntegerChecks>
     <Optimize>false</Optimize>
-    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
     <RegisterForComInterop>false</RegisterForComInterop>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
@@ -67,6 +66,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>false</DefineTrace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -79,6 +80,7 @@
     <DebugType>Full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CapeOpen">
@@ -385,7 +387,6 @@
     <Compile Include="Models\SoaveRedlichKwong.vb" />
     <Compile Include="Models\SoaveRedlichKwong2.vb" />
     <Compile Include="Property Packages\SoaveRedlichKwong.vb" />
-    <Compile Include="Models\Steam67.vb" />
     <Compile Include="Property Packages\SteamTables.vb" />
     <Compile Include="Models\UNIFAC.vb" />
     <Compile Include="Property Packages\UNIFACLL.vb" />
@@ -744,19 +745,14 @@
   -->
   <Target Name="RemoveDesignTimeFacadesBeforeSGen" BeforeTargets="GenerateSerializationAssemblies">
     <ItemGroup>
-      <ReferencePath Remove="@(_DesignTimeFacadeAssemblies_Names->'%(OriginalIdentity)')" />
+      <ReferencePath Remove="@(_DesignTimeFacadeAssemblies_Names-&gt;'%(OriginalIdentity)')" />
     </ItemGroup>
     <Message Importance="normal" Text="Removing DesignTimeFacades from ReferencePath before running SGen." />
   </Target>
   <Target Name="ReAddDesignTimeFacadesBeforeSGen" AfterTargets="GenerateSerializationAssemblies">
     <ItemGroup>
-      <ReferencePath Include="@(_DesignTimeFacadeAssemblies_Names->'%(OriginalIdentity)')" />
+      <ReferencePath Include="@(_DesignTimeFacadeAssemblies_Names-&gt;'%(OriginalIdentity)')" />
     </ItemGroup>
     <Message Importance="normal" Text="Adding back DesignTimeFacades from ReferencePath now that SGen has run." />
-  </Target>
-  <Import Project="..\packages\ExcelDna.AddIn.0.34.6\tools\ExcelDna.AddIn.targets" Condition="Exists('..\packages\ExcelDna.AddIn.0.34.6\tools\ExcelDna.AddIn.targets')" />
-  <Target Name="EnsureExcelDnaTargetsImported" BeforeTargets="BeforeBuild" Condition="'$(ExcelDnaTargetsImported)' == ''">
-    <Error Condition="!Exists('..\packages\ExcelDna.AddIn.0.34.6\tools\ExcelDna.AddIn.targets') And ('$(RunExcelDnaBuild)' != '' And $(RunExcelDnaBuild))" Text="You are trying to build with ExcelDna, but the NuGet targets file that ExcelDna depends on is not available on this computer. This is probably because the ExcelDna package has not been committed to source control, or NuGet Package Restore is not enabled. Please enable NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
-    <Error Condition="Exists('..\packages\ExcelDna.AddIn.0.34.6\tools\ExcelDna.AddIn.targets') And ('$(RunExcelDnaBuild)' != '' And $(RunExcelDnaBuild))" Text="ExcelDna cannot be run because NuGet packages were restored prior to the build running, and the targets file was unavailable when the build started. Please build the project again to include these packages in the build. You may also need to make sure that your build server does not delete packages prior to each build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
   </Target>
 </Project>

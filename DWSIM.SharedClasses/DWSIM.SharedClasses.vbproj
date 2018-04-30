@@ -17,15 +17,14 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>pdbonly</DebugType>
     <DefineDebug>false</DefineDebug>
     <DefineTrace>false</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>DWSIM.SharedClasses.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
     <Prefer32Bit>false</Prefer32Bit>
+    <AdditionalParameters></AdditionalParameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>Full</DebugType>
@@ -59,6 +58,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>false</DefineTrace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -70,11 +71,9 @@
     <DebugType>Full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DefineDebug>false</DefineDebug>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CapeOpen">
-      <HintPath>..\DWSIM\References\CapeOpen.dll</HintPath>
-    </Reference>
     <Reference Include="Ciloci.Flee">
       <HintPath>..\DWSIM\References\Ciloci.Flee.dll</HintPath>
     </Reference>
@@ -93,9 +92,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="CapeOpen">
+      <HintPath>..\DWSIM\References\CapeOpen.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Import Include="DWSIM.Interfaces" />
     <Import Include="DWSIM.SharedClasses" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="System" />
@@ -107,6 +108,7 @@
     <Import Include="System.Windows.Forms" />
     <Import Include="System.Xml.Linq" />
     <Import Include="System.Threading.Tasks" />
+    <Import Include="DWSIM.Interfaces" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base Class\FlowsheetBag.vb" />
@@ -178,9 +180,8 @@
       <Name>DWSIM.GlobalSettings</Name>
     </ProjectReference>
     <ProjectReference Include="..\DWSIM.Interfaces\DWSIM.Interfaces.vbproj">
-      <Project>{50bfd69a-487e-4b38-86ea-48acd85a0eb1}</Project>
+      <Project>{50BFD69A-487E-4B38-86EA-48ACD85A0EB1}</Project>
       <Name>DWSIM.Interfaces</Name>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

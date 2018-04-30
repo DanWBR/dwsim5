@@ -3344,7 +3344,7 @@ Public Class FlowsheetSurface
 
     End Sub
 
-    Private Sub EditarAparênciaToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles EditAppearanceToolStripMenuItem.Click
+    Private Sub EditarAparenciaToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles EditAppearanceToolStripMenuItem.Click
 
         If Me.FlowsheetDesignSurface.SelectedObject.Editor Is Nothing OrElse DirectCast(Me.FlowsheetDesignSurface.SelectedObject.Editor, Form).IsDisposed Then
             Dim f As New FormEditGraphicObject() With {.gobj = Me.FlowsheetDesignSurface.SelectedObject, .fs = FlowsheetDesignSurface, .flowsheet = Me.Flowsheet}

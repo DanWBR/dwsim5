@@ -76,5 +76,5 @@ DWSIM.UI.Desktop.WPF|Cross-Platform UI Windows Presentation Foundation (WPF) Pla
 
 ### Compiling
 
-- This branch can be compiled on Linux and macOS using MonoDevelop v7.5.x + Mono v5.12.x.
+- This branch can be compiled on Linux and macOS using MonoDevelop v7.5.x (Linux) and Visual Studio for Mac (macOS) + Mono v5.12.0 or newer.
 - To compile everything, change the Build target to 'Debug' or 'Release' and 'x64'.

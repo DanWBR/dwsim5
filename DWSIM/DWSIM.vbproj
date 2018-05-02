@@ -332,6 +332,9 @@
       <HintPath>References\PresentationFramework.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Python.Runtime">
+      <HintPath>References\Python.Runtime.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="DWSIM.ExtensionMethods" />

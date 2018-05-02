@@ -166,6 +166,9 @@
       <HintPath>..\DWSIM\References\VBIDEApi.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Python.Runtime">
+      <HintPath>..\DWSIM\References\Python.Runtime.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="DWSIM.DrawingTools" />

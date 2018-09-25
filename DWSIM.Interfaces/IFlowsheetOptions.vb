@@ -56,6 +56,8 @@
 
     Property SpreadsheetUseRegionalSeparator As Boolean
 
+    Property SpreadsheetUnitLockingMode As Boolean
+
     Property MassBalanceCheck As WarningType
 
     Property EnergyBalanceCheck As WarningType
@@ -77,5 +79,9 @@
     Property DisplayCornerPropertyListFontColor As String
 
     Property DisplayCornerPropertyListPadding As Integer
+
+    Property DefaultFloatingTableCompoundAmountBasis As Enums.CompositionBasis
+
+    Property DisplayFloatingTableCompoundAmounts As Boolean
 
 End Interface

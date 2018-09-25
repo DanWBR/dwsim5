@@ -1,7 +1,7 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
 Partial Class EditingForm_Pipe
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     'Form overrides dispose to clean up the component list.
     <System.Diagnostics.DebuggerNonUserCode()> _
@@ -122,7 +122,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.chkActive, "chkActive")
         Me.chkActive.Image = Global.DWSIM.UnitOperations.My.Resources.Resources.bullet_tick
         Me.chkActive.Name = "chkActive"
-        Me.ToolTip1.SetToolTip(Me.chkActive, resources.GetString("chkActive.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.chkActive, resources.GetString("chkActive.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.chkActive, resources.GetString("chkActive.ToolTip1"))
         Me.chkActive.UseVisualStyleBackColor = True
         '
         'lblConnectedTo
@@ -224,7 +225,8 @@ Partial Class EditingForm_Pipe
         '
         resources.ApplyResources(Me.Label4, "Label4")
         Me.Label4.Name = "Label4"
-        Me.ToolTip1.SetToolTip(Me.Label4, resources.GetString("Label4.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.Label4, resources.GetString("Label4.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.Label4, resources.GetString("Label4.ToolTip1"))
         '
         'tbTtol
         '
@@ -243,7 +245,8 @@ Partial Class EditingForm_Pipe
         '
         resources.ApplyResources(Me.Label5, "Label5")
         Me.Label5.Name = "Label5"
-        Me.ToolTip1.SetToolTip(Me.Label5, resources.GetString("Label5.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.Label5, resources.GetString("Label5.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.Label5, resources.GetString("Label5.ToolTip1"))
         '
         'cbPtol
         '
@@ -263,7 +266,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.Button1, "Button1")
         Me.Button1.BackgroundImage = Global.DWSIM.UnitOperations.My.Resources.Resources.information
         Me.Button1.Name = "Button1"
-        Me.ToolTip1.SetToolTip(Me.Button1, resources.GetString("Button1.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.Button1, resources.GetString("Button1.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.Button1, resources.GetString("Button1.ToolTip1"))
         Me.Button1.UseVisualStyleBackColor = True
         '
         'btnConfigureFlashAlg
@@ -271,7 +275,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnConfigureFlashAlg, "btnConfigureFlashAlg")
         Me.btnConfigureFlashAlg.BackgroundImage = Global.DWSIM.UnitOperations.My.Resources.Resources.cog
         Me.btnConfigureFlashAlg.Name = "btnConfigureFlashAlg"
-        Me.ToolTip1.SetToolTip(Me.btnConfigureFlashAlg, resources.GetString("btnConfigureFlashAlg.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnConfigureFlashAlg, resources.GetString("btnConfigureFlashAlg.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnConfigureFlashAlg, resources.GetString("btnConfigureFlashAlg.ToolTip1"))
         Me.btnConfigureFlashAlg.UseVisualStyleBackColor = True
         '
         'chkIncludeJT
@@ -285,7 +290,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnConfigurePP, "btnConfigurePP")
         Me.btnConfigurePP.BackgroundImage = Global.DWSIM.UnitOperations.My.Resources.Resources.cog
         Me.btnConfigurePP.Name = "btnConfigurePP"
-        Me.ToolTip1.SetToolTip(Me.btnConfigurePP, resources.GetString("btnConfigurePP.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnConfigurePP, resources.GetString("btnConfigurePP.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnConfigurePP, resources.GetString("btnConfigurePP.ToolTip1"))
         Me.btnConfigurePP.UseVisualStyleBackColor = True
         '
         'cbPDropModel
@@ -385,7 +391,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnCreateAndConnectEnergy, "btnCreateAndConnectEnergy")
         Me.btnCreateAndConnectEnergy.BackgroundImage = Global.DWSIM.UnitOperations.My.Resources.Resources.bullet_lightning
         Me.btnCreateAndConnectEnergy.Name = "btnCreateAndConnectEnergy"
-        Me.ToolTip1.SetToolTip(Me.btnCreateAndConnectEnergy, resources.GetString("btnCreateAndConnectEnergy.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnCreateAndConnectEnergy, resources.GetString("btnCreateAndConnectEnergy.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnCreateAndConnectEnergy, resources.GetString("btnCreateAndConnectEnergy.ToolTip1"))
         Me.btnCreateAndConnectEnergy.UseVisualStyleBackColor = True
         '
         'btnCreateAndConnectOutlet1
@@ -393,7 +400,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnCreateAndConnectOutlet1, "btnCreateAndConnectOutlet1")
         Me.btnCreateAndConnectOutlet1.BackgroundImage = Global.DWSIM.UnitOperations.My.Resources.Resources.bullet_lightning
         Me.btnCreateAndConnectOutlet1.Name = "btnCreateAndConnectOutlet1"
-        Me.ToolTip1.SetToolTip(Me.btnCreateAndConnectOutlet1, resources.GetString("btnCreateAndConnectOutlet1.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnCreateAndConnectOutlet1, resources.GetString("btnCreateAndConnectOutlet1.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnCreateAndConnectOutlet1, resources.GetString("btnCreateAndConnectOutlet1.ToolTip1"))
         Me.btnCreateAndConnectOutlet1.UseVisualStyleBackColor = True
         '
         'btnCreateAndConnectInlet1
@@ -401,7 +409,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnCreateAndConnectInlet1, "btnCreateAndConnectInlet1")
         Me.btnCreateAndConnectInlet1.BackgroundImage = Global.DWSIM.UnitOperations.My.Resources.Resources.bullet_lightning
         Me.btnCreateAndConnectInlet1.Name = "btnCreateAndConnectInlet1"
-        Me.ToolTip1.SetToolTip(Me.btnCreateAndConnectInlet1, resources.GetString("btnCreateAndConnectInlet1.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnCreateAndConnectInlet1, resources.GetString("btnCreateAndConnectInlet1.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnCreateAndConnectInlet1, resources.GetString("btnCreateAndConnectInlet1.ToolTip1"))
         Me.btnCreateAndConnectInlet1.UseVisualStyleBackColor = True
         '
         'btnDisconnectEnergy
@@ -409,7 +418,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnDisconnectEnergy, "btnDisconnectEnergy")
         Me.btnDisconnectEnergy.Image = Global.DWSIM.UnitOperations.My.Resources.Resources.disconnect
         Me.btnDisconnectEnergy.Name = "btnDisconnectEnergy"
-        Me.ToolTip1.SetToolTip(Me.btnDisconnectEnergy, resources.GetString("btnDisconnectEnergy.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnDisconnectEnergy, resources.GetString("btnDisconnectEnergy.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnDisconnectEnergy, resources.GetString("btnDisconnectEnergy.ToolTip1"))
         Me.btnDisconnectEnergy.UseVisualStyleBackColor = True
         '
         'Label14
@@ -429,7 +439,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnDisconnectOutlet1, "btnDisconnectOutlet1")
         Me.btnDisconnectOutlet1.Image = Global.DWSIM.UnitOperations.My.Resources.Resources.disconnect
         Me.btnDisconnectOutlet1.Name = "btnDisconnectOutlet1"
-        Me.ToolTip1.SetToolTip(Me.btnDisconnectOutlet1, resources.GetString("btnDisconnectOutlet1.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnDisconnectOutlet1, resources.GetString("btnDisconnectOutlet1.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnDisconnectOutlet1, resources.GetString("btnDisconnectOutlet1.ToolTip1"))
         Me.btnDisconnectOutlet1.UseVisualStyleBackColor = True
         '
         'btnDisconnect1
@@ -437,7 +448,8 @@ Partial Class EditingForm_Pipe
         resources.ApplyResources(Me.btnDisconnect1, "btnDisconnect1")
         Me.btnDisconnect1.Image = Global.DWSIM.UnitOperations.My.Resources.Resources.disconnect
         Me.btnDisconnect1.Name = "btnDisconnect1"
-        Me.ToolTip1.SetToolTip(Me.btnDisconnect1, resources.GetString("btnDisconnect1.ToolTip"))
+        Me.ToolTipValues.SetToolTip(Me.btnDisconnect1, resources.GetString("btnDisconnect1.ToolTip"))
+        Me.ToolTip1.SetToolTip(Me.btnDisconnect1, resources.GetString("btnDisconnect1.ToolTip1"))
         Me.btnDisconnect1.UseVisualStyleBackColor = True
         '
         'Label7
@@ -562,64 +574,64 @@ Partial Class EditingForm_Pipe
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
-    Friend WithEvents chkActive As System.Windows.Forms.CheckBox
-    Friend WithEvents lblConnectedTo As System.Windows.Forms.Label
-    Friend WithEvents lblStatus As System.Windows.Forms.Label
-    Friend WithEvents Label13 As System.Windows.Forms.Label
-    Friend WithEvents Label12 As System.Windows.Forms.Label
-    Friend WithEvents Label11 As System.Windows.Forms.Label
-    Friend WithEvents cbFlashAlg As System.Windows.Forms.ComboBox
-    Friend WithEvents Label10 As System.Windows.Forms.Label
-    Friend WithEvents cbPropPack As System.Windows.Forms.ComboBox
-    Friend WithEvents Label9 As System.Windows.Forms.Label
-    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
-    Friend WithEvents btnConfigureFlashAlg As System.Windows.Forms.Button
-    Friend WithEvents btnConfigurePP As System.Windows.Forms.Button
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
-    Friend WithEvents btnDisconnectEnergy As System.Windows.Forms.Button
-    Friend WithEvents Label14 As System.Windows.Forms.Label
-    Friend WithEvents cbEnergy As System.Windows.Forms.ComboBox
-    Friend WithEvents btnDisconnectOutlet1 As System.Windows.Forms.Button
-    Friend WithEvents btnDisconnect1 As System.Windows.Forms.Button
-    Friend WithEvents Label7 As System.Windows.Forms.Label
-    Friend WithEvents cbOutlet1 As System.Windows.Forms.ComboBox
-    Friend WithEvents cbInlet1 As System.Windows.Forms.ComboBox
-    Friend WithEvents Label19 As System.Windows.Forms.Label
-    Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
-    Friend WithEvents lblTag As System.Windows.Forms.TextBox
-    Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
-    Friend WithEvents tabstrip1 As System.Windows.Forms.TabControl
-    Friend WithEvents TabPage1 As System.Windows.Forms.TabPage
-    Friend WithEvents TabPage2 As System.Windows.Forms.TabPage
-    Friend WithEvents TabPage3 As System.Windows.Forms.TabPage
-    Friend WithEvents gridResults As System.Windows.Forms.DataGridView
-    Friend WithEvents cbCalcMode As System.Windows.Forms.ComboBox
-    Friend WithEvents Label2 As System.Windows.Forms.Label
-    Friend WithEvents cbTemp As System.Windows.Forms.ComboBox
-    Friend WithEvents tbOutletTemperature As System.Windows.Forms.TextBox
-    Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents btnCreateAndConnectEnergy As System.Windows.Forms.Button
-    Friend WithEvents btnCreateAndConnectOutlet1 As System.Windows.Forms.Button
-    Friend WithEvents btnCreateAndConnectInlet1 As System.Windows.Forms.Button
-    Friend WithEvents Label6 As System.Windows.Forms.Label
-    Friend WithEvents cbPressure As System.Windows.Forms.ComboBox
-    Friend WithEvents tbOutletPressure As System.Windows.Forms.TextBox
-    Friend WithEvents Label1 As System.Windows.Forms.Label
-    Friend WithEvents TabControl1 As System.Windows.Forms.TabControl
-    Friend WithEvents TabPage4 As System.Windows.Forms.TabPage
-    Friend WithEvents TabPage5 As System.Windows.Forms.TabPage
-    Friend WithEvents TabPage6 As System.Windows.Forms.TabPage
-    Friend WithEvents chkIncludeJT As System.Windows.Forms.CheckBox
-    Friend WithEvents cbPDropModel As System.Windows.Forms.ComboBox
-    Friend WithEvents Button1 As System.Windows.Forms.Button
-    Friend WithEvents Label4 As System.Windows.Forms.Label
-    Friend WithEvents tbTtol As System.Windows.Forms.TextBox
-    Friend WithEvents cbTtol As System.Windows.Forms.ComboBox
-    Friend WithEvents Label5 As System.Windows.Forms.Label
-    Friend WithEvents cbPtol As System.Windows.Forms.ComboBox
-    Friend WithEvents tbPtol As System.Windows.Forms.TextBox
-    Friend WithEvents DataGridViewTextBoxColumn1 As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents DataGridViewTextBoxColumn2 As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents Column1 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Public WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Public WithEvents chkActive As System.Windows.Forms.CheckBox
+    Public WithEvents lblConnectedTo As System.Windows.Forms.Label
+    Public WithEvents lblStatus As System.Windows.Forms.Label
+    Public WithEvents Label13 As System.Windows.Forms.Label
+    Public WithEvents Label12 As System.Windows.Forms.Label
+    Public WithEvents Label11 As System.Windows.Forms.Label
+    Public WithEvents cbFlashAlg As System.Windows.Forms.ComboBox
+    Public WithEvents Label10 As System.Windows.Forms.Label
+    Public WithEvents cbPropPack As System.Windows.Forms.ComboBox
+    Public WithEvents Label9 As System.Windows.Forms.Label
+    Public WithEvents GroupBox2 As System.Windows.Forms.GroupBox
+    Public WithEvents btnConfigureFlashAlg As System.Windows.Forms.Button
+    Public WithEvents btnConfigurePP As System.Windows.Forms.Button
+    Public WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Public WithEvents btnDisconnectEnergy As System.Windows.Forms.Button
+    Public WithEvents Label14 As System.Windows.Forms.Label
+    Public WithEvents cbEnergy As System.Windows.Forms.ComboBox
+    Public WithEvents btnDisconnectOutlet1 As System.Windows.Forms.Button
+    Public WithEvents btnDisconnect1 As System.Windows.Forms.Button
+    Public WithEvents Label7 As System.Windows.Forms.Label
+    Public WithEvents cbOutlet1 As System.Windows.Forms.ComboBox
+    Public WithEvents cbInlet1 As System.Windows.Forms.ComboBox
+    Public WithEvents Label19 As System.Windows.Forms.Label
+    Public WithEvents ToolTip1 As System.Windows.Forms.ToolTip
+    Public WithEvents lblTag As System.Windows.Forms.TextBox
+    Public WithEvents GroupBox6 As System.Windows.Forms.GroupBox
+    Public WithEvents tabstrip1 As System.Windows.Forms.TabControl
+    Public WithEvents TabPage1 As System.Windows.Forms.TabPage
+    Public WithEvents TabPage2 As System.Windows.Forms.TabPage
+    Public WithEvents TabPage3 As System.Windows.Forms.TabPage
+    Public WithEvents gridResults As System.Windows.Forms.DataGridView
+    Public WithEvents cbCalcMode As System.Windows.Forms.ComboBox
+    Public WithEvents Label2 As System.Windows.Forms.Label
+    Public WithEvents cbTemp As System.Windows.Forms.ComboBox
+    Public WithEvents tbOutletTemperature As System.Windows.Forms.TextBox
+    Public WithEvents Label3 As System.Windows.Forms.Label
+    Public WithEvents btnCreateAndConnectEnergy As System.Windows.Forms.Button
+    Public WithEvents btnCreateAndConnectOutlet1 As System.Windows.Forms.Button
+    Public WithEvents btnCreateAndConnectInlet1 As System.Windows.Forms.Button
+    Public WithEvents Label6 As System.Windows.Forms.Label
+    Public WithEvents cbPressure As System.Windows.Forms.ComboBox
+    Public WithEvents tbOutletPressure As System.Windows.Forms.TextBox
+    Public WithEvents Label1 As System.Windows.Forms.Label
+    Public WithEvents TabControl1 As System.Windows.Forms.TabControl
+    Public WithEvents TabPage4 As System.Windows.Forms.TabPage
+    Public WithEvents TabPage5 As System.Windows.Forms.TabPage
+    Public WithEvents TabPage6 As System.Windows.Forms.TabPage
+    Public WithEvents chkIncludeJT As System.Windows.Forms.CheckBox
+    Public WithEvents cbPDropModel As System.Windows.Forms.ComboBox
+    Public WithEvents Button1 As System.Windows.Forms.Button
+    Public WithEvents Label4 As System.Windows.Forms.Label
+    Public WithEvents tbTtol As System.Windows.Forms.TextBox
+    Public WithEvents cbTtol As System.Windows.Forms.ComboBox
+    Public WithEvents Label5 As System.Windows.Forms.Label
+    Public WithEvents cbPtol As System.Windows.Forms.ComboBox
+    Public WithEvents tbPtol As System.Windows.Forms.TextBox
+    Public WithEvents DataGridViewTextBoxColumn1 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Public WithEvents DataGridViewTextBoxColumn2 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Public WithEvents Column1 As System.Windows.Forms.DataGridViewTextBoxColumn
 End Class

@@ -3,7 +3,7 @@ Imports DWSIM.Interfaces.Enums.GraphicObjects
 
 Public Class EditingForm_Mixer
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property MixerObject As UnitOperations.Mixer
 
@@ -25,7 +25,7 @@ Public Class EditingForm_Mixer
 
             chkActive.Checked = MixerObject.GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then

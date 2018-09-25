@@ -10,6 +10,7 @@ using System.IO;
 using DWSIM.Interfaces;
 using System.Threading.Tasks;
 using DWSIM.Thermodynamics.PropertyPackages;
+using DWSIM.Interfaces.Enums;
 
 namespace DWSIM.Thermodynamics.AdvancedEOS
 {
@@ -630,7 +631,7 @@ namespace DWSIM.Thermodynamics.AdvancedEOS
                     result = this.AUX_CONDTL(T);
                     this.CurrentMaterialStream.Phases[phaseID].Properties.thermalConductivity = result;
 
-                    result = this.AUX_LIQVISCm(T);
+                    result = this.AUX_LIQVISCm(T,P);
                     this.CurrentMaterialStream.Phases[phaseID].Properties.viscosity = result;
                     this.CurrentMaterialStream.Phases[phaseID].Properties.kinematic_viscosity = result / this.CurrentMaterialStream.Phases[phaseID].Properties.density.Value;
 
@@ -647,7 +648,7 @@ namespace DWSIM.Thermodynamics.AdvancedEOS
                         var res = this.AUX_LIQDENS(T, P, 0.0, phaseID, false);
                         this.CurrentMaterialStream.Phases[phaseID].Properties.density = res;
                         this.CurrentMaterialStream.Phases[phaseID].Properties.compressibilityFactor = P / res * AUX_MMM(dwpl) / 1000 / 8.314 / T;
-                        res = this.AUX_LIQVISCm(T);
+                        res = this.AUX_LIQVISCm(T, P);
                         this.CurrentMaterialStream.Phases[phaseID].Properties.viscosity = res;
                         this.CurrentMaterialStream.Phases[phaseID].Properties.kinematic_viscosity = res / this.CurrentMaterialStream.Phases[phaseID].Properties.density.GetValueOrDefault();
                     });
@@ -918,7 +919,7 @@ namespace DWSIM.Thermodynamics.AdvancedEOS
                 case "viscosity":
                     if (state == "L")
                     {
-                        result = this.AUX_LIQVISCm(T);
+                        result = this.AUX_LIQVISCm(T, P);
                     }
                     else
                     {
@@ -978,6 +979,18 @@ namespace DWSIM.Thermodynamics.AdvancedEOS
         public override List<System.Xml.Linq.XElement> SaveData()
         {
             return base.SaveData();
+        }
+
+        public override double AUX_Z(double[] Vx, double T, double P, PhaseName state)
+        {
+            if (state == PhaseName.Liquid)
+            {
+                return P / AUX_LIQDENS(T, Vx, P) * AUX_MMM(Vx) / 1000 / 8.314 / T;
+            }
+            else {
+                double vd = (double)CalculateProperty(ThermoProperty.Density, Vx, "V", T, P, 0, 0);
+                return P / vd * AUX_MMM(Vx) / 1000 / 8.314 / T;
+            }
         }
 
     }

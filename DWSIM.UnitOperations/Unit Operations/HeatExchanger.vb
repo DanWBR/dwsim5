@@ -42,6 +42,7 @@ Namespace UnitOperations
         ShellandTube_Rating = 5
         ShellandTube_CalcFoulingFactor = 6
         PinchPoint = 7
+        ThermalEfficiency = 8
 
     End Enum
 
@@ -72,7 +73,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_HeatExchanger
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_HeatExchanger
 
         Protected m_Q As Nullable(Of Double) = 0
         Protected m_dp As Nullable(Of Double) = 0
@@ -161,7 +162,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New HeatExchanger().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New HeatExchanger()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -498,6 +501,50 @@ Namespace UnitOperations
             IObj?.Paragraphs.Add(String.Format("Calculation mode: {0}", [Enum].GetName(CalcMode.GetType, CalcMode)))
 
             Select Case CalcMode
+
+                Case HeatExchangerCalcMode.ThermalEfficiency
+
+                    Q = MaxHeatExchange * ThermalEfficiency / 100.0
+
+                    If Q > MaxHeatExchange Then Throw New Exception("Defined heat exchange is invalid (higher than the theoretical maximum).")
+
+                    DeltaHc = Q / Wc
+                    DeltaHh = -(Q + HeatLoss) / Wh
+                    Hc2 = Hc1 + DeltaHc
+                    Hh2 = Hh1 + DeltaHh
+
+                    StInCold.PropertyPackage.CurrentMaterialStream = StInCold
+
+                    If DebugMode Then AppendDebugLine(String.Format("Doing a PH flash to calculate cold stream outlet temperature... P = {0} Pa, H = {1} kJ/[kg.K]", Pc2, Hc2))
+                    IObj?.SetCurrent()
+                    Dim tmp = StInCold.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, Pc2, Hc2, Tc1)
+                    Tc2 = tmp.CalculatedTemperature
+                    Hh2 = Hh1 + DeltaHh
+                    StInHot.PropertyPackage.CurrentMaterialStream = StInHot
+
+                    If DebugMode Then AppendDebugLine(String.Format("Calculated cold stream outlet temperature T2 = {0} K", Tc2))
+                    If DebugMode Then AppendDebugLine(String.Format("Doing a PH flash to calculate hot stream outlet temperature... P = {0} Pa, H = {1} kJ/[kg.K]", Ph2, Hh2))
+
+                    IObj?.SetCurrent()
+                    tmp = StInHot.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, Ph2, Hh2, Th1)
+                    Th2 = tmp.CalculatedTemperature
+
+                    If DebugMode Then AppendDebugLine(String.Format("Calculated hot stream outlet temperature T2 = {0} K", Th2))
+
+                    Select Case Me.FlowDir
+                        Case FlowDirection.CoCurrent
+                            LMTD = ((Th1 - Tc1) - (Th2 - Tc2)) / Math.Log((Th1 - Tc1) / (Th2 - Tc2))
+                        Case FlowDirection.CounterCurrent
+                            LMTD = ((Th1 - Tc2) - (Th2 - Tc1)) / Math.Log((Th1 - Tc2) / (Th2 - Tc1))
+                    End Select
+
+                    If Not IgnoreLMTDError Then If Double.IsNaN(LMTD) Or Double.IsInfinity(LMTD) Then Throw New Exception(FlowSheet.GetTranslatedString("HXCalcError"))
+
+                    U = OverallCoefficient.GetValueOrDefault
+
+                    A = Q * 1000 / U / LMTD
+
+                    Area = A
 
                 Case HeatExchangerCalcMode.PinchPoint
 
@@ -1064,10 +1111,10 @@ Namespace UnitOperations
                         rs = Me.STProperties.Shell_Fouling
                         rt = Me.STProperties.Tube_Fouling
                         Nc = STProperties.Shell_NumberOfShellsInSeries
-                        de = STProperties.Tube_De
-                        di = STProperties.Tube_Di
+                        de = STProperties.Tube_De / 1000
+                        di = STProperties.Tube_Di / 1000
                         L = STProperties.Tube_Length
-                        pitch = STProperties.Tube_Pitch
+                        pitch = STProperties.Tube_Pitch / 1000
                         n = STProperties.Tube_NumberPerShell
                         nt = n / STProperties.Tube_PassesPerShell
                         A = n * Math.PI * de * (L - 2 * de)
@@ -1099,7 +1146,7 @@ Namespace UnitOperations
                         'tube
                         dpt = 0.0#
                         Dim fric As Double = 0
-                        Dim epsilon As Double = STProperties.Tube_Roughness
+                        Dim epsilon As Double = STProperties.Tube_Roughness / 1000
                         If Ret > 3250 Then
                             Dim a1 = Math.Log(((epsilon / di) ^ 1.1096) / 2.8257 + (7.149 / Ret) ^ 0.8961) / Math.Log(10.0#)
                             Dim b1 = -2 * Math.Log((epsilon / di) / 3.7065 - 5.0452 * a1 / Ret) / Math.Log(10.0#)
@@ -1138,13 +1185,13 @@ Namespace UnitOperations
                                 nsc = 1.19 * n ^ 0.5
                         End Select
                         Dsf = (nsc - 1) * pitch + de
-                        Dsi = STProperties.Shell_Di 'Dsf / 1.075
+                        Dsi = STProperties.Shell_Di / 1000 'Dsf / 1.075
                         'Dsf = Dsi / 1.075 * Dsi
                         HDi = STProperties.Shell_BaffleCut / 100
-                        Nb = L / STProperties.Shell_BaffleSpacing + 1 'review (l1, l2)
+                        Nb = L / (STProperties.Shell_BaffleSpacing / 1000) + 1 'review (l1, l2)
                         'shell pressure drop
                         Dim Gsf, Np, Fp, Ss, Ssf, fs, Cb, Ca, Res, Prs, jh, aa, bb, cc, xx, yy, Nh, Y As Double
-                        xx = Dsi / STProperties.Shell_BaffleSpacing
+                        xx = Dsi / (STProperties.Shell_BaffleSpacing / 1000)
                         yy = pitch / de
                         Select Case STProperties.Tube_Layout
                             Case 0, 1
@@ -1195,7 +1242,7 @@ Namespace UnitOperations
                                 Cb = 1.37
                         End Select
                         Ca = Cb * (pitch - de) / pitch
-                        Ss = Ca * STProperties.Shell_BaffleSpacing * Dsf
+                        Ss = Ca * STProperties.Shell_BaffleSpacing / 1000 * Dsf
                         Ssf = Ss / Fp
                         'Ssf = Math.PI / 4 * (Dsi ^ 2 - nt * de ^ 2)
                         If STProperties.Shell_Fluid = 0 Then
@@ -1302,8 +1349,6 @@ Namespace UnitOperations
                                 End If
                         End Select
 
-
-
                         'Cx
                         Dim Cx As Double = 0
                         Select Case STProperties.Tube_Layout
@@ -1327,7 +1372,7 @@ Namespace UnitOperations
                         'shell htc
 
                         Dim M As Double = 0.96#
-                        dis = STProperties.Shell_Di
+                        dis = STProperties.Shell_Di / 1000
                         Fh = 1 / (1 + Nh * (dis / pitch) ^ 0.5)
                         Ssh = Ss * M / Fh
                         'Ssh = Math.PI / 4 * (Dsi ^ 2 - nt * de ^ 2)
@@ -1358,8 +1403,8 @@ Namespace UnitOperations
                         Else
                             he = jh * kh * Prs ^ 0.34 / de
                         End If
-                        lb = STProperties.Shell_BaffleSpacing * (Nb - 1)
-                        Ec = lb + (L - lb) * (2 * STProperties.Shell_BaffleSpacing / (L - lb)) ^ 0.6 / L
+                        lb = STProperties.Shell_BaffleSpacing / 1000 * (Nb - 1)
+                        Ec = lb + (L - lb) * (2 * STProperties.Shell_BaffleSpacing / 1000 / (L - lb)) ^ 0.6 / L
                         If Double.IsNaN(Ec) Then Ec = 1
                         he *= Ec
 
@@ -1389,31 +1434,31 @@ Namespace UnitOperations
                             Q = U * A * F * LMTD / 1000
                             If Q > MaxHeatExchange Then Q = MaxHeatExchange
                             If STProperties.Shell_Fluid = 0 Then
-                                    'cold
-                                    DeltaHc = (Q - HeatLoss) / Wc
-                                    DeltaHh = -Q / Wh
-                                Else
-                                    'hot
-                                    DeltaHc = Q / Wc
-                                    DeltaHh = -(Q + HeatLoss) / Wh
-                                End If
-                                Hc2 = Hc1 + DeltaHc
-                                Hh2 = Hh1 + DeltaHh
-                                StInCold.PropertyPackage.CurrentMaterialStream = StInCold
-                                IObj?.SetCurrent()
-                                tmp = StInCold.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, Pc2, Hc2, Tc2)
-                                Tc2_ant = Tc2
-                                Tc2 = tmp.CalculatedTemperature
-                                Tc2 = 0.1 * Tc2 + 0.9 * Tc2_ant
-                                StInHot.PropertyPackage.CurrentMaterialStream = StInHot
-                                IObj?.SetCurrent()
-                                tmp = StInHot.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, Ph2, Hh2, Th2)
-                                Th2_ant = Th2
-                                Th2 = tmp.CalculatedTemperature
-                                Th2 = 0.1 * Th2 + 0.9 * Th2_ant
+                                'cold
+                                DeltaHc = (Q - HeatLoss) / Wc
+                                DeltaHh = -Q / Wh
+                            Else
+                                'hot
+                                DeltaHc = Q / Wc
+                                DeltaHh = -(Q + HeatLoss) / Wh
                             End If
+                            Hc2 = Hc1 + DeltaHc
+                            Hh2 = Hh1 + DeltaHh
+                            StInCold.PropertyPackage.CurrentMaterialStream = StInCold
+                            IObj?.SetCurrent()
+                            tmp = StInCold.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, Pc2, Hc2, Tc2)
+                            Tc2_ant = Tc2
+                            Tc2 = tmp.CalculatedTemperature
+                            Tc2 = 0.1 * Tc2 + 0.9 * Tc2_ant
+                            StInHot.PropertyPackage.CurrentMaterialStream = StInHot
+                            IObj?.SetCurrent()
+                            tmp = StInHot.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, Ph2, Hh2, Th2)
+                            Th2_ant = Th2
+                            Th2 = tmp.CalculatedTemperature
+                            Th2 = 0.1 * Th2 + 0.9 * Th2_ant
+                        End If
 
-                            IObj?.Paragraphs.Add("<mi>Q</mi> = " & Q & " kW")
+                        IObj?.Paragraphs.Add("<mi>Q</mi> = " & Q & " kW")
                         IObj?.Paragraphs.Add("<mi>U</mi> = " & U & " W/[m2.K]")
 
                         IObj?.Paragraphs.Add("<mi>T_{c,out}</mi> = " & Tc2 & " K")
@@ -1467,7 +1512,7 @@ Namespace UnitOperations
 
             ThermalEfficiency = (Q - HeatLoss) / MaxHeatExchange * 100
 
-            If HeatLoss > Q Then Throw New Exception("Invalid Heat Loss.")
+            If HeatLoss > Math.Abs(Q.GetValueOrDefault) Then Throw New Exception("Invalid Heat Loss.")
 
             IObj?.Paragraphs.Add("<mi>Q/Q_{max}</mi> = " & ThermalEfficiency & " %")
 
@@ -1519,6 +1564,10 @@ Namespace UnitOperations
             End If
 
         End Sub
+
+        Public Overrides Function GetDefaultProperties() As String()
+            Return New String() {"PROP_HX_0", "PROP_HX_1", "PROP_HX_2", "PROP_HX_3", "PROP_HX_4", "PROP_HX_25", "PROP_HX_26", "PROP_HX_27", "PROP_HX_28"}
+        End Function
 
         Public Overrides Function GetPropertyValue(ByVal prop As String, Optional ByVal su As Interfaces.IUnitsOfMeasure = Nothing) As Object
 
@@ -1772,11 +1821,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_HeatExchanger With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_HeatExchanger With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()
@@ -1961,8 +2012,8 @@ Namespace UnitOperations.Auxiliary.HeatExchanger
         Public Shell_NumberOfShellsInSeries As Integer = 1
         'number of shell passes, integer
         Public Shell_NumberOfPasses As Integer = 2
-        'shell internal diameter in m
-        Public Shell_Di As Double = 0.5
+        'shell internal diameter in mm
+        Public Shell_Di As Double = 500.0
         'shell fouling in K.m2/W
         Public Shell_Fouling As Double = 0.0#
         'baffle type: 0 = single, 1 = double, 2 = triple, 3 = grid
@@ -1971,16 +2022,16 @@ Namespace UnitOperations.Auxiliary.HeatExchanger
         Public Shell_BaffleOrientation As Integer = 1
         'baffle cut in % diameter
         Public Shell_BaffleCut As Double = 20
-        'baffle spacing in m
-        Public Shell_BaffleSpacing As Double = 0.25
+        'baffle spacing in mm
+        Public Shell_BaffleSpacing As Double = 250.0
         'fluid in shell: 0 = cold, 1 = hot
         Public Shell_Fluid As Integer = 1
-        'tube internal diameter in m
-        Public Tube_Di As Double = 0.05
-        'tube external diameter in m
-        Public Tube_De As Double = 0.06
+        'tube internal diameter in mm
+        Public Tube_Di As Double = 50.0
+        'tube external diameter in mm
+        Public Tube_De As Double = 60.0
         'tube length in m
-        Public Tube_Length As Double = 5
+        Public Tube_Length As Double = 5.0
         'tube fouling in K.m2/W
         Public Tube_Fouling As Double = 0.0#
         'number of tube passes per shell, integer
@@ -1989,14 +2040,14 @@ Namespace UnitOperations.Auxiliary.HeatExchanger
         Public Tube_NumberPerShell As Integer = 160
         'tube layout: 0 = triangular, 1 = triangular rotated, 2 = square, 2 = square rotated
         Public Tube_Layout As Integer = 0
-        'tube pitch in m
-        Public Tube_Pitch As Double = 0.04
+        'tube pitch in mm
+        Public Tube_Pitch As Double = 40.0
         'fluid in tubes: 0 = cold, 1 = hot
         Public Tube_Fluid As Integer = 0
-        'tube material roughness in m
-        Public Tube_Roughness As Double = 0.000045
-        'shell material roughness in m
-        Public Shell_Roughness As Double = 0.000045
+        'tube material roughness in mm
+        Public Tube_Roughness As Double = 0.000045 * 1000
+        'shell material roughness in mm
+        Public Shell_Roughness As Double = 0.000045 * 1000
         'tube scaling friction factor correction
         Public Tube_Scaling_FricCorrFactor As Double = 1.2#
         'tube thermal conductivity

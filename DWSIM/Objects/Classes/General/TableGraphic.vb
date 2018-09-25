@@ -512,7 +512,7 @@ Namespace GraphicObjects
             Dim i As Integer = 0
             Dim j As Integer = 0
 
-            Dim data As String = ""
+            Dim data As String = HeaderText + vbCrLf + "Object"
 
             Dim refitem = m_items.Values.FirstOrDefault
 
@@ -759,6 +759,8 @@ Namespace GraphicObjects
 
         Public Property VisibleProperties As New Dictionary(Of String, List(Of String))
 
+        Private Property ClipboardData As String = ""
+
         <Xml.Serialization.XmlIgnore> Public Property Flowsheet As Interfaces.IFlowsheet
 
         Public Overrides Function SaveData() As System.Collections.Generic.List(Of System.Xml.Linq.XElement)
@@ -974,12 +976,7 @@ Namespace GraphicObjects
 
         Public Sub CopyToClipboard()
 
-            Dim i As Integer = 0
-            Dim j As Integer = 0
-
-            Dim data As String = Me.HeaderText & vbCrLf
-
-            Clipboard.SetText(data)
+            Clipboard.SetText(ClipboardData)
 
         End Sub
 
@@ -1116,6 +1113,8 @@ Namespace GraphicObjects
                 g.DrawString(Me.HeaderText, Me.HeaderFont, New SolidBrush(Color.FromArgb(iopacity, Me.FontColor)), X + Padding, Y + Padding)
                 Dim n As Integer = 1
 
+                ClipboardData = HeaderText + vbCrLf
+
                 For Each item In VisibleProperties
                     For Each value In item.Value
 
@@ -1137,6 +1136,8 @@ Namespace GraphicObjects
                         g.DrawString(propunit, Me.FontCol3, New SolidBrush(Color.FromArgb(iopacity, Me.FontColor)), X + maxL0 + maxL1 + maxL2 + Padding, Y + n * maxH + Padding)
 
                         g.DrawLine(Me.m_BorderPen, X, Y + n * maxH, X + Width, Y + n * maxH)
+
+                        ClipboardData += Me.Flowsheet.SimulationObjects(item.Key).GraphicObject.Tag + vbTab + propstring & vbTab & propval & vbTab & propunit & vbCrLf
 
                         n += 1
 
@@ -1444,7 +1445,7 @@ Namespace GraphicObjects
 
                 If Me.Owner.GetFlowsheet IsNot Nothing Then
 
-                    Me.Opacity = 225
+                    Me.Opacity = 240
 
                     Dim gContainer As System.Drawing.Drawing2D.GraphicsContainer
                     Dim myMatrix As Drawing2D.Matrix
@@ -1457,7 +1458,7 @@ Namespace GraphicObjects
 
                     Dim dpiscale = g.DpiX / 96.0
 
-                    Me.HeaderFont = New Font("Arial", dpiscale * 11 / Me.AdditionalInfo, FontStyle.Regular, GraphicsUnit.Pixel, 0, False)
+                    Me.HeaderFont = New Font("Segoe UI", dpiscale * 11 / AdditionalInfo, FontStyle.Regular, GraphicsUnit.Pixel, 0, False)
 
                     g.TextRenderingHint = Text.TextRenderingHint.SystemDefault
 
@@ -1517,91 +1518,517 @@ Namespace GraphicObjects
                         count += 1
                     Next
 
-                    If Not Me.AdditionalInfo Is Nothing Then Me.Padding = 3 / Me.AdditionalInfo
+                    If Not Me.Owner.GraphicObject.ObjectType = ObjectType.MaterialStream Then
 
-                    If maxH = 0 Then maxH = 20
+                        If Not Me.AdditionalInfo Is Nothing Then Me.Padding = 3 / Me.AdditionalInfo
 
-                    Me.Height = (count + 1) * (maxH + 2 * Me.Padding)
-                    size = g.MeasureString(Me.HeaderText, Me.HeaderFont, New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
-                    size2 = g.MeasureString(DWSIM.App.GetLocalString(Me.Owner.GraphicObject.Description), Me.HeaderFont, New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If maxH = 0 Then maxH = 20
 
-                    If size.Width > size2.Width Then
-                        If size.Width > (2 * Me.Padding + maxL1 + maxL2 + maxL3) Then
-                            Me.Width = 2 * Me.Padding + size.Width
+                        Me.Height = (count + 1) * (maxH + 2 * Me.Padding)
+                        size = g.MeasureString(Me.HeaderText, Me.HeaderFont, New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        size2 = g.MeasureString(DWSIM.App.GetLocalString(Me.Owner.GraphicObject.Description), Me.HeaderFont, New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+
+                        If size.Width > size2.Width Then
+                            If size.Width > (2 * Me.Padding + maxL1 + maxL2 + maxL3) Then
+                                Me.Width = 2 * Me.Padding + size.Width
+                            Else
+                                Me.Width = 6 * Me.Padding + maxL1 + maxL2 + maxL3
+                            End If
                         Else
-                            Me.Width = 6 * Me.Padding + maxL1 + maxL2 + maxL3
+                            If size2.Width > (2 * Me.Padding + maxL1 + maxL2 + maxL3) Then
+                                Me.Width = 2 * Me.Padding + size2.Width
+                            Else
+                                Me.Width = 6 * Me.Padding + maxL1 + maxL2 + maxL3
+                            End If
                         End If
+
+                        Me.Width += 6
+
+                        maxL1 = maxL1 + 2 * Padding
+                        maxL2 = maxL2 + 2 * Padding
+                        maxL3 = maxL3 + 2 * Padding
+
+                        maxH = maxH + 2 * Padding
+
+                        If Width > Owner.GetFlowsheet().GetFlowsheetSurfaceWidth Then Exit Sub
+                        If Height > Owner.GetFlowsheet().GetFlowsheetSurfaceHeight Then Exit Sub
+
+                        If m_BorderPen Is Nothing Then m_BorderPen = New Drawing.Pen(Color.SteelBlue)
+
+                        With Me.m_BorderPen
+                            .Color = Color.SteelBlue
+                            .DashStyle = Me.BorderStyle
+                        End With
+
+                        'draw shadow
+
+                        Dim rect0 As New Rectangle(X + 2, Y + 2, Width, Height)
+                        DrawRoundRect(g, Pens.Transparent, rect0.X, rect0.Y, rect0.Width, rect0.Height, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), New SolidBrush(Color.FromArgb(50, Color.DimGray)))
+
+                        Dim rect As New Rectangle(X, Y, Width, Height)
+                        DrawRoundRect(g, Pens.Transparent, rect.X, rect.Y, rect.Width, rect.Height, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), New SolidBrush(Color.FromArgb(Me.Opacity, Me.BackgroundColor)))
+
+                        Dim format1 As New StringFormat(StringFormatFlags.NoClip)
+                        With format1
+                            .Alignment = StringAlignment.Far
+                        End With
+
+                        'desenhar textos e retangulos
+                        g.DrawString(Me.Owner.GraphicObject.Tag.ToUpper, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + Padding)
+                        g.DrawString(DWSIM.App.GetLocalString(Me.Owner.GraphicObject.Description), Me.HeaderFont, New SolidBrush(FontColor), X + Padding + 3, Y + maxH)
+                        Dim n As Integer = 1
+                        For Each prop In props
+                            propstring = Owner.GetFlowsheet.GetTranslatedString(prop)
+                            pval0 = Owner.GetPropertyValue(prop, Owner.GetFlowsheet.FlowsheetOptions.SelectedUnitSystem)
+                            If pval0 Is Nothing Then Exit For
+                            If TypeOf pval0 Is Double Then
+                                propval = Convert.ToDouble(pval0).ToString(Owner.GetFlowsheet.FlowsheetOptions.NumberFormat)
+                            Else
+                                propval = pval0.ToString
+                            End If
+                            propunit = Owner.GetPropertyUnit(prop, Owner.GetFlowsheet.FlowsheetOptions.SelectedUnitSystem)
+                            g.DrawString(propstring, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + (n + 1) * maxH + Padding)
+                            g.DrawString(propval, Me.HeaderFont, New SolidBrush(FontColor), X + maxL1 + maxL2 + 3, Y + (n + 1) * maxH + Padding, format1)
+                            g.DrawString(propunit, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + maxL1 + maxL2 + Padding + 3, Y + (n + 1) * maxH + Padding)
+                            'g.DrawLine(Me.m_BorderPen, X, Y + n * maxH, X + Width, Y + n * maxH)
+                            n += 1
+                        Next
+
+                        Me.m_BorderPen.Width = 1 / Me.AdditionalInfo
+
+                        DrawRoundRect(g, Me.m_BorderPen, Me.X, Me.Y, Me.Width, Me.Height, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), Brushes.Transparent)
+                        g.DrawLine(Me.m_BorderPen, X + Padding + 3, Y + 2 * maxH - Padding, X + Width - Padding - 3, Y + 2 * maxH - Padding)
+
                     Else
-                        If size2.Width > (2 * Me.Padding + maxL1 + maxL2 + maxL3) Then
-                            Me.Width = 2 * Me.Padding + size2.Width
+
+                        Dim MSObj = DirectCast(Me.Owner, Interfaces.IMaterialStream)
+
+                        Dim ABasis = MSObj.FloatingTableAmountBasis
+
+                        If ABasis = CompositionBasis.DefaultBasis Then ABasis = MSObj.Flowsheet.FlowsheetOptions.DefaultFloatingTableCompoundAmountBasis
+
+                        Dim maxL4, maxL5, maxL6, maxL7, maxL8, maxL9, count2 As Integer
+                        Dim maxH2 As Integer
+
+                        count2 = 2
+
+                        Dim nf = "G6"
+
+                        Dim compounds = MSObj.Phases(0).Compounds.Select(Function(x) x.Value.Name).ToList
+
+                        Dim p As Interfaces.IPhase
+
+                        size = g.MeasureString(MSObj.Flowsheet.GetTranslatedString("CompoundsPhases"), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If size.Width > maxL4 Then maxL4 = size.Width
+
+                        size = g.MeasureString(MSObj.Flowsheet.GetTranslatedString("Overall"), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If size.Width > maxL5 Then maxL5 = size.Width
+
+                        size = g.MeasureString(MSObj.Flowsheet.GetTranslatedString("Vapor"), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If size.Width > maxL6 Then maxL6 = size.Width
+
+                        size = g.MeasureString(MSObj.Flowsheet.GetTranslatedString("Liquid1"), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If size.Width > maxL7 Then maxL7 = size.Width
+
+                        size = g.MeasureString(MSObj.Flowsheet.GetTranslatedString("Liquid2"), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If size.Width > maxL8 Then maxL8 = size.Width
+
+                        size = g.MeasureString(MSObj.Flowsheet.GetTranslatedString("Solid"), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        If size.Width > maxL9 Then maxL9 = size.Width
+
+                        Dim su = MSObj.Flowsheet.FlowsheetOptions.SelectedUnitSystem
+
+                        Dim bprop As String = ""
+
+                        Dim convertfrom As String = ""
+
+                        Select Case ABasis
+                            Case CompositionBasis.Mass_Flows
+                                bprop = "MassFlow"
+                                convertfrom = su.massflow
+                            Case CompositionBasis.Mass_Fractions
+                                bprop = "MassFraction"
+                            Case CompositionBasis.Molar_Flows
+                                bprop = "MolarFlow"
+                                convertfrom = su.molarflow
+                            Case CompositionBasis.Molar_Fractions
+                                bprop = "MoleFraction"
+                            Case CompositionBasis.Volumetric_Flows
+                                bprop = "VolumetricFlow"
+                                convertfrom = su.volumetricFlow
+                            Case CompositionBasis.Volumetric_Fractions
+                                bprop = "VolumetricFraction"
+                        End Select
+
+                        Dim bpval As Nullable(Of Double)
+
+                        For Each c In compounds
+
+                            size = g.MeasureString(c, New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                            If size.Width > maxL4 Then maxL4 = size.Width
+                            If size.Height > maxH2 Then maxH2 = size.Height
+
+                            p = MSObj.GetPhase("Mixture")
+
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                            size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                            If size.Width > maxL5 Then maxL5 = size.Width
+                            If size.Height > maxH2 Then maxH2 = size.Height
+
+                            p = MSObj.GetPhase("Vapor")
+
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                            size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                            If size.Width > maxL6 Then maxL6 = size.Width
+                            If size.Height > maxH2 Then maxH2 = size.Height
+
+                            p = MSObj.GetPhase("Liquid1")
+
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                            size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                            If size.Width > maxL7 Then maxL7 = size.Width
+                            If size.Height > maxH2 Then maxH2 = size.Height
+
+                            p = MSObj.GetPhase("Liquid2")
+
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                            size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                            If size.Width > maxL8 Then maxL8 = size.Width
+                            If size.Height > maxH2 Then maxH2 = size.Height
+
+                            p = MSObj.GetPhase("Solid")
+
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                            size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                            If size.Width > maxL9 Then maxL9 = size.Width
+                            If size.Height > maxH2 Then maxH2 = size.Height
+
+                            count2 += 1
+
+                        Next
+
+                        Dim sumL = maxL1 + maxL2 + maxL3
+                        Dim sumL2 = maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9
+
+                        If Not Me.AdditionalInfo Is Nothing Then Me.Padding = 3 / Me.AdditionalInfo
+
+                        If maxH = 0 Then maxH = 20.0
+
+                        Me.Height = (count + 1) * (maxH + 2 * Me.Padding)
+
+                        Dim Height2 = (count2 + 4) * (maxH2 + 2 * Me.Padding)
+
+                        size = g.MeasureString(Me.HeaderText, Me.HeaderFont, New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+                        size2 = g.MeasureString(DWSIM.App.GetLocalString(Me.Owner.GraphicObject.Description), Me.HeaderFont, New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
+
+                        If size.Width > size2.Width Then
+                            If size.Width > (2 * Me.Padding + sumL) Then
+                                Me.Width = 2 * Me.Padding + size.Width
+                            Else
+                                Me.Width = 6 * Me.Padding + sumL
+                            End If
                         Else
-                            Me.Width = 6 * Me.Padding + maxL1 + maxL2 + maxL3
+                            If size2.Width > (2 * Me.Padding + sumL) Then
+                                Me.Width = 2 * Me.Padding + size2.Width
+                            Else
+                                Me.Width = 6 * Me.Padding + sumL
+                            End If
                         End If
-                    End If
 
-                    Me.Width += 6
+                        Me.Width += 6
 
-                    maxL1 = maxL1 + 2 * Padding
-                    maxL2 = maxL2 + 2 * Padding
-                    maxL3 = maxL3 + 2 * Padding
+                        Dim Width2 = 16 * Me.Padding + sumL2 + 6
 
-                    maxH = maxH + 2 * Padding
+                        Dim delta = 2 * Padding
 
-                    If m_BorderPen Is Nothing Then m_BorderPen = New Drawing.Pen(Color.SteelBlue)
+                        maxL1 += delta
+                        maxL2 += delta
+                        maxL3 += delta
+                        maxL4 += delta
+                        maxL5 += delta
+                        maxL6 += delta
+                        maxL7 += delta
+                        maxL8 += delta
+                        maxL9 += delta
 
-                    With Me.m_BorderPen
-                        .Color = Color.SteelBlue
-                        .DashStyle = Me.BorderStyle
-                    End With
+                        maxH += delta
+                        maxH2 += delta
 
-                    'draw shadow
+                        If m_BorderPen Is Nothing Then m_BorderPen = New Drawing.Pen(Color.SteelBlue)
 
-                    Dim rect0 As New Rectangle(X + 4, Y + 4, Width, Height)
-                    DrawRoundRect(g, Pens.Transparent, rect0.X, rect0.Y, rect0.Width, rect0.Height, 10, New SolidBrush(Color.FromArgb(100, Color.Gray)))
-                    g.FillRectangle(New SolidBrush(Color.FromArgb(50, Color.DimGray)), rect0)
-                    Me.DrawRoundRect(g, New Pen(Color.Transparent), X + 4, Y + 4, Width, Height, 10, New SolidBrush(Color.FromArgb(50, Color.DimGray)))
+                        With Me.m_BorderPen
+                            .Color = Color.SteelBlue
+                            .DashStyle = Me.BorderStyle
+                        End With
 
+                        'draw shadow
 
-                    m_Color_Gradient_1 = Color.FromArgb(255, BackgroundGradientColor1)
-                    m_Color_Gradient_2 = Color.FromArgb(255, BackgroundGradientColor2)
+                        Dim rect0 As New Rectangle(X + 2, Y + 2, Width, Height)
+                        DrawRoundRect(g, Pens.Transparent, rect0.X, rect0.Y, rect0.Width, rect0.Height, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), New SolidBrush(Color.FromArgb(50, Color.DimGray)))
 
-                    Dim rect As New Rectangle(X, Y, Width, Height)
-                    If Me.IsGradientBackground = False Then
-                        DrawRoundRect(g, Pens.Transparent, rect.X, rect.Y, rect.Width, rect.Height, 6, New SolidBrush(Color.FromArgb(Me.Opacity, Me.BackgroundColor)))
-                    Else
-                        DrawRoundRect(g, Pens.Transparent, rect.X, rect.Y, rect.Width, rect.Height, 6, New Drawing2D.LinearGradientBrush(rect, Me.m_Color_Gradient_1, Me.m_Color_Gradient_2, LinearGradientMode.Vertical))
-                    End If
+                        Dim rect As New Rectangle(X, Y, Width, Height)
+                        DrawRoundRect(g, Pens.Transparent, rect.X, rect.Y, rect.Width, rect.Height, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), New SolidBrush(Color.FromArgb(Me.Opacity, Me.BackgroundColor)))
 
-                    Dim format1 As New StringFormat(StringFormatFlags.NoClip)
-                    With format1
-                        .Alignment = StringAlignment.Far
-                    End With
+                        Dim format1 As New StringFormat(StringFormatFlags.NoClip)
+                        With format1
+                            .Alignment = StringAlignment.Far
+                        End With
 
-                    'desenhar textos e retangulos
-                    g.DrawString(Me.Owner.GraphicObject.Tag.ToUpper, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + Padding)
-                    g.DrawString(DWSIM.App.GetLocalString(Me.Owner.GraphicObject.Description), Me.HeaderFont, New SolidBrush(FontColor), X + Padding + 3, Y + maxH)
-                    Dim n As Integer = 1
-                    For Each prop In props
-                        propstring = Owner.GetFlowsheet.GetTranslatedString(prop)
-                        pval0 = Owner.GetPropertyValue(prop, Owner.GetFlowsheet.FlowsheetOptions.SelectedUnitSystem)
-                        If pval0 Is Nothing Then Exit For
-                        If TypeOf pval0 Is Double Then
-                            propval = Convert.ToDouble(pval0).ToString(Owner.GetFlowsheet.FlowsheetOptions.NumberFormat)
-                        Else
-                            propval = pval0.ToString
+                        'desenhar textos e retangulos
+                        g.DrawString(Me.Owner.GraphicObject.Tag, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + Padding)
+                        g.DrawString(DWSIM.App.GetLocalString(Me.Owner.GraphicObject.Description), Me.HeaderFont, New SolidBrush(FontColor), X + Padding + 3, Y + maxH)
+                        Dim n As Integer = 1
+                        For Each prop In props
+                            propstring = Owner.GetFlowsheet.GetTranslatedString(prop)
+                            pval0 = Owner.GetPropertyValue(prop, Owner.GetFlowsheet.FlowsheetOptions.SelectedUnitSystem)
+                            If pval0 Is Nothing Then Exit For
+                            If TypeOf pval0 Is Double Then
+                                propval = Convert.ToDouble(pval0).ToString(Owner.GetFlowsheet.FlowsheetOptions.NumberFormat)
+                            Else
+                                propval = pval0.ToString
+                            End If
+                            propunit = Owner.GetPropertyUnit(prop, Owner.GetFlowsheet.FlowsheetOptions.SelectedUnitSystem)
+                            g.DrawString(propstring, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + (n + 1) * maxH + Padding)
+                            g.DrawString(propval, Me.HeaderFont, New SolidBrush(FontColor), X + maxL1 + maxL2 + 3, Y + (n + 1) * maxH + Padding, format1)
+                            g.DrawString(propunit, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + maxL1 + maxL2 + Padding + 3, Y + (n + 1) * maxH + Padding)
+                            'g.DrawLine(Me.m_BorderPen, X, Y + n * maxH, X + Width, Y + n * maxH)
+                            n += 1
+                        Next
+
+                        Me.m_BorderPen.Width = 1 / Me.AdditionalInfo
+
+                        DrawRoundRect(g, Me.m_BorderPen, Me.X, Me.Y, Me.Width, Me.Height, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), Brushes.Transparent)
+                        g.DrawLine(Me.m_BorderPen, X + Padding + 3, Y + 2 * maxH - Padding, X + Width - Padding - 3, Y + 2 * maxH - Padding)
+
+                        Dim DeltaY As Integer = -Height2 - (n + 3) * Padding
+
+                        If MSObj.Flowsheet.FlowsheetOptions.DisplayFloatingTableCompoundAmounts And (Y + DeltaY) > 0 Then
+
+                            If Width2 > Owner.GetFlowsheet().GetFlowsheetSurfaceWidth * 2 / 3 Then Exit Sub
+                            If Height2 > Owner.GetFlowsheet().GetFlowsheetSurfaceHeight * 2 / 3 Then Exit Sub
+
+                            'draw shadow
+
+                            DrawRoundRect(g, Pens.Transparent, X + 2, Y + DeltaY + 2, Width2, Height2, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), New SolidBrush(Color.FromArgb(50, Color.DimGray)))
+                            DrawRoundRect(g, Pens.Transparent, X, Y + DeltaY, Width2, Height2, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), New SolidBrush(Color.FromArgb(Me.Opacity, Me.BackgroundColor)))
+
+                            Dim atext As String = ""
+
+                            Select Case ABasis
+                                Case CompositionBasis.Mass_Flows
+                                    atext = MSObj.Flowsheet.GetTranslatedString("Vazomssica") + " (" + su.massflow + ")"
+                                Case CompositionBasis.Mass_Fractions
+                                    atext = MSObj.Flowsheet.GetTranslatedString("FraoMssica")
+                                Case CompositionBasis.Molar_Flows
+                                    atext = MSObj.Flowsheet.GetTranslatedString("Vazomolar") + " (" + su.molarflow + ")"
+                                Case CompositionBasis.Molar_Fractions
+                                    atext = MSObj.Flowsheet.GetTranslatedString("FraoMolar1")
+                                Case CompositionBasis.Volumetric_Flows
+                                    atext = MSObj.Flowsheet.GetTranslatedString("Vazovolumtrica") + " (" + su.volumetricFlow + ")"
+                                Case CompositionBasis.Volumetric_Fractions
+                                    atext = MSObj.Flowsheet.GetTranslatedString("VolumetricFraction")
+                            End Select
+
+                            g.DrawString(Me.HeaderText, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + Padding + DeltaY)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("CompoundAmounts") + atext, New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor), X + Padding + 3, Y + maxH2 + DeltaY)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("CompoundsPhases"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + 2 * maxH2 + DeltaY)
+
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Overall"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), New PointF(X + maxL4 + maxL5 + Padding + 3, Y + 2 * maxH2 + DeltaY), format1)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Vapor"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + 2 * maxH2 + DeltaY), format1)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Liquid1"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + 2 * maxH2 + DeltaY), format1)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Liquid2"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + 2 * maxH2 + DeltaY), format1)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Solid"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + 2 * maxH2 + DeltaY), format1)
+
+                            n = 1
+                            For Each c In compounds
+
+                                g.DrawString(c, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor),
+                                             New PointF(X + Padding + 3, Y + (n + 2) * maxH2 + Padding + DeltaY), New StringFormat(StringFormatFlags.NoClip, 0))
+
+                                p = MSObj.GetPhase("Mixture")
+
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                                g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + Padding + 3, Y + (n + 2) * maxH2 + Padding + DeltaY), format1)
+
+                                p = MSObj.GetPhase("Vapor")
+
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                                g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 2) * maxH2 + Padding + DeltaY), format1)
+
+                                p = MSObj.GetPhase("Liquid1")
+
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                                g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 2) * maxH2 + Padding + DeltaY), format1)
+
+                                p = MSObj.GetPhase("Liquid2")
+
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                                g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 2) * maxH2 + Padding + DeltaY), format1)
+
+                                p = MSObj.GetPhase("Solid")
+
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+
+                                g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 2) * maxH2 + Padding + DeltaY), format1)
+
+                                n += 1
+
+                            Next
+
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Fraction"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY)
+                            g.DrawString(MSObj.Flowsheet.GetTranslatedString("Total"), New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY)
+
+                            Select Case ABasis
+                                Case CompositionBasis.Mass_Flows
+                                    p = MSObj.GetPhase("Overall")
+                                    g.DrawString(p.Properties.massflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Vapor")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.massflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid1")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.massflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid2")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.massflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Solid")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.massflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                Case CompositionBasis.Mass_Fractions
+                                    atext = MSObj.Flowsheet.GetTranslatedString("FraoMssica")
+                                    p = MSObj.GetPhase("Vapor")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid1")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid2")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Solid")
+                                    g.DrawString(p.Properties.massfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                Case CompositionBasis.Molar_Flows
+                                    p = MSObj.GetPhase("Overall")
+                                    g.DrawString(p.Properties.molarflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Vapor")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.molarflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid1")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.molarflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid2")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.molarflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Solid")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    g.DrawString(p.Properties.molarflow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                Case CompositionBasis.Molar_Fractions
+                                    p = MSObj.GetPhase("Vapor")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid1")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid2")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Solid")
+                                    g.DrawString(p.Properties.molarfraction.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 3) * maxH2 + Padding + DeltaY), format1)
+                                Case CompositionBasis.Volumetric_Flows
+                                    p = MSObj.GetPhase("Overall")
+                                    g.DrawString(p.Properties.volumetric_flow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Vapor")
+                                    g.DrawString(p.Properties.volumetric_flow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid1")
+                                    g.DrawString(p.Properties.volumetric_flow.GetValueOrDefault.ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Liquid2")
+                                    g.DrawString(p.Properties.volumetric_flow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                    p = MSObj.GetPhase("Solid")
+                                    g.DrawString(p.Properties.volumetric_flow.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
+                                             New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
+                                             New PointF(X + maxL4 + maxL5 + maxL6 + maxL7 + maxL8 + maxL9 + Padding + 3, Y + (n + 4) * maxH2 + Padding + DeltaY), format1)
+                                Case CompositionBasis.Volumetric_Fractions
+                            End Select
+
+                            DrawRoundRect(g, Me.m_BorderPen, X, Y + DeltaY, Width2, Height2, Convert.ToSingle(3.0 / Convert.ToSingle(AdditionalInfo)), Brushes.Transparent)
+                            g.DrawLine(Me.m_BorderPen, X + Padding + 3, Y + 3 * maxH2 - Padding + DeltaY, X + Width2 - Padding - 3, Y + 3 * maxH2 - Padding + DeltaY)
+
                         End If
-                        propunit = Owner.GetPropertyUnit(prop, Owner.GetFlowsheet.FlowsheetOptions.SelectedUnitSystem)
-                        g.DrawString(propstring, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + Padding + 3, Y + (n + 1) * maxH + Padding)
-                        g.DrawString(propval, Me.HeaderFont, New SolidBrush(FontColor), X + maxL1 + maxL2 + 3, Y + (n + 1) * maxH + Padding, format1)
-                        g.DrawString(propunit, New Font(Me.HeaderFont, FontStyle.Bold), New SolidBrush(FontColor), X + maxL1 + maxL2 + Padding + 3, Y + (n + 1) * maxH + Padding)
-                        'g.DrawLine(Me.m_BorderPen, X, Y + n * maxH, X + Width, Y + n * maxH)
-                        n += 1
-                    Next
 
-                    Me.m_BorderPen.Width = 1 / Me.AdditionalInfo
-
-                    DrawRoundRect(g, Me.m_BorderPen, Me.X, Me.Y, Me.Width, Me.Height, 3, Brushes.Transparent)
-                    g.DrawLine(Me.m_BorderPen, X + Padding + 3, Y + 2 * maxH - Padding, X + Width - Padding - 3, Y + 2 * maxH - Padding)
+                    End If
 
                     g.EndContainer(gContainer)
 

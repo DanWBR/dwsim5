@@ -18,6 +18,7 @@
 
 Imports System.Linq
 Imports DWSIM.Interfaces
+Imports DWSIM.Interfaces.Enums
 Imports DWSIM.SharedClasses.Flowsheet
 
 Namespace DWSIM.Flowsheet
@@ -89,7 +90,7 @@ Namespace DWSIM.Flowsheet
 
         Public Property SimulationMode As String = ""
 
-        Public PetroleumAssays As Dictionary(Of String, DWSIM.Utilities.PetroleumCharacterization.Assay.Assay)
+        Public PetroleumAssays As Dictionary(Of String, Utilities.PetroleumCharacterization.Assay.Assay)
 
         Public SelectedUnitSystem As SystemsOfUnits.Units
 
@@ -102,7 +103,7 @@ Namespace DWSIM.Flowsheet
             ReactionSets = New Dictionary(Of String, Interfaces.IReactionSet)
             Databases = New Dictionary(Of String, String())
             PropertyPackages = New Dictionary(Of String, IPropertyPackage)
-            PetroleumAssays = New Dictionary(Of String, DWSIM.Utilities.PetroleumCharacterization.Assay.Assay)
+            PetroleumAssays = New Dictionary(Of String, Utilities.PetroleumCharacterization.Assay.Assay)
 
             'With ReactionSets
             '    .Add("DefaultSet", New ReactionSet("DefaultSet", DWSIM.App.GetLocalString("Rxn_DefaultSetName"), DWSIM.App.GetLocalString("Rxn_DefaultSetDesc")))
@@ -223,6 +224,12 @@ Namespace DWSIM.Flowsheet
         Public Property DisplayCornerPropertyListFontSize As Integer = 8 Implements IFlowsheetOptions.DisplayCornerPropertyListFontSize
 
         Public Property DisplayCornerPropertyListPadding As Integer = 4 Implements IFlowsheetOptions.DisplayCornerPropertyListPadding
+
+        Public Property DefaultFloatingTableCompoundAmountBasis As CompositionBasis = CompositionBasis.Molar_Fractions Implements IFlowsheetOptions.DefaultFloatingTableCompoundAmountBasis
+
+        Public Property DisplayFloatingTableCompoundAmounts As Boolean = True Implements IFlowsheetOptions.DisplayFloatingTableCompoundAmounts
+
+        Public Property SpreadsheetUnitLockingMode As Boolean = True Implements IFlowsheetOptions.SpreadsheetUnitLockingMode
 
     End Class
 

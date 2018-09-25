@@ -98,14 +98,16 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_CompoundSeparator
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_CompoundSeparator
 
         Protected m_ei As Double
         Protected _compsepspeccollection As New Dictionary(Of String, ComponentSeparationSpec)
         Protected _streamindex As Byte = 0
 
         Public Overrides Function CloneXML() As Object
-            Return New ComponentSeparator().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New ComponentSeparator()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -438,7 +440,7 @@ Namespace UnitOperations
                     Dim compound As String = prop.Split("_")(1)
 
                     If ComponentSepSpecs.ContainsKey(compound) Then
-                        Return ComponentSepSpecs(compound).SpecValue
+                        Return SystemsOfUnits.Converter.ConvertToSI(ComponentSepSpecs(compound).SpecUnit, ComponentSepSpecs(compound).SpecValue)
                     End If
 
                 ElseIf prop.Equals("SpecifiedStreamIndex") Then
@@ -494,14 +496,13 @@ Namespace UnitOperations
             If MyBase.SetPropertyValue(prop, propval, su) Then Return True
 
             If su Is Nothing Then su = New SystemsOfUnits.SI
-            Dim cv As New SystemsOfUnits.Converter
 
             If prop.StartsWith("SepSpecValue_") Then
 
                 Dim compound As String = prop.Split("_")(1)
 
                 If ComponentSepSpecs.ContainsKey(compound) Then
-                    ComponentSepSpecs(compound).SpecValue = Convert.ToDouble(propval)
+                    ComponentSepSpecs(compound).SpecValue = SystemsOfUnits.Converter.ConvertFromSI(ComponentSepSpecs(compound).SpecUnit, propval)
                 End If
 
             ElseIf prop.Equals("SpecifiedStreamIndex") Then
@@ -559,11 +560,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_CompoundSeparator With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_CompoundSeparator With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

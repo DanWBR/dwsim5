@@ -65,7 +65,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_FlowsheetUO
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_FlowsheetUO
 
         Public Property SimulationFile As String = ""
         <System.Xml.Serialization.XmlIgnore> Public Property Initialized As Boolean = False
@@ -112,7 +112,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Flowsheet().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Flowsheet()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -218,9 +220,18 @@ Label_00CC:
 
         Private Shared Function InitializeFlowsheetInternal(xdoc As XDocument, fs As IFlowsheet)
 
-            For Each xel1 As XElement In xdoc.Descendants
-                SharedClasses.Utility.UpdateElement(xel1)
-            Next
+            'For Each xel1 As XElement In xdoc.Descendants
+            '    SharedClasses.Utility.UpdateElement(xel1)
+            'Next
+
+            Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                                   SharedClasses.Utility.UpdateElement(xel1)
+                                                   If GlobalSettings.Settings.OldUI Then
+                                                       SharedClasses.Utility.UpdateElementFromNewUI(xel1)
+                                                   Else
+                                                       SharedClasses.Utility.UpdateElementForNewUI(xel1)
+                                                   End If
+                                               End Sub)
 
             Dim ci As CultureInfo = CultureInfo.InvariantCulture
 
@@ -1067,11 +1078,13 @@ Label_00CC:
             If f Is Nothing Then
                 f = New EditingForm_FlowsheetUO With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_FlowsheetUO With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

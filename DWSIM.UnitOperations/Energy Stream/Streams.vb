@@ -41,7 +41,7 @@ Namespace Streams
         'CAPE-OPEN Error Interfaces
         Implements ECapeUser, ECapeUnknown, ECapeRoot
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_EnergyStream
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_EnergyStream
 
         Private WithEvents m_work As CapeOpen.RealParameter
 
@@ -197,7 +197,9 @@ Namespace Streams
 #End Region
 
         Public Overrides Function CloneXML() As Object
-            Return New EnergyStream().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New EnergyStream()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -209,11 +211,13 @@ Namespace Streams
             If f Is Nothing Then
                 f = New EditingForm_EnergyStream With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_EnergyStream With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

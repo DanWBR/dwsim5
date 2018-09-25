@@ -27,6 +27,17 @@ namespace DWSIM.UI.Desktop.WPF
                 TextOptions.SetTextRenderingMode(label, TextRenderingMode.Auto);
             });
 
+            Eto.Style.Add<Eto.Forms.Button>("donate", button =>
+            {
+                var wpfbutton = (Button)button.ControlObject;
+                wpfbutton.BorderThickness = new Thickness(0.0);
+                var img = (Image)((Grid)wpfbutton.Content).Children[0];
+                img.Margin = new Thickness(5.0d);
+                var label = (Label)((Grid)wpfbutton.Content).Children[1];
+                label.HorizontalAlignment = HorizontalAlignment.Left;
+                TextOptions.SetTextRenderingMode(label, TextRenderingMode.Auto);
+            });
+
             Eto.Style.Add<Eto.Forms.Panel>("transparent-form", control =>
             {
                 var wpfwnd = (System.Windows.Window)control.ControlObject;
@@ -59,6 +70,18 @@ namespace DWSIM.UI.Desktop.WPF
                 {
                     e.Row.Header = (e.Row.GetIndex() + 1).ToString();
                 };
+                wpfgrid.MaxHeight = 1000;
+                wpfgrid.UpdateLayout();
+            });
+
+            Eto.Style.Add<Eto.Forms.GridView>("fastgrid", control =>
+            {
+                var wpfgrid = (Eto.Wpf.Forms.Controls.EtoDataGrid)control.ControlObject;
+                wpfgrid.EnableColumnVirtualization = true;
+                wpfgrid.EnableRowVirtualization = true;
+                VirtualizingPanel.SetVirtualizationMode(wpfgrid, VirtualizationMode.Recycling);
+                VirtualizingStackPanel.SetIsVirtualizing(wpfgrid, true);
+                wpfgrid.MaxHeight = 1000;
                 wpfgrid.UpdateLayout();
             });
 

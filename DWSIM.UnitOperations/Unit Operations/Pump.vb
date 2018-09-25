@@ -167,7 +167,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Pump
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Pump
 
         Public Enum CalculationMode
             Delta_P = 0
@@ -208,7 +208,9 @@ Namespace UnitOperations
         Property OutletTemperature As Double = 298.15#
 
         Public Overrides Function CloneXML() As Object
-            Return New Pump().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Pump()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -712,7 +714,7 @@ Namespace UnitOperations
 
                 Case CalculationMode.EnergyStream
 
-                    Dim tmp As Object
+                    Dim tmp As IFlashCalculationResult
 
                     'Corrente de EnergyFlow - pegar valor do DH
                     With esin
@@ -731,7 +733,7 @@ Namespace UnitOperations
 
                     IObj?.SetCurrent()
                     tmp = Me.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, P2, H2, Ti)
-                    T2 = tmp(2)
+                    T2 = tmp.CalculatedTemperature.GetValueOrDefault
                     CheckSpec(T2, True, "outlet temperature")
 
                     If DebugMode Then AppendDebugLine(String.Format("Calculated outlet temperature T2 = {0} K", T2))
@@ -753,7 +755,7 @@ Namespace UnitOperations
 
                 Case CalculationMode.Power
 
-                    Dim tmp As Object
+                    Dim tmp As IFlashCalculationResult
 
                     'Corrente de EnergyFlow - pegar valor do DH
                     With esin
@@ -772,7 +774,7 @@ Namespace UnitOperations
 
                     IObj?.SetCurrent()
                     tmp = Me.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, P2, H2, Ti)
-                    T2 = tmp(2)
+                    T2 = tmp.CalculatedTemperature.GetValueOrDefault
                     CheckSpec(T2, True, "outlet temperature")
 
                     If DebugMode Then AppendDebugLine(String.Format("Calculated outlet temperature T2 = {0} K", T2))
@@ -809,7 +811,7 @@ Namespace UnitOperations
 
                     IObj?.SetCurrent()
                     Dim tmp = Me.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, P2, H2, 0.0#)
-                    T2 = tmp.CalculatedTemperature
+                    T2 = tmp.CalculatedTemperature.GetValueOrDefault
                     CheckSpec(T2, True, "outlet temperature")
 
                     If DebugMode Then AppendDebugLine(String.Format("Calculated outlet temperature T2 = {0} K", T2))
@@ -978,6 +980,8 @@ Namespace UnitOperations
                     Case 3
                         'PROP_PU_3	Power Required
                         value = SystemsOfUnits.Converter.ConvertFromSI(su.heatflow, Me.DeltaQ.GetValueOrDefault)
+                    Case 4
+                        value = SystemsOfUnits.Converter.ConvertFromSI(su.distance, Me.NPSH.GetValueOrDefault)
 
                 End Select
 
@@ -998,15 +1002,15 @@ Namespace UnitOperations
                         proplist.Add("PROP_PU_" + CStr(i))
                     Next
                 Case PropertyType.RW
-                    For i = 0 To 3
+                    For i = 0 To 4
                         proplist.Add("PROP_PU_" + CStr(i))
                     Next
                 Case PropertyType.WR
-                    For i = 0 To 3
+                    For i = 0 To 4
                         proplist.Add("PROP_PU_" + CStr(i))
                     Next
                 Case PropertyType.ALL
-                    For i = 0 To 3
+                    For i = 0 To 4
                         proplist.Add("PROP_PU_" + CStr(i))
                     Next
             End Select
@@ -1060,6 +1064,8 @@ Namespace UnitOperations
                     Case 3
                         'PROP_PU_3	Power Required
                         value = su.heatflow
+                    Case 4
+                        value = su.distance
 
                 End Select
 
@@ -1072,11 +1078,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_Pump With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Pump With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

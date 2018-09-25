@@ -6,7 +6,7 @@ Imports WeifenLuo.WinFormsUI.Docking
 
 Public Class EditingForm_Valve
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As UnitOperations.Valve
 
@@ -34,7 +34,7 @@ Public Class EditingForm_Valve
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -106,14 +106,6 @@ Public Class EditingForm_Valve
             cbPressureDropU.Items.AddRange(units.GetUnitSet(Interfaces.Enums.UnitOfMeasure.deltaP).ToArray)
             cbPressureDropU.SelectedItem = units.deltaP
 
-            cbTemp.Items.Clear()
-            cbTemp.Items.AddRange(units.GetUnitSet(Interfaces.Enums.UnitOfMeasure.temperature).ToArray)
-            cbTemp.SelectedItem = units.temperature
-
-            cbDeltaT.Items.Clear()
-            cbDeltaT.Items.AddRange(units.GetUnitSet(Interfaces.Enums.UnitOfMeasure.deltaT).ToArray)
-            cbDeltaT.SelectedItem = units.deltaT
-
             Dim uobj = SimObject
 
             Select Case uobj.CalcMode
@@ -121,12 +113,22 @@ Public Class EditingForm_Valve
                     cbCalcMode.SelectedIndex = 0
                 Case UnitOperations.Valve.CalculationMode.DeltaP
                     cbCalcMode.SelectedIndex = 1
+                Case UnitOperations.Valve.CalculationMode.Kv_Liquid
+                    cbCalcMode.SelectedIndex = 2
+                Case UnitOperations.Valve.CalculationMode.Kv_Gas
+                    cbCalcMode.SelectedIndex = 3
+                Case UnitOperations.Valve.CalculationMode.Kv_Steam
+                    cbCalcMode.SelectedIndex = 4
             End Select
 
             tbOutletPressure.Text = su.Converter.ConvertFromSI(units.pressure, uobj.OutletPressure.GetValueOrDefault).ToString(nf)
             tbPressureDrop.Text = su.Converter.ConvertFromSI(units.deltaP, uobj.DeltaP.GetValueOrDefault).ToString(nf)
-            tbTemp.Text = su.Converter.ConvertFromSI(units.temperature, uobj.OutletTemperature).ToString(nf)
-            tbDeltaT.Text = su.Converter.ConvertFromSI(units.deltaT, uobj.DeltaT.GetValueOrDefault).ToString(nf)
+
+            tbOp.Text = uobj.OpeningPct.ToString(nf)
+            tbKv.Text = uobj.Kv.ToString(nf)
+            tbKvOpRel.Text = uobj.PercentOpeningVersusPercentKvExpression
+
+            chkEnableKvOpRel.Checked = uobj.EnableOpeningKvRelationship
 
         End With
 
@@ -146,7 +148,7 @@ Public Class EditingForm_Valve
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -176,11 +178,43 @@ Public Class EditingForm_Valve
             Case 0
                 tbPressureDrop.Enabled = False
                 tbOutletPressure.Enabled = True
+                tbKv.Enabled = False
+                tbKvOpRel.Enabled = False
+                tbOp.Enabled = False
+                chkEnableKvOpRel.Enabled = False
                 SimObject.CalcMode = UnitOperations.Valve.CalculationMode.OutletPressure
             Case 1
                 tbPressureDrop.Enabled = True
                 tbOutletPressure.Enabled = False
+                tbKv.Enabled = False
+                tbKvOpRel.Enabled = False
+                tbOp.Enabled = False
+                chkEnableKvOpRel.Enabled = False
                 SimObject.CalcMode = UnitOperations.Valve.CalculationMode.DeltaP
+            Case 2
+                tbPressureDrop.Enabled = False
+                tbOutletPressure.Enabled = False
+                tbKv.Enabled = True
+                tbKvOpRel.Enabled = True
+                tbOp.Enabled = True
+                chkEnableKvOpRel.Enabled = True
+                SimObject.CalcMode = UnitOperations.Valve.CalculationMode.Kv_Liquid
+            Case 3
+                tbPressureDrop.Enabled = False
+                tbOutletPressure.Enabled = False
+                tbKv.Enabled = True
+                tbKvOpRel.Enabled = True
+                tbOp.Enabled = True
+                chkEnableKvOpRel.Enabled = True
+                SimObject.CalcMode = UnitOperations.Valve.CalculationMode.Kv_Gas
+            Case 4
+                tbPressureDrop.Enabled = False
+                tbOutletPressure.Enabled = False
+                tbKv.Enabled = True
+                tbKvOpRel.Enabled = True
+                tbOp.Enabled = True
+                chkEnableKvOpRel.Enabled = True
+                SimObject.CalcMode = UnitOperations.Valve.CalculationMode.Kv_Steam
         End Select
 
     End Sub
@@ -218,10 +252,18 @@ Public Class EditingForm_Valve
                 uobj.CalcMode = UnitOperations.Valve.CalculationMode.OutletPressure
             Case 1
                 uobj.CalcMode = UnitOperations.Valve.CalculationMode.DeltaP
+            Case 2
+                uobj.CalcMode = UnitOperations.Valve.CalculationMode.Kv_Liquid
+            Case 3
+                uobj.CalcMode = UnitOperations.Valve.CalculationMode.Kv_Gas
+            Case 4
+                uobj.CalcMode = UnitOperations.Valve.CalculationMode.Kv_Steam
         End Select
 
-        If sender Is tbOutletPressure Then uobj.OutletPressure = su.Converter.ConvertToSI(cbPress.SelectedItem.ToString, tbOutletPressure.Text)
-        If sender Is tbPressureDrop Then uobj.DeltaP = su.Converter.ConvertToSI(cbPressureDropU.SelectedItem.ToString, tbPressureDrop.Text)
+        If sender Is tbOutletPressure Then uobj.OutletPressure = su.Converter.ConvertToSI(cbPress.SelectedItem.ToString, tbOutletPressure.Text.ParseExpressionToDouble)
+        If sender Is tbPressureDrop Then uobj.DeltaP = su.Converter.ConvertToSI(cbPressureDropU.SelectedItem.ToString, tbPressureDrop.Text.ParseExpressionToDouble)
+        If sender Is tbKv Then uobj.Kv = tbKv.Text.ParseExpressionToDouble
+        If sender Is tbOp Then uobj.OpeningPct = tbOp.Text.ParseExpressionToDouble
 
         RequestCalc()
 
@@ -233,11 +275,11 @@ Public Class EditingForm_Valve
 
     End Sub
 
-    Private Sub tb_TextChanged(sender As Object, e As EventArgs) Handles tbPressureDrop.TextChanged, tbOutletPressure.TextChanged
+    Private Sub tb_TextChanged(sender As Object, e As EventArgs) Handles tbPressureDrop.TextChanged, tbOutletPressure.TextChanged, tbKv.TextChanged, tbOp.TextChanged
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red
@@ -245,7 +287,7 @@ Public Class EditingForm_Valve
 
     End Sub
 
-    Private Sub TextBoxKeyDown(sender As Object, e As KeyEventArgs) Handles tbPressureDrop.KeyDown, tbOutletPressure.KeyDown
+    Private Sub TextBoxKeyDown(sender As Object, e As KeyEventArgs) Handles tbPressureDrop.KeyDown, tbOutletPressure.KeyDown, tbKv.KeyDown, tbOp.KeyDown
 
         If e.KeyCode = Keys.Enter And Loaded And DirectCast(sender, TextBox).ForeColor = Drawing.Color.Blue Then
 
@@ -417,5 +459,17 @@ Public Class EditingForm_Valve
 
     End Sub
 
+    Private Sub chkEnableKvOpRel_CheckedChanged(sender As Object, e As EventArgs) Handles chkEnableKvOpRel.CheckedChanged
+        SimObject.EnableOpeningKvRelationship = chkEnableKvOpRel.Checked
+        tbKvOpRel.Enabled = chkEnableKvOpRel.Checked
+        tbOp.Enabled = chkEnableKvOpRel.Checked
+    End Sub
+
+    Private Sub tbKvOpRel_TextChanged(sender As Object, e As EventArgs) Handles tbKvOpRel.KeyDown
+        SimObject.PercentOpeningVersusPercentKvExpression = tbKvOpRel.Text
+    End Sub
+    Private Sub GroupBox2_MouseMove(sender As Object, e As MouseEventArgs) Handles GroupBox2.MouseMove
+        MyBase.Editor_MouseMove(sender, e)
+    End Sub
 
 End Class

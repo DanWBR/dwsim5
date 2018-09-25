@@ -35,7 +35,7 @@ Namespace SpecialOps
 
         Implements ISpec
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Spec
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Spec
 
         Protected m_SourceObjectData As New SpecialOps.Helpers.SpecialOpObjectInfo
         Protected m_TargetObjectData As New SpecialOps.Helpers.SpecialOpObjectInfo
@@ -67,7 +67,9 @@ Namespace SpecialOps
         Protected nf As String = ""
 
         Public Overrides Function CloneXML() As Object
-            Return New Spec().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Spec()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -522,11 +524,13 @@ Namespace SpecialOps
             If f Is Nothing Then
                 f = New EditingForm_Spec With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Spec With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

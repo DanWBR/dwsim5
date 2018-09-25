@@ -47,7 +47,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_CAPEOPENUO
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_CAPEOPENUO
 
         <System.NonSerialized()> Private _couo As Object
         <System.NonSerialized()> Private _form As Form_CapeOpenSelector
@@ -164,7 +164,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New CapeOpenUO().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New CapeOpenUO()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -840,7 +842,6 @@ Namespace UnitOperations
                 Catch ex As Exception
                     Dim ecu As CapeOpen.ECapeUser = myuo
                     Me.FlowSheet.ShowMessage(Me.GraphicObject.Tag & ": CAPE-OPEN Exception: " & ecu.code & " at " & ecu.interfaceName & ". Reason: " & ecu.description, IFlowsheet.MessageType.Warning)
-                    Throw
                 End Try
                 UpdateParams()
                 UpdatePorts()
@@ -1046,10 +1047,10 @@ Namespace UnitOperations
                 Dim msg As String = ""
                 Try
                     'set reaction set, if supported
-                    If Not TryCast(_couo, ICapeKineticReactionContext) Is Nothing Then
+                    If Not TryCast(_couo, CAPEOPEN110.ICapeKineticReactionContext) Is Nothing Then
                         Me.FlowSheet.ReactionSets(Me.ReactionSetID).simulationContext = Me.FlowSheet
-                        Dim myset As Object = CType(Me.FlowSheet.ReactionSets(Me.ReactionSetID), Object)
-                        Dim myruo As ICapeKineticReactionContext = _couo
+                        Dim myset = DirectCast(Me.FlowSheet.ReactionSets(Me.ReactionSetID), ReactionSet)
+                        Dim myruo As CAPEOPEN110.ICapeKineticReactionContext = _couo
                         myruo.SetReactionObject(myset)
                     End If
                 Catch ex As Exception
@@ -1244,11 +1245,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_CAPEOPENUO With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_CAPEOPENUO With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

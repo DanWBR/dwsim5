@@ -415,7 +415,7 @@ Imports System.Dynamic
 
                 Return Me.SimulationObjects(AddObjectToSurface(ObjectType.RCT_PFR, x, y, tag))
 
-            Case "Continous Stirred Tank Reactor (CSTR)"
+            Case "Continuous Stirred Tank Reactor (CSTR)"
 
                 Return Me.SimulationObjects(AddObjectToSurface(ObjectType.RCT_CSTR, x, y, tag))
 
@@ -663,7 +663,7 @@ Imports System.Dynamic
 
             Case ObjectType.Expander
 
-                Dim myComp As New ExpanderGraphic(mpx, mpy, 50, 50)
+                Dim myComp As New TurbineGraphic(mpx, mpy, 50, 50)
                 myComp.Tag = "X-" & SimulationObjects.Count.ToString("00#")
                 If tag <> "" Then myComp.Tag = tag
                 gObj = myComp
@@ -995,16 +995,52 @@ Imports System.Dynamic
 
     End Function
 
-    Public Sub LoadFromXML(xdoc As XDocument) Implements IFlowsheet.LoadFromXML
+    Public Sub LoadFromMXML(xdoc As XDocument)
 
-        For Each xel1 As XElement In xdoc.Descendants
-            SharedClasses.Utility.UpdateElement(xel1)
-            SharedClasses.Utility.UpdateElementForNewUI(xel1)
-        Next
+        Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                               SharedClasses.Utility.UpdateElementForMobileXMLLoading_CrossPlatformUI(xel1)
+                                           End Sub)
+
+        LoadFromXML(xdoc)
+
+    End Sub
+
+
+    Public Sub LoadFromXML(xdoc As XDocument) Implements IFlowsheet.LoadFromXML
 
         Dim ci As CultureInfo = CultureInfo.InvariantCulture
 
         Dim excs As New Concurrent.ConcurrentBag(Of Exception)
+
+        'check version
+
+        Dim sver = New Version("1.0.0.0")
+
+        Try
+            sver = New Version(xdoc.Element("DWSIM_Simulation_Data").Element("GeneralInfo").Element("BuildVersion").Value)
+        Catch ex As Exception
+        End Try
+
+        If sver < New Version("5.0.0.0") Then
+            Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                                   SharedClasses.Utility.UpdateElement(xel1)
+                                               End Sub)
+        End If
+
+        'check saved from Classic UI
+
+        Dim savedfromclui As Boolean = True
+
+        Try
+            savedfromclui = Boolean.Parse(xdoc.Element("DWSIM_Simulation_Data").Element("GeneralInfo").Element("SavedFromClassicUI").Value)
+        Catch ex As Exception
+        End Try
+
+        If savedfromclui Then
+            Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                                   SharedClasses.Utility.UpdateElementForNewUI(xel1)
+                                               End Sub)
+        End If
 
         Dim data As List(Of XElement) = xdoc.Element("DWSIM_Simulation_Data").Element("Settings").Elements.ToList
 
@@ -1087,6 +1123,7 @@ Imports System.Dynamic
 
         For Each xel As XElement In data
             Try
+                xel.Element("Type").Value = xel.Element("Type").Value.Replace("PortableDTL.DTL.SimulationObjects", "DWSIM.Thermodynamics")
                 xel.Element("Type").Value = xel.Element("Type").Value.Replace("DWSIM.DWSIM.SimulationObjects", "DWSIM.Thermodynamics")
                 Dim obj As PropertyPackage = Nothing
                 If xel.Element("Type").Value.Contains("AdvancedEOS") Then
@@ -1189,29 +1226,38 @@ Imports System.Dynamic
             End Try
         Next
 
-        data = xdoc.Element("DWSIM_Simulation_Data").Element("OptimizationCases").Elements.ToList
 
-        For Each xel As XElement In data
-            Try
-                Dim obj As New Optimization.OptimizationCase
-                obj.LoadData(xel.Elements.ToList)
-                OptimizationCollection.Add(obj)
-            Catch ex As Exception
-                excs.Add(New Exception("Error Loading Optimization Case Information", ex))
-            End Try
-        Next
+        If xdoc.Element("DWSIM_Simulation_Data").Element("OptimizationCases") IsNot Nothing Then
 
-        data = xdoc.Element("DWSIM_Simulation_Data").Element("SensitivityAnalysis").Elements.ToList
+            data = xdoc.Element("DWSIM_Simulation_Data").Element("OptimizationCases").Elements.ToList
 
-        For Each xel As XElement In data
-            Try
-                Dim obj As New Optimization.SensitivityAnalysisCase
-                obj.LoadData(xel.Elements.ToList)
-                SensAnalysisCollection.Add(obj)
-            Catch ex As Exception
-                excs.Add(New Exception("Error Loading Sensitivity Analysis Case Information", ex))
-            End Try
-        Next
+            For Each xel As XElement In data
+                Try
+                    Dim obj As New Optimization.OptimizationCase
+                    obj.LoadData(xel.Elements.ToList)
+                    OptimizationCollection.Add(obj)
+                Catch ex As Exception
+                    excs.Add(New Exception("Error Loading Optimization Case Information", ex))
+                End Try
+            Next
+
+        End If
+
+        If xdoc.Element("DWSIM_Simulation_Data").Element("SensitivityAnalysis") IsNot Nothing Then
+
+            data = xdoc.Element("DWSIM_Simulation_Data").Element("SensitivityAnalysis").Elements.ToList
+
+            For Each xel As XElement In data
+                Try
+                    Dim obj As New Optimization.SensitivityAnalysisCase
+                    obj.LoadData(xel.Elements.ToList)
+                    SensAnalysisCollection.Add(obj)
+                Catch ex As Exception
+                    excs.Add(New Exception("Error Loading Sensitivity Analysis Case Information", ex))
+                End Try
+            Next
+
+        End If
 
         Scripts = New Dictionary(Of String, Interfaces.IScript)
 
@@ -1246,6 +1292,18 @@ Imports System.Dynamic
 
     End Sub
 
+    Public Function SaveToMXML() As XDocument
+
+        Dim xdoc = SaveToXML()
+
+        Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                               SharedClasses.Utility.UpdateElementForMobileXMLSaving_CrossPlatformUI(xel1)
+                                           End Sub)
+
+        Return xdoc
+
+    End Function
+
     Public Function SaveToXML() As XDocument Implements IFlowsheet.SaveToXML
 
         Dim xdoc As New XDocument()
@@ -1265,6 +1323,7 @@ Imports System.Dynamic
             xel.Add(New XElement("OSInfo", My.Computer.Info.OSFullName & ", Version " & My.Computer.Info.OSVersion & ", " & My.Computer.Info.OSPlatform & " Platform"))
         End If
         xel.Add(New XElement("SavedOn", Date.Now))
+        xel.Add(New XElement("SavedFromClassicUI", False))
 
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("SimulationObjects"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("SimulationObjects")
@@ -2079,8 +2138,10 @@ Label_00CC:
                                                                                  Dim sys As Object = PythonEngine.ImportModule("sys")
 
                                                                                  If Not GlobalSettings.Settings.IsRunningOnMono() Then
-                                                                                    Dim codeToRedirectOutput As String = "import sys" & vbCrLf + "from io import BytesIO as StringIO" & vbCrLf + "sys.stdout = mystdout = StringIO()" & vbCrLf + "sys.stdout.flush()" & vbCrLf + "sys.stderr = mystderr = StringIO()" & vbCrLf + "sys.stderr.flush()"
-                                                                                    PythonEngine.RunSimpleString(codeToRedirectOutput)
+
+                                                                                     Dim codeToRedirectOutput As String = "import sys" & vbCrLf + "from io import BytesIO as StringIO" & vbCrLf + "sys.stdout = mystdout = StringIO()" & vbCrLf + "sys.stdout.flush()" & vbCrLf + "sys.stderr = mystderr = StringIO()" & vbCrLf + "sys.stderr.flush()"
+                                                                                     PythonEngine.RunSimpleString(codeToRedirectOutput)
+
                                                                                  End If
 
                                                                                  Dim locals As New PyDict()
@@ -2089,6 +2150,7 @@ Label_00CC:
                                                                                  locals.SetItem("Flowsheet", Me.ToPython)
                                                                                  Dim Solver As New FlowsheetSolver.FlowsheetSolver
                                                                                  locals.SetItem("Solver", Solver.ToPython)
+
                                                                                  If Not GlobalSettings.Settings.IsRunningOnMono() Then
                                                                                      locals.SetItem("Application", GetApplicationObject.ToPython)
                                                                                  End If
@@ -2098,7 +2160,7 @@ Label_00CC:
                                                                                  If Not GlobalSettings.Settings.IsRunningOnMono() Then
                                                                                      ShowMessage(sys.stdout.getvalue().ToString, IFlowsheet.MessageType.Information)
                                                                                  End If
-                                                                                 
+
                                                                              Catch ex As Exception
 
                                                                                  ShowMessage("Error running script: " & ex.Message.ToString, IFlowsheet.MessageType.GeneralError)
@@ -2135,5 +2197,12 @@ Label_00CC:
 
     Public MustOverride Function GetApplicationObject() As Object Implements IFlowsheet.GetApplicationObject
 
+    Public Function GetFlowsheetSurfaceWidth() As Integer Implements IFlowsheet.GetFlowsheetSurfaceWidth
+        Return FlowsheetSurface.Size.Width
+    End Function
+
+    Public Function GetFlowsheetSurfaceHeight() As Integer Implements IFlowsheet.GetFlowsheetSurfaceHeight
+        Return FlowsheetSurface.Size.Height
+    End Function
 End Class
 

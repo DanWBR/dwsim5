@@ -700,7 +700,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New DistillationColumn().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New DistillationColumn()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -1043,7 +1045,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New AbsorptionColumn().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New AbsorptionColumn()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -1216,6 +1220,8 @@ Namespace UnitOperations
 
         Public _sm As SolvingMethods.ColSolvingMethod
 
+        Public Overrides Property Visible As Boolean = False
+
         Public Sub New()
             MyBase.New()
         End Sub
@@ -1239,7 +1245,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New ReboiledAbsorber().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New ReboiledAbsorber()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -1369,6 +1377,8 @@ Namespace UnitOperations
 
         Public _sm As SolvingMethods.ColSolvingMethod
 
+        Public Overrides Property Visible As Boolean = False
+
         Public Sub New()
             MyBase.New()
         End Sub
@@ -1392,7 +1402,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New RefluxedAbsorber().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New RefluxedAbsorber()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -1539,7 +1551,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Column
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Column
 
         Public Enum ColType
             DistillationColumn = 0
@@ -3367,9 +3379,7 @@ Namespace UnitOperations
                             End If
                     End Select
                 Case ColType.AbsorptionColumn
-                    If Not feedok Or Not rmok Or Not cmvok Then
-                        Throw New Exception(FlowSheet.GetTranslatedString("DCConnectionMissingException"))
-                    ElseIf Not cmvok And Me.CondenserType = condtype.Partial_Condenser Then
+                    If Not feedok Or Not rmok Or Not (cmvok Or cmok) Then
                         Throw New Exception(FlowSheet.GetTranslatedString("DCConnectionMissingException"))
                     End If
                 Case ColType.ReboiledAbsorber
@@ -3410,11 +3420,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_Column With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Column With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

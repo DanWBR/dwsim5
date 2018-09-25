@@ -22,7 +22,6 @@ Imports System.Runtime.Serialization.Formatters
 Imports System.IO
 Imports DWSIM.FlowsheetSolver
 Imports System.Linq
-Imports DWSIM.DWSIM.Flowsheet
 Imports DWSIM.Thermodynamics.PropertyPackages
 
 Public Class FormSimulSettings
@@ -244,7 +243,7 @@ Public Class FormSimulSettings
         End If
 
         Me.TBaut.Text = Me.FrmChild.Options.SimulationAuthor
-        Me.TBdesc.Text = Me.FrmChild.Options.SimulationComments
+        Me.TBdesc.Text = Me.FrmChild.Options.SimulationComments.Replace(vbLf, vbCrLf)
         Me.TBtit.Text = Me.FrmChild.Options.SimulationName
 
         Me.tbPassword.Text = FrmChild.Options.Password
@@ -262,6 +261,9 @@ Public Class FormSimulSettings
 
         chkShowFloatingTables.Checked = FrmChild.Options.DisplayFloatingPropertyTables
         chkShowAnchoredPropertyLists.Checked = FrmChild.Options.DisplayCornerPropertyList
+
+        chkDisplayFloatingTableCompoundAmounts.Checked = FrmChild.Options.DisplayFloatingTableCompoundAmounts
+        cbDefaultFloatingTableCompoundAmountBasis.SelectedIndex = FrmChild.Options.DefaultFloatingTableCompoundAmountBasis
 
         Me.loaded = True
 
@@ -1689,6 +1691,14 @@ Public Class FormSimulSettings
         FrmChild.Options.DisplayCornerPropertyListFontColor = FontDialog1.Color.Name
         FrmChild.Options.DisplayCornerPropertyListFontSize = FontDialog1.Font.Size
 
+    End Sub
+
+    Private Sub chkDisplayFloatingTableCompoundAmounts_CheckedChanged(sender As Object, e As EventArgs) Handles chkDisplayFloatingTableCompoundAmounts.CheckedChanged
+        FrmChild.Options.DisplayFloatingTableCompoundAmounts = chkDisplayFloatingTableCompoundAmounts.Checked
+    End Sub
+
+    Private Sub cbDefaultFloatingTableCompoundAmountBasis_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cbDefaultFloatingTableCompoundAmountBasis.SelectedIndexChanged
+        FrmChild.Options.DefaultFloatingTableCompoundAmountBasis = cbDefaultFloatingTableCompoundAmountBasis.SelectedIndex
     End Sub
 
     Private Sub btnConfigPPAdv_Click(sender As Object, e As EventArgs) Handles btnConfigPPAdv.Click

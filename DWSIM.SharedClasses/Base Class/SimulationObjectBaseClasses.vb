@@ -44,6 +44,10 @@ Namespace UnitOperations
 
         Public Property ExtraProperties As New ExpandoObject Implements ISimulationObject.ExtraProperties
 
+        Public Overridable Property Visible As Boolean = True
+
+        <System.NonSerialized()> Public LaunchExternalPropertyEditor() As Action(Of ISimulationObject)
+
 #Region "    Constructors"
 
         Public Sub New()
@@ -97,11 +101,12 @@ Namespace UnitOperations
         End Property
 
         Public Property PreferredFlashAlgorithmTag As String = "" Implements ISimulationObject.PreferredFlashAlgorithmTag
+
         Public Property Calculated As Boolean = False Implements Interfaces.ISimulationObject.Calculated
 
         Public Property DebugMode As Boolean = False Implements Interfaces.ISimulationObject.DebugMode
 
-        Public Property DebugText As String = "" Implements Interfaces.ISimulationObject.DebugText
+        <Xml.Serialization.XmlIgnore> Public Property DebugText As String = "" Implements Interfaces.ISimulationObject.DebugText
 
         <Xml.Serialization.XmlIgnore> Public Property LastUpdated As New Date Implements Interfaces.ISimulationObject.LastUpdated
 
@@ -510,17 +515,7 @@ Namespace UnitOperations
 
         Function ObjectCopy(ByVal obj As UnitOperations.BaseClass) As Object
 
-            If GlobalSettings.Settings.AutomationMode Then
-                Return Me.CloneXML
-            Else
-                Using objMemStream As New MemoryStream()
-                    Dim objBinaryFormatter As New BinaryFormatter(Nothing, New StreamingContext(StreamingContextStates.Clone))
-                    objBinaryFormatter.Serialize(objMemStream, Me)
-                    objMemStream.Seek(0, SeekOrigin.Begin)
-                    objBinaryFormatter.AssemblyFormat = Formatters.FormatterAssemblyStyle.Simple
-                    Return objBinaryFormatter.Deserialize(objMemStream)
-                End Using
-            End If
+            Return Me.CloneXML
 
         End Function
 
@@ -797,7 +792,7 @@ Namespace UnitOperations
         End Sub
 
         ''' <summary>
-        ''' Gets the current flowsheet where this object is.
+        ''' Gets the current flowsheet where this object is located.
         ''' </summary>
         ''' <value></value>
         ''' <returns>Flowsheet instance.</returns>

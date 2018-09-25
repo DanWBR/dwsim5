@@ -149,7 +149,7 @@ Public Class Window
 
                 End With
 
-                content.Enabled = False
+                'content.Enabled = False
 
                 f.Show()
 
@@ -206,7 +206,7 @@ Public Class Window
                                       End Sub, ct.Token).ContinueWith(Sub()
                                                                           Application.Instance.Invoke(Sub()
                                                                                                           itemSelector.DataStore = tvc
-                                                                                                          content.Enabled = True
+                                                                                                          'content.Enabled = True
                                                                                                           f.Close()
                                                                                                       End Sub)
                                                                       End Sub)
@@ -220,7 +220,11 @@ Public Class Window
                 If itemSelector.SelectedItem IsNot Nothing Then
                     Dim nesteditems = GetItems(Host.Items.ToList)
                     Dim sitem = nesteditems.Where(Function(x) x.ID = DirectCast(itemSelector.SelectedItem, TreeGridItem).Tag.ToString).FirstOrDefault
-                    currentItemViewer.LoadHtml(sitem.GetHTML())
+                    If Not sitem Is Nothing Then
+                        currentItemViewer.LoadHtml(sitem.GetHTML())
+                    Else
+                        MessageBox.Show("Selected report not found.")
+                    End If
                 End If
 
             End Sub

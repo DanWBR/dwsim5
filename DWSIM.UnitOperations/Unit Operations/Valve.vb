@@ -31,7 +31,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Valve
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Valve
 
         Protected m_dp As Nullable(Of Double)
         Protected m_dt As Nullable(Of Double)
@@ -40,12 +40,21 @@ Namespace UnitOperations
         Protected m_cmode As CalculationMode = CalculationMode.DeltaP
         Public Property Hinlet As Double
         Public Property Houtlet As Double
-        Public Property Cv As Double
-        Public Property C1 As Double
+
+        Public Property Kv As Double = 100.0#
+
+        Public Property OpeningPct As Double = 50.0
+
+        Public Property PercentOpeningVersusPercentKvExpression As String = "1.0*OP"
+
+        Public Property EnableOpeningKvRelationship As Boolean = False
 
         Public Enum CalculationMode
             DeltaP = 0
             OutletPressure = 1
+            Kv_Liquid = 2
+            Kv_Gas = 3
+            Kv_Steam = 4
         End Enum
 
         Public Sub New()
@@ -61,7 +70,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Valve().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Valve()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -138,7 +149,8 @@ Namespace UnitOperations
                 Throw New Exception(FlowSheet.GetTranslatedString("Verifiqueasconexesdo"))
             End If
 
-            Dim Ti, Pi, Hi, Wi, ei, ein, T2, P2, H2, H2c, rho, volf, vf As Double
+            Dim Ti, Pi, Hi, Wi, ei, ein, T2, P2, H2, H2c, rho, volf, rhog20, P2ant, v2, Kvc As Double
+            Dim icount As Integer
 
             Dim ims As MaterialStream = Me.GetInletMaterialStream(0)
 
@@ -158,15 +170,88 @@ Namespace UnitOperations
             If DebugMode Then AppendDebugLine(String.Format("Property Package: {0}", Me.PropertyPackage.Name))
             If DebugMode Then AppendDebugLine(String.Format("Input variables: T = {0} K, P = {1} Pa, H = {2} kJ/kg, W = {3} kg/s", Ti, Pi, Hi, Wi))
 
+            If EnableOpeningKvRelationship Then
+                IObj?.Paragraphs.Add("<h2>Opening/Kv relationship</h2>")
+                IObj?.Paragraphs.Add("When this feature is enabled, you can enter an expression that relates the valve stem opening with the maximum flow value (Kvmax).")
+                IObj?.Paragraphs.Add("The relationship between control valve capacity and valve stem travel is known as the Flow Characteristic of the 
+                                    Control Valve. Trim design of the valve affects how the control valve capacity changes as the valve moves through 
+                                    its complete travel. Because of the variation in trim design, many valves are not linear in nature. Valve trims 
+                                    are instead designed, or characterized, in order to meet the large variety of control application needs. Many 
+                                    control loops have inherent non linearity's, which may be possible to compensate selecting the control valve trim.")
+                IObj?.Paragraphs.Add("<img src='https://www.engineeringtoolbox.com/docs/documents/485/Control_Valve_Flow_Characteristics.gif'></img>")
+                Try
+                    Dim ExpContext As New Ciloci.Flee.ExpressionContext
+                    ExpContext.Imports.AddType(GetType(System.Math))
+                    ExpContext.Variables.Clear()
+                    ExpContext.Options.ParseCulture = Globalization.CultureInfo.InvariantCulture
+                    ExpContext.Variables.Add("OP", OpeningPct)
+                    IObj?.Paragraphs.Add("Current Opening (%): " & OpeningPct)
+                    IObj?.Paragraphs.Add("Opening/Kvmax relationship expression: " & PercentOpeningVersusPercentKvExpression)
+                    Dim Expr = ExpContext.CompileGeneric(Of Double)(PercentOpeningVersusPercentKvExpression)
+                    Kvc = Kv * Expr.Evaluate() / 100
+                    IObj?.Paragraphs.Add("Calculated Kv/Kvmax (%): " & Kvc / Kv * 100)
+                    IObj?.Paragraphs.Add("Calculated Kv: " & Kvc)
+                Catch ex As Exception
+                    Throw New Exception("Invalid expression for Kv/Opening relationship.")
+                End Try
+            Else
+                Kvc = Kv
+            End If
+
+            'reference: https://www.samson.de/document/t00050en.pdf
+
+            If CalcMode = CalculationMode.Kv_Gas Or CalcMode = CalculationMode.Kv_Liquid Or CalcMode = CalculationMode.Kv_Steam Then
+                IObj?.Paragraphs.Add("<h2>Kv Calculation Mode</h2>")
+                IObj?.Paragraphs.Add("Kv flow equations in DWSIM are implemented as per IEC 60534 for non-critical flow (P2 > 0.5*P1).")
+                IObj?.Paragraphs.Add("For more information, see <a href='https://www.samson.de/document/t00050en.pdf'>this document</a>.")
+                IObj?.Paragraphs.Add(String.Format("Kv = {0}", Kvc))
+            End If
+
+            If CalcMode = CalculationMode.Kv_Liquid Then
+                P2 = Pi - 100 / rho * (Wi * 3600 / Kvc) ^ 2
+                IObj?.Paragraphs.Add(String.Format("Calculated Outlet Pressure P2 = {0} Pa", P2))
+            ElseIf CalcMode = CalculationMode.Kv_Gas Then
+                ims.PropertyPackage.CurrentMaterialStream = ims
+                rhog20 = ims.PropertyPackage.AUX_VAPDENS(273.15, 101325)
+                P2 = Pi * 0.7
+                icount = 0
+                Do
+                    P2ant = P2
+                    P2 = Pi - Ti / rhog20 / P2ant * (519 * Kvc / Wi / 3600) ^ -2
+                    icount += 1
+                    If icount > 1000 Then Throw New Exception("P2 did not converge in 1000 iterations.")
+                Loop Until Math.Abs(P2 - P2ant) < 0.0001
+                IObj?.Paragraphs.Add(String.Format("Calculated Outlet Pressure P2 = {0} Pa", P2))
+            ElseIf CalcMode = CalculationMode.Kv_Steam Then
+                P2 = Pi * 0.7
+                icount = 0
+                Do
+                    v2 = 1 / ims.PropertyPackage.AUX_VAPDENS(Ti, P2)
+                    P2ant = P2
+                    P2 = Pi - v2 * (31.62 * Kvc / Wi / 3600) ^ -2
+                    icount += 1
+                    If icount > 1000 Then Throw New Exception("P2 did not converge in 1000 iterations.")
+                Loop Until Math.Abs(P2 - P2ant) < 0.0001
+                IObj?.Paragraphs.Add(String.Format("Calculated Outlet Pressure P2 = {0} Pa", P2))
+            End If
+
             If Me.CalcMode = CalculationMode.DeltaP Then
                 P2 = Pi - Me.DeltaP.GetValueOrDefault
-            Else
+            ElseIf CalcMode = CalculationMode.OutletPressure Then
                 P2 = Me.OutletPressure.GetValueOrDefault
                 Me.DeltaP = Pi - P2
+            Else
+                DeltaP = Pi - P2
+                OutletPressure = P2
             End If
+
             CheckSpec(P2, True, "outlet pressure")
 
             If DebugMode Then AppendDebugLine(String.Format("Doing a PH flash to calculate outlet temperature... P = {0} Pa, H = {1} kJ/[kg.K]", P2, H2))
+
+            IObj?.Paragraphs.Add(String.Format("Doing a PH flash to calculate outlet temperature... P = {0} Pa, H = {1} kJ/[kg.K]", P2, H2))
+
+            IObj?.Paragraphs.Add(String.Format("Inlet Stream Enthalpy = {0} kJ/kg", Hi))
 
             IObj?.SetCurrent()
             Dim tmp = Me.PropertyPackage.CalculateEquilibrium2(FlashCalculationType.PressureEnthalpy, P2, H2, Ti)
@@ -176,6 +261,9 @@ Namespace UnitOperations
             CheckSpec(H2c, False, "outlet enthalpy")
 
             If DebugMode Then AppendDebugLine(String.Format("Calculated outlet temperature T2 = {0} K", T2))
+
+            IObj?.Paragraphs.Add(String.Format("Outlet Stream Enthalpy = {0} kJ/kg", H2c))
+            IObj?.Paragraphs.Add(String.Format("Calculated Outlet Temperature T2 = {0} K", T2))
 
             Houtlet = H2c
             Hinlet = Hi
@@ -187,23 +275,6 @@ Namespace UnitOperations
 
             Me.DeltaT = T2 - Ti
             Me.DeltaQ = 0
-
-            If vf = 0.0# Then
-                'size for liquid
-                Cv = (volf * 15850.3) / ((DeltaP.GetValueOrDefault * 0.000145038) / (rho / 1000)) ^ 0.5
-            ElseIf vf = 1.0# Then
-                'size for vapor
-                C1 = 20 '18 to 37
-                Dim f1 As Double = Math.Sin((3417 / C1) * (Math.Abs(DeltaP.GetValueOrDefault) / Pi) ^ 0.5 / 57.2958)
-                Cv = (Wi * 7936.64) / 1.06 / (rho * 0.062428 * Pi * 0.000145038) ^ 0.5 / f1
-            Else
-                'size for liquid
-                Cv = (1 - vf) * (volf * 15850.3) / ((DeltaP.GetValueOrDefault * 0.000145038) / (rho / 1000)) ^ 0.5
-                'size for vapor
-                C1 = 20 '18 to 37
-                Dim f1 As Double = Math.Sin((3417 / C1) * (Math.Abs(DeltaP.GetValueOrDefault) / Pi) ^ 0.5 / 57.2958)
-                Cv += vf * (Wi * 7936.64) / 1.06 / (rho * 0.062428 * Pi * 0.000145038) ^ 0.5 / f1
-            End If
 
             OutletTemperature = T2
 
@@ -292,6 +363,10 @@ Namespace UnitOperations
                     Case 3
                         'PROP_VA_3	Temperature Drop
                         value = SystemsOfUnits.Converter.ConvertFromSI(su.deltaT, Me.DeltaT.GetValueOrDefault)
+                    Case 5
+                        value = Kv
+                    Case 6
+                        value = OpeningPct
                 End Select
 
                 Return value
@@ -311,15 +386,15 @@ Namespace UnitOperations
                         proplist.Add("PROP_VA_" + CStr(i))
                     Next
                 Case PropertyType.RW
-                    For i = 0 To 3
+                    For i = 0 To 5
                         proplist.Add("PROP_VA_" + CStr(i))
                     Next
                 Case PropertyType.WR
-                    For i = 0 To 2
+                    For i = 0 To 5
                         proplist.Add("PROP_VA_" + CStr(i))
                     Next
                 Case PropertyType.ALL
-                    For i = 0 To 3
+                    For i = 0 To 5
                         proplist.Add("PROP_VA_" + CStr(i))
                     Next
             End Select
@@ -345,6 +420,10 @@ Namespace UnitOperations
                 Case 2
                     'PROP_VA_2	Outlet Pressure
                     Me.OutletPressure = SystemsOfUnits.Converter.ConvertToSI(su.pressure, propval)
+                Case 4
+                    Me.Kv = propval
+                Case 5
+                    Me.OpeningPct = propval
             End Select
             Return 1
         End Function
@@ -361,7 +440,7 @@ Namespace UnitOperations
 
                 Select Case propidx
 
-                    Case 0
+                    Case 0, 4, 5
                         'PROP_VA_0	Calculation Mode
                         value = ""
                     Case 1
@@ -391,11 +470,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_Valve With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Valve With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()
@@ -471,6 +552,8 @@ Namespace UnitOperations
                     str.AppendLine("    Pressure decrease: " & SystemsOfUnits.Converter.ConvertFromSI(su.deltaP, Me.DeltaP).ToString(numberformat, ci) & " " & su.deltaP)
                 Case CalculationMode.OutletPressure
                     str.AppendLine("    Outlet pressure: " & SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.OutletPressure).ToString(numberformat, ci) & " " & su.pressure)
+                Case Else
+                    str.AppendLine("    Kv(max): " & Kv)
             End Select
             str.AppendLine()
             str.AppendLine("Results")
@@ -480,11 +563,13 @@ Namespace UnitOperations
                     str.AppendLine("    Outlet pressure: " & SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.OutletPressure).ToString(numberformat, ci) & " " & su.pressure)
                 Case CalculationMode.OutletPressure
                     str.AppendLine("    Pressure decrease: " & SystemsOfUnits.Converter.ConvertFromSI(su.deltaP, Me.DeltaP).ToString(numberformat, ci) & " " & su.deltaP)
+                Case Else
+                    str.AppendLine("    Outlet pressure: " & SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.OutletPressure).ToString(numberformat, ci) & " " & su.pressure)
+                    str.AppendLine("    Pressure decrease: " & SystemsOfUnits.Converter.ConvertFromSI(su.deltaP, Me.DeltaP).ToString(numberformat, ci) & " " & su.deltaP)
             End Select
             str.AppendLine("    Inlet enthalpy: " & SystemsOfUnits.Converter.ConvertFromSI(su.enthalpy, Me.Hinlet).ToString(numberformat, ci) & " " & su.enthalpy)
             str.AppendLine("    Outlet enthalpy: " & SystemsOfUnits.Converter.ConvertFromSI(su.enthalpy, Me.Houtlet).ToString(numberformat, ci) & " " & su.enthalpy)
             str.AppendLine("    Temperature decrease: " & SystemsOfUnits.Converter.ConvertFromSI(su.deltaT, Me.DeltaT).ToString(numberformat, ci) & " " & su.deltaT)
-            str.AppendLine("    Cv (uncorrected): " & Me.Cv.ToString(numberformat, ci))
 
             Return str.ToString
 

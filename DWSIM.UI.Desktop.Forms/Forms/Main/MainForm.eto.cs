@@ -70,13 +70,22 @@ namespace DWSIM.UI
                 button.Width = 230;
             });
 
+            Eto.Style.Add<Button>("donate", button =>
+            {
+                button.BackgroundColor = Colors.LightYellow;
+                button.Font = new Font(FontFamilies.Sans, 12f, FontStyle.None);
+                button.TextColor = bgcolor;
+                button.ImagePosition = ButtonImagePosition.Left;
+                button.Width = 230;
+            });
+
             var btn1 = new Button() { Style = "main", Text = "OpenSavedFile".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "OpenFolder_100px.png"), 40, 40, ImageInterpolation.Default) };
             var btn2 = new Button() { Style = "main", Text = "NewSimulation".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "Workflow_100px.png"), 40, 40, ImageInterpolation.Default) };
             var btn3 = new Button() { Style = "main", Text = "NewCompound".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "Peptide_100px.png"), 40, 40, ImageInterpolation.Default) };
             var btn4 = new Button() { Style = "main", Text = "NewDataRegression".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "AreaChart_100px.png"), 40, 40, ImageInterpolation.Default) };
             var btn6 = new Button() { Style = "main", Text = "Help".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "Help_100px.png"), 40, 40, ImageInterpolation.Default) };
             var btn7 = new Button() { Style = "main", Text = "About".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "Info_100px.png"), 40, 40, ImageInterpolation.Default) };
-            var btn8 = new Button() { Style = "main", Text = "Donate".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "PayPal_100px.png"), 40, 40, ImageInterpolation.Default) };
+            var btn8 = new Button() { Style = "donate", Text = "Donate ", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "PayPal_100px.png"), 40, 40, ImageInterpolation.Default) };
             var btn9 = new Button() { Style = "main", Text = "Preferences".Localize(), Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "VerticalSettingsMixer_100px.png"), 40, 40, ImageInterpolation.Default) };
 
             btn9.Click += (sender, e) =>
@@ -94,6 +103,7 @@ namespace DWSIM.UI
                 var dialog = new OpenFileDialog();
                 dialog.Title = "Open File".Localize();
                 dialog.Filters.Add(new FileFilter("XML Simulation File".Localize(), new[] { ".dwxml", ".dwxmz" }));
+                dialog.Filters.Add(new FileFilter("Mobile XML Simulation File (Android/iOS)", new[] { ".xml" }));
                 dialog.MultiSelect = false;
                 dialog.CurrentFilterIndex = 0;
                 if (dialog.ShowDialog(this) == DialogResult.Ok)
@@ -331,12 +341,18 @@ namespace DWSIM.UI
                 var splash = new SplashScreen { MainFrm = this };
                 splash.Show();
             });
+
         }
 
         void LoadSimulation(string path)
         {
 
-            var form = new Forms.Flowsheet();
+            Forms.Flowsheet form = null;
+
+            Application.Instance.Invoke(() =>
+            {
+                form = new Forms.Flowsheet();
+            });
 
             OpenForms += 1;
             form.Closed += (sender2, e2) =>
@@ -359,6 +375,10 @@ namespace DWSIM.UI
                 else if (System.IO.Path.GetExtension(path).ToLower() == ".dwxml")
                 {
                     form.FlowsheetObject.LoadFromXML(XDocument.Load(path));
+                }
+                else if (System.IO.Path.GetExtension(path).ToLower() == ".xml")
+                {
+                    form.FlowsheetObject.LoadFromMXML(XDocument.Load(path));
                 }
                 form.FlowsheetObject.FilePath = path;
                 form.FlowsheetObject.FlowsheetOptions.FilePath = path;

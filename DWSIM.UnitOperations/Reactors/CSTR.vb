@@ -53,7 +53,7 @@ Namespace Reactors
 
         Dim activeAL As Integer = 0
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_ReactorCSTR
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_ReactorCSTR
 
         <System.NonSerialized()> Dim ims As MaterialStream
 
@@ -114,7 +114,9 @@ Namespace Reactors
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Reactor_CSTR().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Reactor_CSTR()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -1476,11 +1478,13 @@ out:        Dim ms1, ms2 As MaterialStream
             If f Is Nothing Then
                 f = New EditingForm_ReactorCSTR With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_ReactorCSTR With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

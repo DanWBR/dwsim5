@@ -184,6 +184,13 @@ namespace DWSIM.UI.Forms
             if (PageEditor != null)
             {
 
+                try
+                {
+                    DocumentPage dpage = (DocumentPage)PageEditor.Parent.Parent;
+                    dpage.Text = obj.GraphicObject.Tag;
+                }
+                catch { }
+
                 PageEditor.Content = null;
 
                 var cont = UI.Shared.Common.GetDefaultContainer();

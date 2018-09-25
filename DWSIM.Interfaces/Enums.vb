@@ -165,6 +165,7 @@ Namespace Enums
         volume
         volumetricFlow
         diffusivity
+        none
 
     End Enum
 
@@ -289,6 +290,7 @@ Namespace Enums
         Molar_Flows
         Mass_Flows
         Volumetric_Flows
+        DefaultBasis
     End Enum
 
     Public Enum PhaseLabel

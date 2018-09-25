@@ -5,7 +5,7 @@ Imports su = DWSIM.SharedClasses.SystemsOfUnits
 
 Public Class EditingForm_Recycle
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As SpecialOps.Recycle
 
@@ -33,7 +33,7 @@ Public Class EditingForm_Recycle
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -114,7 +114,7 @@ Public Class EditingForm_Recycle
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -138,9 +138,9 @@ Public Class EditingForm_Recycle
 
     Sub UpdateProps(sender As Object)
 
-        If sender Is tbTT Then SimObject.ConvergenceParameters.Temperatura = su.Converter.ConvertToSI(cbT.SelectedItem.ToString, tbTT.Text)
-        If sender Is tbWT Then SimObject.ConvergenceParameters.VazaoMassica = su.Converter.ConvertToSI(cbW.SelectedItem.ToString, tbWT.Text)
-        If sender Is tbPT Then SimObject.ConvergenceParameters.Pressao = su.Converter.ConvertToSI(cbP.SelectedItem.ToString, tbPT.Text)
+        If sender Is tbTT Then SimObject.ConvergenceParameters.Temperatura = su.Converter.ConvertToSI(cbT.SelectedItem.ToString, tbTT.Text.ParseExpressionToDouble)
+        If sender Is tbWT Then SimObject.ConvergenceParameters.VazaoMassica = su.Converter.ConvertToSI(cbW.SelectedItem.ToString, tbWT.Text.ParseExpressionToDouble)
+        If sender Is tbPT Then SimObject.ConvergenceParameters.Pressao = su.Converter.ConvertToSI(cbP.SelectedItem.ToString, tbPT.Text.ParseExpressionToDouble)
 
     End Sub
 
@@ -154,7 +154,7 @@ Public Class EditingForm_Recycle
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red

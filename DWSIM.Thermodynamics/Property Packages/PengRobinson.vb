@@ -22,11 +22,12 @@ Imports DWSIM.Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms
 
 Imports System.Threading.Tasks
 Imports System.Linq
+Imports DWSIM.Interfaces.Enums
 
 Namespace PropertyPackages
 
-    <System.Runtime.InteropServices.Guid(PengRobinsonPropertyPackage.ClassId)> _
- <System.Serializable()> Public Class PengRobinsonPropertyPackage
+    <System.Runtime.InteropServices.Guid(PengRobinsonPropertyPackage.ClassId)>
+    <System.Serializable()> Public Class PengRobinsonPropertyPackage
 
         Inherits PropertyPackages.PropertyPackage
 
@@ -61,10 +62,11 @@ Namespace PropertyPackages
 
             With Me.Parameters
                 .Clear()
-                .Add("PP_IDEAL_MIXRULE_LIQDENS", 0)
                 .Add("PP_USEEXPLIQDENS", 0)
-                .Add("PP_USE_EOS_LIQDENS", 0)
-                .Add("PP_USE_EOS_VOLUME_SHIFT", 0)
+                .Add("PP_USE_EOS_LIQDENS", 1)
+                .Add("PP_USE_EOS_VOLUME_SHIFT", 1)
+                .Add("PP_EXP_LIQDENS_PCORRECTION", 1)
+                .Add("PP_LIQVISC_PCORRECTION", 1)
             End With
 
         End Sub
@@ -212,11 +214,11 @@ Namespace PropertyPackages
             P = Me.CurrentMaterialStream.Phases(0).Properties.pressure.GetValueOrDefault
 
             Select Case phase
-                Case phase.Vapor
+                Case Phase.Vapor
                     state = "V"
-                Case phase.Liquid, phase.Liquid1, phase.Liquid2, phase.Liquid3, phase.Aqueous
+                Case Phase.Liquid, Phase.Liquid1, Phase.Liquid2, Phase.Liquid3, Phase.Aqueous
                     state = "L"
-                Case phase.Solid
+                Case Phase.Solid
                     state = "S"
             End Select
 
@@ -284,7 +286,7 @@ Namespace PropertyPackages
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_entropyF = result
                 Case "viscosity"
                     If state = "L" Then
-                        result = Me.AUX_LIQVISCm(T)
+                        result = Me.AUX_LIQVISCm(T, P)
                     Else
                         result = Me.AUX_VAPVISCm(T, Me.CurrentMaterialStream.Phases(phaseID).Properties.density.GetValueOrDefault, Me.AUX_MMM(phase))
                     End If
@@ -404,20 +406,9 @@ Namespace PropertyPackages
                                                      End Sub)
                     tasks(4) = Task.Factory.StartNew(Sub() resultObj = Auxiliary.PROPS.CpCvR("L", T, P, RET_VMOL(dwpl), RET_VKij(), RET_VMAS(dwpl), RET_VTC(), RET_VPC(), RET_VCP(T), RET_VMM(), RET_VW(), RET_VZRa()))
                     tasks(5) = Task.Factory.StartNew(Sub() tc = Me.AUX_CONDTL(T))
-                    tasks(6) = Task.Factory.StartNew(Sub() visc = Me.AUX_LIQVISCm(T))
+                    tasks(6) = Task.Factory.StartNew(Sub() visc = Me.AUX_LIQVISCm(T, P))
                     tasks(7) = Task.Factory.StartNew(Sub()
-                                                         If Convert.ToInt32(Me.Parameters("PP_USE_EOS_LIQDENS")) = 1 Then
-                                                             Dim val As Double
-                                                             val = m_pr.Z_PR(T, P, RET_VMOL(Phase), RET_VKij(), RET_VTC, RET_VPC, RET_VW, "L")
-                                                             val = (8.314 * val * T / P)
-                                                             If Convert.ToInt32(Me.Parameters("PP_USE_EOS_VOLUME_SHIFT")) = 1 Then
-                                                                 val -= Me.AUX_CM(Phase)
-                                                             End If
-                                                             val = 1 / val * Me.AUX_MMM(dwpl) / 1000
-                                                             dens = val
-                                                         Else
-                                                             dens = Me.AUX_LIQDENS(T, P, 0.0#, phaseID, False)
-                                                         End If
+                                                         dens = Me.AUX_LIQDENS(T, P, 0.0#, phaseID, False)
                                                      End Sub)
 
                     Task.WaitAll(tasks)
@@ -447,18 +438,7 @@ Namespace PropertyPackages
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight = mw
 
                     IObj?.SetCurrent
-                    If Convert.ToInt32(Me.Parameters("PP_USE_EOS_LIQDENS")) = 1 Then
-                        Dim val As Double
-                        val = m_pr.Z_PR(T, P, RET_VMOL(Phase), RET_VKij(), RET_VTC, RET_VPC, RET_VW, "L")
-                        val = (8.314 * val * T / P)
-                        If Convert.ToInt32(Me.Parameters("PP_USE_EOS_VOLUME_SHIFT")) = 1 Then
-                            val -= Me.AUX_CM(Phase)
-                        End If
-                        val = 1 / val * Me.AUX_MMM(dwpl) / 1000
-                        dens = val
-                    Else
-                        dens = Me.AUX_LIQDENS(T, P, 0.0#, phaseID, False)
-                    End If
+                    dens = Me.AUX_LIQDENS(T, P, 0.0#, phaseID, False)
 
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.density = dens
 
@@ -489,7 +469,7 @@ Namespace PropertyPackages
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.thermalConductivity = tc
 
                     IObj?.SetCurrent
-                    visc = Me.AUX_LIQVISCm(T)
+                    visc = Me.AUX_LIQVISCm(T, P)
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.viscosity = visc
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.kinematic_viscosity = visc / dens
 
@@ -623,7 +603,7 @@ Namespace PropertyPackages
 
         Public Overrides Function DW_CalcViscosidadeDinamica_ISOL(ByVal Phase1 As PropertyPackages.Phase, ByVal T As Double, ByVal P As Double) As Double
             If Phase1 = Phase.Liquid Then
-                Return Me.AUX_LIQVISCm(T)
+                Return Me.AUX_LIQVISCm(T, P)
             ElseIf Phase1 = Phase.Vapor Then
                 Return Me.AUX_VAPVISCm(T, Me.AUX_VAPDENS(T, P), Me.AUX_MMM(Phase.Vapor))
             End If
@@ -1081,6 +1061,37 @@ Namespace PropertyPackages
             CP.Add(New Double() {TCR, PCR, VCR, real})
 
             Return CP
+
+        End Function
+
+        Public Overrides Function AUX_Z(Vx() As Double, T As Double, P As Double, state As PhaseName) As Double
+
+            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
+
+            Inspector.Host.CheckAndAdd(IObj, "", "AUX_Z", "Compressibility Factor", "Compressibility Factor Calculation Routine")
+
+            IObj?.SetCurrent()
+
+            Dim val As Double
+            If state = PhaseName.Liquid Then
+                val = m_pr.Z_PR(T, P, Vx, RET_VKij(), RET_VTC, RET_VPC, RET_VW, "L")
+            Else
+                val = m_pr.Z_PR(T, P, Vx, RET_VKij(), RET_VTC, RET_VPC, RET_VW, "V")
+            End If
+
+            val = (8.314 * val * T / P)
+            If Convert.ToInt32(Me.Parameters("PP_USE_EOS_VOLUME_SHIFT")) = 1 Then
+                val -= Me.AUX_CM(Vx)
+            End If
+            val = P * val / (8.314 * T)
+
+            IObj?.Paragraphs.Add("<h2>Results</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Compressibility Factor: {0}", val))
+
+            IObj?.Close()
+
+            Return val
 
         End Function
 

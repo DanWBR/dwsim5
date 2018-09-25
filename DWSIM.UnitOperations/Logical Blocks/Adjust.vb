@@ -33,7 +33,7 @@ Namespace SpecialOps
 
         Implements Interfaces.IAdjust
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Adjust
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Adjust
 
         Protected m_ManipulatedObject As SharedClasses.UnitOperations.BaseClass
         Protected m_ControlledObject As SharedClasses.UnitOperations.BaseClass
@@ -67,7 +67,9 @@ Namespace SpecialOps
         Protected m_initialEstimate As Nullable(Of Double) = Nothing
 
         Public Overrides Function CloneXML() As Object
-            Return New Adjust().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Adjust()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -444,11 +446,13 @@ Namespace SpecialOps
             If f Is Nothing Then
                 f = New EditingForm_Adjust With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Adjust With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

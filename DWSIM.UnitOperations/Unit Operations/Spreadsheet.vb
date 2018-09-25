@@ -45,7 +45,7 @@ Namespace UnitOperations
 
         Inherits UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_SpreadsheetUO
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_SpreadsheetUO
 
         Protected m_DQ As Nullable(Of Double)
         Protected m_FileName As String = ""
@@ -89,7 +89,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New ExcelUO().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New ExcelUO()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -899,11 +901,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_SpreadsheetUO With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_SpreadsheetUO With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

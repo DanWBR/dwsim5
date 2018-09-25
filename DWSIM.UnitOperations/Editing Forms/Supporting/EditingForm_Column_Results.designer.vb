@@ -1,6 +1,6 @@
 <Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
 Partial Class EditingForm_Column_Results
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     'Form overrides dispose to clean up the component list.
     <System.Diagnostics.DebuggerNonUserCode()> _
@@ -718,9 +718,9 @@ Partial Class EditingForm_Column_Results
     Public WithEvents FaTabStripItem22 As FarsiLibrary.Win.FATabStripItem
     Public WithEvents GroupBox23 As System.Windows.Forms.GroupBox
     Public WithEvents DataGridView4 As System.Windows.Forms.DataGridView
-    Friend WithEvents TSB_PrinterSetup As System.Windows.Forms.ToolStripButton
-    Friend WithEvents PrintDialog1 As System.Windows.Forms.PrintDialog
-    Friend WithEvents TSB_PageSetup As System.Windows.Forms.ToolStripButton
-    Friend WithEvents TSB_Preview As System.Windows.Forms.ToolStripButton
-    Friend WithEvents TSB_Copy As System.Windows.Forms.ToolStripButton
+    Public WithEvents TSB_PrinterSetup As System.Windows.Forms.ToolStripButton
+    Public WithEvents PrintDialog1 As System.Windows.Forms.PrintDialog
+    Public WithEvents TSB_PageSetup As System.Windows.Forms.ToolStripButton
+    Public WithEvents TSB_Preview As System.Windows.Forms.ToolStripButton
+    Public WithEvents TSB_Copy As System.Windows.Forms.ToolStripButton
 End Class

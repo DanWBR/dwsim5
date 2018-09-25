@@ -34,8 +34,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>Full</DebugType>
     <DefineDebug>false</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <Optimize>true</Optimize>
+    <DefineTrace>false</DefineTrace>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DocumentationFile>DWSIM.Thermodynamics.xml</DocumentationFile>
     <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036,42353,42354,42355</NoWarn>
@@ -97,8 +97,8 @@
     <Reference Include="Cureos.Numerics">
       <HintPath>..\DWSIM\References\Cureos.Numerics.dll</HintPath>
     </Reference>
-    <Reference Include="Eto, Version=2.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Eto.Forms.2.4.1\lib\netstandard1.0\Eto.dll</HintPath>
+    <Reference Include="Eto, Version=2.4.6782.27823, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Eto.Forms.2.5.0-build1496\lib\netstandard1.0\Eto.dll</HintPath>
     </Reference>
     <Reference Include="ExcelDna.Integration, Version=0.34.6373.42344, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ExcelDna.Integration.0.34.6\lib\ExcelDna.Integration.dll</HintPath>
@@ -149,10 +149,6 @@
     <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Runtime.Serialization.Primitives">
-      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -339,13 +335,13 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Models\BlackOilProperties.vb" />
-    <Compile Include="PetroleumCharacterization\AssayClass.vb" />
     <Compile Include="PetroleumCharacterization\CurveConversion.vb" />
     <Compile Include="PetroleumCharacterization\Fitting.vb" />
     <Compile Include="PetroleumCharacterization\GenerateCompounds.vb" />
     <Compile Include="PetroleumCharacterization\GL.vb" />
     <Compile Include="PetroleumCharacterization\LM.vb" />
     <Compile Include="PetroleumCharacterization\PropertyMethods.vb" />
+    <Compile Include="PetroleumCharacterization\QualityCheck.vb" />
     <Compile Include="PetroleumCharacterization\Riazi.vb" />
     <Compile Include="Property Packages\BlackOil.vb" />
     <Compile Include="Interfaces\CAPE-OPEN.vb" />
@@ -355,13 +351,11 @@
     <Compile Include="Models\ChaoSeader.vb" />
     <Compile Include="Models\ExtendedUNIQUAC.vb" />
     <Compile Include="Property Packages\ExtendedUNIQUAC.vb" />
-    <Compile Include="Models\FPROPS.vb" />
     <Compile Include="Property Packages\GraysonStreed.vb" />
     <Compile Include="Models\GraysonStreed.vb" />
     <Compile Include="Models\SteamTables_IAPWS_IF97.vb" />
     <Compile Include="Models\Ideal.vb" />
     <Compile Include="Models\LIQUAC2.vb" />
-    <Compile Include="Property Packages\LIQUAC2.vb" />
     <Compile Include="Models\LeeKesler.vb" />
     <Compile Include="Models\LeeKeslerPlocker.vb" />
     <Compile Include="Property Packages\LeeKeslerPlocker.vb" />
@@ -563,8 +557,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DWSIM.Thermodynamics-AddIn.dna" />
-    <None Include="Properties\ExcelDna.Build.props" />
     <None Include="Resources\cross.png" />
     <None Include="Resources\copy.gif" />
     <EmbeddedResource Include="Assets\Databases\chedl_thermo.json" />
@@ -733,9 +725,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-    <Error Condition="!Exists('..\packages\Eto.Forms.2.4.1\build\Eto.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Eto.Forms.2.4.1\build\Eto.Forms.targets'))" />
+    <Error Condition="!Exists('..\packages\Eto.Forms.2.5.0-build1496\build\Eto.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Eto.Forms.2.5.0-build1496\build\Eto.Forms.targets'))" />
   </Target>
-  <Import Project="..\packages\Eto.Forms.2.4.1\build\Eto.Forms.targets" Condition="Exists('..\packages\Eto.Forms.2.4.1\build\Eto.Forms.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -755,4 +746,5 @@
     </ItemGroup>
     <Message Importance="normal" Text="Adding back DesignTimeFacades from ReferencePath now that SGen has run." />
   </Target>
+  <Import Project="..\packages\Eto.Forms.2.5.0-build1496\build\Eto.Forms.targets" Condition="Exists('..\packages\Eto.Forms.2.5.0-build1496\build\Eto.Forms.targets')" />
 </Project>

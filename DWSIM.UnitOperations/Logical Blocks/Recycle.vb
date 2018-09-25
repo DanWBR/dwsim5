@@ -34,7 +34,7 @@ Namespace SpecialOps
 
         Implements Interfaces.IRecycle
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Recycle
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Recycle
 
         Protected m_ConvPar As Helpers.Recycle.ConvergenceParameters
         Protected m_ConvHist As IRecycleConvergenceHistory
@@ -68,7 +68,9 @@ Namespace SpecialOps
         End Property
 
         Public Overrides Function CloneXML() As Object
-            Return New Recycle().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Recycle()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -653,11 +655,13 @@ Namespace SpecialOps
             If f Is Nothing Then
                 f = New EditingForm_Recycle With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Recycle With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

@@ -153,7 +153,60 @@ Namespace PropertyPackages.Auxiliary
 
             Dim e As Double = 0.176 * (Tc / (MM ^ 3 * Pc ^ 4)) ^ (1 / 6)
 
-            viscl_letsti = (e0 + e1) / e / 1000 'Pa.s
+            viscl_letsti = (e0 + e1 * w) / e / 1000 'Pa.s
+
+        End Function
+
+        Shared Function viscl_pcorrection_lucas(ByVal Tr As Double, P As Double, Pc As Double, Pvap As Double, w As Double) As Double
+
+            'high pressure liquid viscosity correction by Lucas (1981)
+            'Lucas, K.: Cheng. Ing. Tech., 53:959 (1981)
+
+            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
+
+            Inspector.Host.CheckAndAdd(IObj, "", "viscl_pcorrection_lucas", "High Pressure Liquid Viscosity Correction (Lucas)", "Liquid Phase Viscosity Calculation Routine")
+
+            IObj?.SetCurrent()
+
+            IObj?.Paragraphs.Add("This routine corrects the liquid viscosity (temperature-dependent only) to take into account the pressure effects (compressibility) using the method devised by Lucas (1981).")
+
+            IObj?.Paragraphs.Add("Ref.: Lucas, K.: Cheng. Ing. Tech., 53:959 (1981)")
+
+            IObj?.Paragraphs.Add("<h2>Equations</h2>")
+
+            IObj?.Paragraphs.Add("<m>\frac{\eta_{corr}}{\eta}=\frac{1 + D * (\delta P_r / 2.118) ^ A}{1 + C * w * \delta P_r}</m>")
+            IObj?.Paragraphs.Add("<m>\delta P_r = \frac{P - P_{sat}}{Pc}</m>")
+
+            IObj?.Paragraphs.Add("<m>A = 0.9991 - (0.0004674 / (1.0523 Tr ^ {-0.03877} - 1.0513))</m>")
+            IObj?.Paragraphs.Add("<m>D = (0.3257 / (1.0039 - Tr^{2.573})^{0.2906})-0.2086</m>")
+            IObj?.Paragraphs.Add("<m>C = -0.07921 + 2.1616 Tr - 13.404  Tr ^ 2 + 44.1706 Tr ^ 3 - 84.8291 Tr ^ 4 + 96.1209 Tr ^ 5 - 59.8127 Tr ^ 6 + 15.6719 Tr ^ 7</m>")
+
+            IObj?.Paragraphs.Add("<h2>Input Parameters</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Reduced Temperature: {0}", Tr))
+            IObj?.Paragraphs.Add(String.Format("Pressure: {0} Pa", P))
+            IObj?.Paragraphs.Add(String.Format("Critical Pressure: {0} Pa", Pc))
+            IObj?.Paragraphs.Add(String.Format("Vapor Pressure: {0} Pa", Pvap))
+            IObj?.Paragraphs.Add(String.Format("Acentric Factor: {0}", w))
+
+            Dim A, C, D, DPr As Double
+
+            DPr = (P - Pvap) / Pc
+
+            A = 0.9991 - (0.0004674 / (1.0523 * Tr ^ -0.03877 - 1.0513))
+            D = (0.3257 / (1.0039 - Tr ^ 2.573) ^ 0.2906) - 0.2086
+            C = -0.07921 + 2.1616 * Tr - 13.404 * Tr ^ 2 + 44.1706 * Tr ^ 3 - 84.8291 * Tr ^ 4 +
+                96.1209 * Tr ^ 5 - 59.8127 * Tr ^ 6 + 15.6719 * Tr ^ 7
+
+            Dim correction = (1 + D * (DPr / 2.118) ^ A) / (1 + C * w * DPr)
+
+            IObj?.Paragraphs.Add("<h2>Results</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Correction Factor: {0}", correction))
+
+            IObj?.Close()
+
+            Return correction
 
         End Function
 
@@ -170,6 +223,73 @@ Namespace PropertyPackages.Auxiliary
             Dim tmp As Double = (1 / e) * (0.807 * Tr ^ 0.618 - 0.357 * Math.Exp(-0.449 * Tr) + 0.34 * Math.Exp(-4.058 * Tr) + 0.018)
 
             viscg_lucas = tmp / 1000000.0 * 100 / 1000 'Pa.s
+
+        End Function
+
+        Shared Function liq_dens_pcorrection(ByVal Tr As Double, ByVal P As Double, ByVal Pc As Double, ByVal Pvap As Double, ByVal w As Double) As Double
+
+            'compressed liquid density correction by Thomson (1982)
+            'Thomson, G.H., K. R. Brobst, and R. W. Hawkinson. AIChE Journal, 28:671 (1982)
+
+            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
+
+            Inspector.Host.CheckAndAdd(IObj, "", "liq_dens_pcorrection", "Compressed Liquid Density Pressure Correction (Thomson)", "Liquid Phase Density Calculation Routine")
+
+            IObj?.SetCurrent()
+
+            IObj?.Paragraphs.Add("This routine corrects the experimental liquid density (temperature-dependent only) to take into account the pressure effects (compressibility) using the method devised by Thomson (1982).")
+
+            IObj?.Paragraphs.Add("Ref.: Thomson, G.H., K. R. Brobst, and R. W. Hawkinson. AIChE Journal, 28:671 (1982)")
+
+            IObj?.Paragraphs.Add("<h2>Equations</h2>")
+
+            IObj?.Paragraphs.Add("<m>\frac{\rho_{corr}}{\rho} = 1-c\ln\frac{\beta+P}{\beta+P_{sat}}</m>")
+
+            IObj?.Paragraphs.Add("<m>\frac{\beta}{P_c}=1+a(1-T_r)^{1/3}b(1-T_r)^{2/3}+d(1-T_r)+e(1-T_r)^{4/3}</m>")
+            IObj?.Paragraphs.Add("<m>e=\exp(f+g\omega+h\omega^{2})</m>")
+            IObj?.Paragraphs.Add("<m>c=j+k\omega</m>")
+
+            IObj?.Paragraphs.Add("<m>a=-9.070217</m>")
+            IObj?.Paragraphs.Add("<m>b=62.45326</m>")
+            IObj?.Paragraphs.Add("<m>d=-135.1102</m>")
+            IObj?.Paragraphs.Add("<m>f=4.79594</m>")
+            IObj?.Paragraphs.Add("<m>g=0.250047</m>")
+            IObj?.Paragraphs.Add("<m>h=1.14188</m>")
+            IObj?.Paragraphs.Add("<m>j=0.0861488</m>")
+            IObj?.Paragraphs.Add("<m>k=0.0344483</m>")
+
+            IObj?.Paragraphs.Add("<h2>Input Parameters</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Reduced Temperature: {0}", Tr))
+            IObj?.Paragraphs.Add(String.Format("Pressure: {0} Pa", P))
+            IObj?.Paragraphs.Add(String.Format("Vapor Pressure: {0} Pa", Pvap))
+            IObj?.Paragraphs.Add(String.Format("Acentric Factor: {0}", w))
+
+            Dim a, b, c, d, e, f, g, h, j, k As Double
+
+            a = -9.070217
+            b = 62.45326
+            d = -135.1102
+            f = 4.79594
+            g = 0.250047
+            h = 1.14188
+            j = 0.0861488
+            k = 0.0344483
+
+            c = j + k * w
+            e = Math.Exp(f + g * w + h * w ^ 2)
+
+            Dim beta = Pc * (1 + a * (1 - Tr) ^ (1 / 3) + b * (1 - Tr) ^ (2 / 3) + d * (1 - Tr) + e * (1 - Tr) ^ (4 / 3))
+
+            Dim correction = 1 / (1 - c * Math.Log((beta + P) / (beta + Pvap)))
+
+            IObj?.Paragraphs.Add("<h2>Results</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Correction Factor: {0}", correction))
+
+            IObj?.Close()
+
+            Return correction
 
         End Function
 
@@ -644,7 +764,7 @@ Namespace PropertyPackages.Auxiliary
 
         End Function
 
-        Shared Function oilvisc_twu(ByVal T, ByVal T1, ByVal T2, ByVal v1, ByVal v2)
+        Shared Function oilvisc_twu(ByVal T, ByVal T1, ByVal T2, ByVal v1, ByVal v2) As Double
 
             'v = m2/s, T = K
 
@@ -660,11 +780,11 @@ Namespace PropertyPackages.Auxiliary
             Z1 = vk1 + 0.7 + Math.Exp(-1.47 - 1.84 * vk1 - 0.51 * vk1 ^ 2)
             Z2 = vk2 + 0.7 + Math.Exp(-1.47 - 1.84 * vk2 - 0.51 * vk2 ^ 2)
 
-            Dim var1 As Double = (Math.Log(Math.Log(Z1)) + Math.Log(Math.Log(Z2)))
-            Dim var2 As Double = (Math.Log(T1) + Math.Log(T2))
+            Dim var1 As Double = (Math.Log10(Math.Log10(Z1)) - Math.Log10(Math.Log10(Z2)))
+            Dim var2 As Double = (Math.Log10(T1) - Math.Log10(T2))
             B = var1 / var2
 
-            Z = Math.Exp(Math.Exp(Math.Log(Math.Log(Z1)) + B * (Math.Log(T) - Math.Log(T2))))
+            Z = Math.Pow(10, (Math.Pow(10, (Math.Log10(Math.Log10(Z1)) + B * (Math.Log10(T) - Math.Log10(T1))))))
 
             Dim tmp = Z - 0.7 - Math.Exp(-0.7487 - 3.295 * (Z - 0.7) + 0.6119 * (Z - 0.7) ^ 2 - 0.3193 * (Z - 0.7) ^ 3)
 

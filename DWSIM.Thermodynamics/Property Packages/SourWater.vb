@@ -73,12 +73,12 @@ Namespace PropertyPackages
             m_par = New System.Collections.Generic.Dictionary(Of String, Double)
             With Me.Parameters
                 .Clear()
-                .Add("PP_IDEAL_MIXRULE_LIQDENS", 1)
                 .Add("PP_USEEXPLIQDENS", 1)
                 .Add("PP_USE_EOS_LIQDENS", 0)
                 .Add("PP_IDEAL_VAPOR_PHASE_FUG", 1)
                 .Add("PP_ENTH_CP_CALC_METHOD", 0)
                 .Add("PP_IGNORE_VAPOR_FRACTION_LIMIT", 0)
+                .Add("PP_LIQVISC_PCORRECTION", 1)
             End With
         End Sub
 

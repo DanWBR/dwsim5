@@ -50,7 +50,7 @@ Namespace Streams
 
         Implements Interfaces.IMaterialStream
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Private f As MaterialStreamEditor
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As MaterialStreamEditor
 
         <NonSerialized> <Xml.Serialization.XmlIgnore> Public _pp As PropertyPackages.PropertyPackage
         Public _ppid As String = ""
@@ -202,7 +202,7 @@ Namespace Streams
                         Next
                     End If
                 Else
-                    _ppid = _pp.UniqueID
+                    _ppid = _pp?.UniqueID
                     Return _pp
                 End If
                 Return Nothing
@@ -426,6 +426,8 @@ Namespace Streams
                         If Not Me.GraphicObject Is Nothing AndAlso Me.GraphicObject.InputConnectors(0).IsAttached AndAlso
                             Me.GraphicObject.InputConnectors(0).AttachedConnector.AttachedFrom.ObjectType <> ObjectType.OT_Recycle Then
                             If DebugMode Then AppendDebugLine(String.Format("Stream is single-compound and attached to the outlet of an unit operation. PH flash equilibrium calculation forced."))
+                            IObj?.Paragraphs.Add("<b>WARNING: Stream is single-compound and attached to the outlet of an unit operation. PH flash equilibrium calculation forced.</b>")
+                            IObj?.Paragraphs.Add(String.Format("<b>Current State Variables: P = {0} Pa, H = {1} kJ/kg</b>", P, H))
                             .DW_CalcEquilibrium(PropertyPackages.FlashSpec.P, PropertyPackages.FlashSpec.H)
                         Else
                             Select Case Me.SpecType
@@ -810,7 +812,7 @@ Namespace Streams
 
             AtEquilibrium = False
 
-            GraphicObject.Calculated = False
+            If GraphicObject IsNot Nothing Then GraphicObject.Calculated = False
 
         End Sub
 
@@ -5837,11 +5839,13 @@ Namespace Streams
             If f Is Nothing Then
                 f = New MaterialStreamEditor With {.MatStream = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New MaterialStreamEditor With {.MatStream = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()
@@ -5873,7 +5877,7 @@ Namespace Streams
         End Function
 
         Public Overrides Function GetDefaultProperties() As String()
-            Return New String() {"PROP_MS_0", "PROP_MS_1", "PROP_MS_2", "PROP_MS_3", "PROP_MS_4"}
+            Return New String() {"PROP_MS_0", "PROP_MS_1", "PROP_MS_2", "PROP_MS_3", "PROP_MS_4", "PROP_MS_9", "PROP_MS_10", "PROP_MS_27", "PROP_MS_130", "PROP_MS_154"}
         End Function
 
         Public Overrides Sub CloseEditForm()
@@ -5949,6 +5953,8 @@ Namespace Streams
                 Return Phases.Values.ToArray
             End Get
         End Property
+
+        Public Property FloatingTableAmountBasis As CompositionBasis = CompositionBasis.DefaultBasis Implements IMaterialStream.FloatingTableAmountBasis
 
         Public Overrides Function GetReport(su As IUnitsOfMeasure, ci As Globalization.CultureInfo, numberformat As String) As String
 
@@ -6710,6 +6716,7 @@ Namespace Streams.Editors
         Public Property CompoundsAmountSelectedTab As Integer = 0
         Public Property CompoundsPropertySelectedTab As Integer = 0
         Public Property PhasePropsSelectedTab As Integer = 0
+        Public Property MainSelectedTab0 As Integer = 0
 
     End Class
 

@@ -18,6 +18,7 @@
 
 Imports Ciloci.Flee
 Imports System.Linq
+Imports DWSIM.SharedClasses.DWSIM.Flowsheet
 
 Public Class SpreadsheetForm
     Inherits WeifenLuo.WinFormsUI.Docking.DockContent
@@ -68,6 +69,8 @@ Public Class SpreadsheetForm
         formc = My.Application.ActiveSimulation
 
         chkUseRegionalSeparator.Checked = formc.Options.SpreadsheetUseRegionalSeparator
+
+        chkEnableUnitLocking.Checked = formc.Options.SpreadsheetUnitLockingMode
 
         If Me.loaded = False Then
             Me.DataGridView1.Rows.Add(100)
@@ -560,14 +563,18 @@ Public Class SpreadsheetForm
                 ccparams.Expression = expression
                 If ccparams.CellType = Spreadsheet.VarType.Write Then
                     If formc.Collections.FlowsheetObjectCollection.ContainsKey(ccparams.ObjectID) Then
-                        ccparams.ToolTipText = DWSIM.App.GetLocalString("CellWillWrite") & vbCrLf & _
-                        DWSIM.App.GetLocalString("Objeto") & ": " & formc.Collections.FlowsheetObjectCollection(ccparams.ObjectID).GraphicObject.Tag & vbCrLf & _
+                        ccparams.ToolTipText = DWSIM.App.GetLocalString("CellWillWrite") & vbCrLf &
+                        DWSIM.App.GetLocalString("Objeto") & ": " & formc.Collections.FlowsheetObjectCollection(ccparams.ObjectID).GraphicObject.Tag & vbCrLf &
                         DWSIM.App.GetLocalString("Propriedade") & ": " & DWSIM.App.GetPropertyName(ccparams.PropID)
                         cell.Style.BackColor = Color.LightBlue
                     Else
                         ccparams.CellType = Spreadsheet.VarType.Expression
                         ccparams.ToolTipText = expression
                     End If
+                    cell.ToolTipText = ccparams.ToolTipText
+                ElseIf ccparams.CellType = Spreadsheet.VarType.Unit Then
+                    ccparams.ToolTipText = DWSIM.App.GetLocalString("CellUnitLocked")
+                    cell.Style.BackColor = Color.Beige
                     cell.ToolTipText = ccparams.ToolTipText
                 End If
                 If expression <> "" Then
@@ -603,7 +610,7 @@ Public Class SpreadsheetForm
                         cell.Style.BackColor = Color.LightGreen
                     Else
                         cell.Value = expression
-                        If ccparams.CellType <> Spreadsheet.VarType.Write Then
+                        If ccparams.CellType <> Spreadsheet.VarType.Write And ccparams.CellType <> Spreadsheet.VarType.Unit Then
                             ccparams.ToolTipText = expression
                             cell.ToolTipText = ccparams.ToolTipText
                             cell.Style.BackColor = cell.OwningColumn.DefaultCellStyle.BackColor
@@ -621,7 +628,7 @@ Public Class SpreadsheetForm
                 cell.Tag = ccparams.Clone
                 cell.ToolTipText = ccparams.ToolTipText
                 cell.Style.BackColor = cell.OwningColumn.DefaultCellStyle.BackColor
-                My.Application.ActiveSimulation.WriteToLog(Me.Text & ": " & DWSIM.App.GetLocalString("Invalidexpressiononcell") & " " & GetCellString(cell) & " - " & ex.Message, Color.Brown, DWSIM.Flowsheet.MessageType.Information)
+                My.Application.ActiveSimulation.WriteToLog(Me.Text & ": " & DWSIM.App.GetLocalString("Invalidexpressiononcell") & " " & GetCellString(cell) & " - " & ex.Message, Color.Brown, MessageType.Information)
             End Try
 
         End If
@@ -789,7 +796,19 @@ Public Class SpreadsheetForm
                 If Not ccparams Is Nothing Then
                     If ccparams.CellType = Spreadsheet.VarType.Write And Not ce.Value Is Nothing Then
                         obj = formc.Collections.FlowsheetObjectCollection(ccparams.ObjectID)
-                        obj.SetPropertyValue(ccparams.PropID, ce.Value, su)
+                        If ce.ColumnIndex + 1 < DataGridView1.Columns.GetColumnCount(DataGridViewElementStates.None) Then
+                            If formc.Options.SpreadsheetUnitLockingMode Then
+                                Dim adjcell = r.Cells.Item(ce.ColumnIndex + 1)
+                                Dim ccparams2 As Spreadsheet.SpreadsheetCellParameters = adjcell.Tag
+                                If ccparams2.CellType = Spreadsheet.VarType.Unit Then
+                                    obj.SetPropertyValue(ccparams.PropID, SystemsOfUnits.Converter.ConvertToSI(ccparams2.Expression, ce.Value))
+                                Else
+                                    obj.SetPropertyValue(ccparams.PropID, ce.Value, su)
+                                End If
+                            End If
+                        Else
+                            obj.SetPropertyValue(ccparams.PropID, ce.Value, su)
+                        End If
                     End If
                 End If
             Next
@@ -854,6 +873,10 @@ Public Class SpreadsheetForm
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
         Clipboard.SetDataObject(Me.DataGridView1.GetClipboardContent)
+    End Sub
+
+    Private Sub chkEnableUnitLocking_CheckedChanged(sender As Object, e As EventArgs) Handles chkEnableUnitLocking.CheckedChanged
+        If loaded Then formc.Options.SpreadsheetUnitLockingMode = chkEnableUnitLocking.Checked
     End Sub
 
     Private Sub chkUseRegionalSeparator_CheckedChanged(sender As Object, e As EventArgs) Handles chkUseRegionalSeparator.CheckedChanged

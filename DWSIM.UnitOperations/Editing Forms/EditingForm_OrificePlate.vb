@@ -5,7 +5,7 @@ Imports su = DWSIM.SharedClasses.SystemsOfUnits
 
 Public Class EditingForm_OrificePlate
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As UnitOperations.OrificePlate
 
@@ -33,7 +33,7 @@ Public Class EditingForm_OrificePlate
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -155,7 +155,7 @@ Public Class EditingForm_OrificePlate
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -212,11 +212,11 @@ Public Class EditingForm_OrificePlate
 
         Dim uobj = SimObject
 
-        If sender Is tbIntPipeDiameter Then uobj.InternalPipeDiameter = su.Converter.ConvertToSI(cbIntPipeDiam.SelectedItem.ToString, tbIntPipeDiameter.Text)
-        If sender Is tbOrificeDiameter Then uobj.OrificeDiameter = su.Converter.ConvertToSI(cbOrifDiam.SelectedItem.ToString, tbOrificeDiameter.Text)
+        If sender Is tbIntPipeDiameter Then uobj.InternalPipeDiameter = su.Converter.ConvertToSI(cbIntPipeDiam.SelectedItem.ToString, tbIntPipeDiameter.Text.ParseExpressionToDouble)
+        If sender Is tbOrificeDiameter Then uobj.OrificeDiameter = su.Converter.ConvertToSI(cbOrifDiam.SelectedItem.ToString, tbOrificeDiameter.Text.ParseExpressionToDouble)
         If sender Is tbOrificeDiameter Or sender Is tbIntPipeDiameter Then uobj.Beta = uobj.OrificeDiameter / uobj.InternalPipeDiameter
 
-        If sender Is tbCorrF Then uobj.CorrectionFactor = Double.Parse(tbCorrF.Text)
+        If sender Is tbCorrF Then uobj.CorrectionFactor = Double.Parse(tbCorrF.Text.ParseExpressionToDouble)
 
         RequestCalc()
 
@@ -232,7 +232,7 @@ Public Class EditingForm_OrificePlate
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red

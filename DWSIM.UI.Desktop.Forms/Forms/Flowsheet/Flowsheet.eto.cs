@@ -16,6 +16,7 @@ using DWSIM.Drawing.SkiaSharp.GraphicObjects.Tables;
 using System.Timers;
 using System.Diagnostics;
 using DWSIM.Drawing.SkiaSharp.GraphicObjects.Charts;
+using System.Reflection;
 
 namespace DWSIM.UI.Forms
 {
@@ -215,7 +216,7 @@ namespace DWSIM.UI.Forms
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error saving file", ex.ToString(), MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
+                    MessageBox.Show(ex.ToString(),"Error saving file", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
                 }
             };
 
@@ -224,6 +225,7 @@ namespace DWSIM.UI.Forms
                 var dialog = new SaveFileDialog();
                 dialog.Title = "Save File".Localize();
                 dialog.Filters.Add(new FileFilter("XML Simulation File (Compressed)".Localize(), new[] { ".dwxmz" }));
+                dialog.Filters.Add(new FileFilter("Mobile XML Simulation File (Android/iOS)".Localize(), new[] { ".xml" }));
                 dialog.CurrentFilterIndex = 0;
                 if (dialog.ShowDialog(this) == DialogResult.Ok)
                 {
@@ -252,7 +254,8 @@ namespace DWSIM.UI.Forms
 
             ActInspector = () =>
             {
-                var iform = Common.GetDefaultEditorForm("DWSIM - Solution Inspector", 1024, 768, DWSIM.Inspector.Window.GetInspectorWindow(), false);
+                var iwindow = DWSIM.Inspector.Window.GetInspectorWindow();
+                var iform = Common.GetDefaultEditorForm("DWSIM - Solution Inspector", 1024, 768, iwindow, false);
                 iform.WindowState = WindowState.Maximized;
                 iform.Show();
             };
@@ -562,12 +565,15 @@ namespace DWSIM.UI.Forms
 
             FlowsheetObject.LoadSpreadsheetData = new Action<XDocument>((xdoc) =>
             {
-                string data1 = xdoc.Element("DWSIM_Simulation_Data").Element("Spreadsheet").Element("Data1").Value;
-                string data2 = xdoc.Element("DWSIM_Simulation_Data").Element("Spreadsheet").Element("Data2").Value;
-                if (!string.IsNullOrEmpty(data1)) Spreadsheet.CopyDT1FromString(data1);
-                if (!string.IsNullOrEmpty(data2)) Spreadsheet.CopyDT2FromString(data2);
-                Spreadsheet.CopyFromDT();
-                Spreadsheet.EvaluateAll();
+                if (xdoc.Element("DWSIM_Simulation_Data").Element("SensitivityAnalysis") != null)
+                {
+                    string data1 = xdoc.Element("DWSIM_Simulation_Data").Element("Spreadsheet").Element("Data1").Value;
+                    string data2 = xdoc.Element("DWSIM_Simulation_Data").Element("Spreadsheet").Element("Data2").Value;
+                    if (!string.IsNullOrEmpty(data1)) Spreadsheet.CopyDT1FromString(data1);
+                    if (!string.IsNullOrEmpty(data2)) Spreadsheet.CopyDT2FromString(data2);
+                    Spreadsheet.CopyFromDT();
+                    Spreadsheet.EvaluateAll();
+                }
             });
 
             FlowsheetObject.SaveSpreadsheetData = new Action<XDocument>((xdoc) =>
@@ -639,20 +645,23 @@ namespace DWSIM.UI.Forms
 
             foreach (var obj in ObjectList.Values.OrderBy(x => x.GetDisplayName()))
             {
-                var pitem = new FlowsheetObjectPanelItem();
-                var bmp = (System.Drawing.Bitmap)obj.GetIconBitmap();
-                pitem.imgIcon.Image = new Bitmap(Common.ImageToByte(bmp));
-                pitem.txtName.Text = obj.GetDisplayName();
-                pitem.txtDescription.Text = obj.GetDisplayDescription();
-                pitem.MouseDown += (sender, e) =>
+                if ((Boolean)(obj.GetType().GetProperty("Visible").GetValue(obj)))
                 {
-                    var dobj = new DataObject();
-                    dobj.Image = pitem.imgIcon.Image;
-                    dobj.SetString(obj.GetDisplayName(), "ObjectName");
-                    pitem.DoDragDrop(dobj, DragEffects.All);
-                    e.Handled = true;
-                };
-                objcontainer.Items.Add(pitem);
+                    var pitem = new FlowsheetObjectPanelItem();
+                    var bmp = (System.Drawing.Bitmap)obj.GetIconBitmap();
+                    pitem.imgIcon.Image = new Bitmap(Common.ImageToByte(bmp));
+                    pitem.txtName.Text = obj.GetDisplayName();
+                    pitem.txtDescription.Text = obj.GetDisplayDescription();
+                    pitem.MouseDown += (sender, e) =>
+                    {
+                        var dobj = new DataObject();
+                        dobj.Image = pitem.imgIcon.Image;
+                        dobj.SetString(obj.GetDisplayName(), "ObjectName");
+                        pitem.DoDragDrop(dobj, DragEffects.All);
+                        e.Handled = true;
+                    };
+                    objcontainer.Items.Add(pitem);
+                }
             }
 
             if (Application.Instance.Platform.IsWpf) FlowsheetControl.AllowDrop = true;
@@ -730,14 +739,11 @@ namespace DWSIM.UI.Forms
                         var obj = FlowsheetControl.FlowsheetSurface.SelectedObject;
                         switch (obj.ObjectType)
                         {
-                            case Interfaces.Enums.GraphicObjects.ObjectType.GO_Text:
-                            case Interfaces.Enums.GraphicObjects.ObjectType.GO_Image:
                             case Interfaces.Enums.GraphicObjects.ObjectType.GO_Table:
                             case Interfaces.Enums.GraphicObjects.ObjectType.GO_MasterTable:
                             case Interfaces.Enums.GraphicObjects.ObjectType.GO_SpreadsheetTable:
-                            case Interfaces.Enums.GraphicObjects.ObjectType.GO_Chart:
                                 selctxmenu.Items.Clear();
-                                var itemtype = new ButtonMenuItem { Text = "Misc Object", Enabled = false };
+                                var itemtype = new ButtonMenuItem { Text = "Data Table", Enabled = false };
                                 selctxmenu.Items.Add(itemtype);
 
                                 var menuitem0 = new ButtonMenuItem { Text = "Edit", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "EditProperty_96px.png")) };
@@ -748,15 +754,58 @@ namespace DWSIM.UI.Forms
 
                                 selctxmenu.Items.Add(menuitem0);
 
+                                var item7 = new ButtonMenuItem { Text = "Copy Data to Clipboard", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "icons8-copy_2_filled.png")) };
+
+                                item7.Click += (sender2, e2) =>
+                                {
+                                    new Clipboard().Text = obj.GetType().GetProperty("ClipboardData").GetValue(obj).ToString();
+                                };
+
+                                selctxmenu.Items.Add(item7);
+
                                 var delitem = new ButtonMenuItem { Text = "Delete", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "Delete_96px.png")) };
                                 delitem.Click += (sender2, e2) =>
                                 {
                                     if (MessageBox.Show(this, "Confirm object removal?", "Delete Object", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
-                                    {   
+                                    {
                                         FlowsheetObject.DeleteSelectedObject(this, new EventArgs(), obj, false, false);
                                     }
                                 };
                                 selctxmenu.Items.Add(delitem);
+                                break;
+                            case Interfaces.Enums.GraphicObjects.ObjectType.GO_Text:
+                            case Interfaces.Enums.GraphicObjects.ObjectType.GO_Image:
+                            case Interfaces.Enums.GraphicObjects.ObjectType.GO_Chart:
+                                selctxmenu.Items.Clear();
+                                var itemtype2 = new ButtonMenuItem { Text = "Misc Object", Enabled = false };
+                                selctxmenu.Items.Add(itemtype2);
+
+                                var menuitem02 = new ButtonMenuItem { Text = "Edit", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "EditProperty_96px.png")) };
+                                menuitem02.Click += (sender2, e2) =>
+                                {
+                                    EditSelectedObjectProperties();
+                                };
+
+                                selctxmenu.Items.Add(menuitem02);
+
+                                var item7a = new ButtonMenuItem { Text = "Copy Data to Clipboard", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "icons8-copy_2_filled.png")) };
+
+                                item7a.Click += (sender2, e2) =>
+                                {
+                                    new Clipboard().Text = obj.GetType().GetProperty("ClipboardData").GetValue(obj).ToString();
+                                };
+
+                                selctxmenu.Items.Add(item7a);
+
+                                var delitem2 = new ButtonMenuItem { Text = "Delete", Image = new Bitmap(Eto.Drawing.Bitmap.FromResource(imgprefix + "Delete_96px.png")) };
+                                delitem2.Click += (sender2, e2) =>
+                                {
+                                    if (MessageBox.Show(this, "Confirm object removal?", "Delete Object", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
+                                    {
+                                        FlowsheetObject.DeleteSelectedObject(this, new EventArgs(), obj, false, false);
+                                    }
+                                };
+                                selctxmenu.Items.Add(delitem2);
                                 break;
                             default:
                                 SetupSelectedContextMenu();
@@ -840,7 +889,7 @@ namespace DWSIM.UI.Forms
                     }
                 };
 
-                this.Enabled = false;
+                //this.Enabled = false;
                 TabContainer.SelectedPage = TabPageSpreadsheet;
 
             }
@@ -864,53 +913,64 @@ namespace DWSIM.UI.Forms
         void SaveSimulation(string path, bool backup = false)
         {
 
-            Application.Instance.Invoke(() => ScriptListControl.UpdateScripts());
 
-            path = Path.ChangeExtension(path, ".dwxmz");
-
-            string xmlfile = Path.ChangeExtension(Path.GetTempFileName(), "xml");
-
-            using (var fstream = new FileStream(xmlfile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            if (System.IO.Path.GetExtension(path).ToLower() == ".dwxmz")
             {
-                FlowsheetObject.SaveToXML().Save(fstream);
+                Application.Instance.Invoke(() => ScriptListControl.UpdateScripts());
+
+                path = Path.ChangeExtension(path, ".dwxmz");
+
+                string xmlfile = Path.ChangeExtension(Path.GetTempFileName(), "xml");
+
+                using (var fstream = new FileStream(xmlfile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    FlowsheetObject.SaveToXML().Save(fstream);
+                }
+
+                var i_Files = new List<string>();
+                if (File.Exists(xmlfile))
+                    i_Files.Add(xmlfile);
+
+                ZipOutputStream strmZipOutputStream = default(ZipOutputStream);
+
+                strmZipOutputStream = new ZipOutputStream(File.Create(path));
+
+                strmZipOutputStream.SetLevel(9);
+
+                if (FlowsheetObject.Options.UsePassword)
+                    strmZipOutputStream.Password = FlowsheetObject.Options.Password;
+
+                string strFile = null;
+
+                foreach (string strFile_loopVariable in i_Files)
+                {
+                    strFile = strFile_loopVariable;
+                    FileStream strmFile = File.OpenRead(strFile);
+                    byte[] abyBuffer = new byte[strmFile.Length];
+
+                    strmFile.Read(abyBuffer, 0, abyBuffer.Length);
+                    ZipEntry objZipEntry = new ZipEntry(Path.GetFileName(strFile));
+
+                    objZipEntry.DateTime = DateTime.Now;
+                    objZipEntry.Size = strmFile.Length;
+                    strmFile.Close();
+                    strmZipOutputStream.PutNextEntry(objZipEntry);
+                    strmZipOutputStream.Write(abyBuffer, 0, abyBuffer.Length);
+
+                }
+
+                strmZipOutputStream.Finish();
+                strmZipOutputStream.Close();
+
+                File.Delete(xmlfile);
             }
-
-            var i_Files = new List<string>();
-            if (File.Exists(xmlfile))
-                i_Files.Add(xmlfile);
-
-            ZipOutputStream strmZipOutputStream = default(ZipOutputStream);
-
-            strmZipOutputStream = new ZipOutputStream(File.Create(path));
-
-            strmZipOutputStream.SetLevel(9);
-
-            if (FlowsheetObject.Options.UsePassword)
-                strmZipOutputStream.Password = FlowsheetObject.Options.Password;
-
-            string strFile = null;
-
-            foreach (string strFile_loopVariable in i_Files)
+            else if (System.IO.Path.GetExtension(path).ToLower() == ".xml")
             {
-                strFile = strFile_loopVariable;
-                FileStream strmFile = File.OpenRead(strFile);
-                byte[] abyBuffer = new byte[strmFile.Length];
-
-                strmFile.Read(abyBuffer, 0, abyBuffer.Length);
-                ZipEntry objZipEntry = new ZipEntry(Path.GetFileName(strFile));
-
-                objZipEntry.DateTime = DateTime.Now;
-                objZipEntry.Size = strmFile.Length;
-                strmFile.Close();
-                strmZipOutputStream.PutNextEntry(objZipEntry);
-                strmZipOutputStream.Write(abyBuffer, 0, abyBuffer.Length);
-
+                using (var fstream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    FlowsheetObject.SaveToMXML().Save(fstream);
+                }
             }
-
-            strmZipOutputStream.Finish();
-            strmZipOutputStream.Close();
-
-            File.Delete(xmlfile);
 
             if (!backup)
             {
@@ -1103,21 +1163,7 @@ namespace DWSIM.UI.Forms
                 try
                 {
                     var sobj = FlowsheetControl.FlowsheetSurface.SelectedObject;
-                    switch (sobj.ObjectType)
-                    {
-                        case Interfaces.Enums.GraphicObjects.ObjectType.GO_MasterTable:
-                            //((MasterTableGraphic)sobj).CopyToClipboard();
-                            break;
-                        case Interfaces.Enums.GraphicObjects.ObjectType.GO_SpreadsheetTable:
-                            //((SpreadsheetTableGraphic)sobj).CopyToClipboard();
-                            break;
-                        case Interfaces.Enums.GraphicObjects.ObjectType.GO_Table:
-                            //((TableGraphic)sobj).CopyToClipboard();
-                            break;
-                        default:
-                            ((SharedClasses.UnitOperations.BaseClass)FlowsheetObject.SimulationObjects[sobj.Name]).CopyDataToClipboard((DWSIM.SharedClasses.SystemsOfUnits.Units)FlowsheetObject.FlowsheetOptions.SelectedUnitSystem, FlowsheetObject.FlowsheetOptions.NumberFormat);
-                            break;
-                    }
+                    ((SharedClasses.UnitOperations.BaseClass)FlowsheetObject.SimulationObjects[sobj.Name]).CopyDataToClipboard((DWSIM.SharedClasses.SystemsOfUnits.Units)FlowsheetObject.FlowsheetOptions.SelectedUnitSystem, FlowsheetObject.FlowsheetOptions.NumberFormat);
                 }
                 catch (Exception ex)
                 {
@@ -1354,7 +1400,7 @@ namespace DWSIM.UI.Forms
             if (obj == null) return;
             if (MessageBox.Show(this, "Confirm object removal?", "Delete Object", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
             {
-                var editor = EditorHolder.Pages.Where(x => (string)x.Content.Tag == obj.Name).First();
+                var editor = EditorHolder.Pages.Where(x => (string)x.Content.Tag == obj.Name).FirstOrDefault();
                 if (editor != null)
                 {
                     EditorHolder.Pages.Remove(editor);
@@ -1447,6 +1493,14 @@ namespace DWSIM.UI.Forms
                 var editorc = new DocumentPage(editor) { Closable = true, Text = obj.GraphicObject.Tag };
                 EditorHolder.Pages.Add(editorc);
                 EditorHolder.SelectedPage = editorc;
+                if (EditorHolder.Pages.Count > 6)
+                {
+                    try
+                    {
+                        EditorHolder.Pages.Remove(EditorHolder.Pages.First());
+                    }
+                    catch { }
+                }
             }
 
             SplitterFlowsheet.Invalidate();

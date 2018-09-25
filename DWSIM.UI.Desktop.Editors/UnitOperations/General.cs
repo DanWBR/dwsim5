@@ -65,7 +65,7 @@ namespace DWSIM.UI.Desktop.Editors
             s.CreateAndAddStringEditorRow(container, "Name", SimObject.GraphicObject.Tag, (TextBox arg3, EventArgs ev) =>
             {
                 SimObject.GraphicObject.Tag = arg3.Text;
-            });
+            }, () => CallSolverIfNeeded());
 
             s.CreateAndAddLabelRow(container, "Property Package");
 
@@ -103,8 +103,7 @@ namespace DWSIM.UI.Desktop.Editors
             };
 
             s.CreateAndAddLabelRow(container, "Object Properties");
-
-            double val;
+            
             switch (SimObject.GraphicObject.ObjectType)
             {
                 case ObjectType.SolidSeparator:
@@ -112,10 +111,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Solids Separation Efficiency", ss.SeparationEfficiency,
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           ss.SeparationEfficiency = Double.Parse(arg3.Text.ToString());
+                                           ss.SeparationEfficiency = arg3.Text.ToString().ParseExpressionToDouble();
                                        }
                                        else
                                        {
@@ -127,10 +126,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Liquids Separation Efficiency", ss.LiquidSeparationEfficiency,
                                         (TextBox arg3, EventArgs ev) =>
                                         {
-                                            if (Double.TryParse(arg3.Text.ToString(), out val))
+                                            if (arg3.Text.IsValidDoubleExpression())
                                             {
                                                 arg3.TextColor = (SystemColors.ControlText);
-                                                ss.LiquidSeparationEfficiency = Double.Parse(arg3.Text.ToString());
+                                                ss.LiquidSeparationEfficiency = arg3.Text.ToString().ParseExpressionToDouble();
                                             }
                                             else
                                             {
@@ -145,10 +144,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Heat Flow (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, es.EnergyFlow.GetValueOrDefault()),
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           es.EnergyFlow = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                                           es.EnergyFlow = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                                        }
                                        else
                                        {
@@ -199,10 +198,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Increase (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, ce.DeltaP.GetValueOrDefault()),
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           ce.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                           ce.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                        }
                                        else
                                        {
@@ -214,10 +213,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, ce.POut.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               ce.POut = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                               ce.POut = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -229,10 +228,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Power Required (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, ce.DeltaQ.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               ce.DeltaQ = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                               ce.DeltaQ = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -244,10 +243,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Efficiency (%)", ce.EficienciaAdiabatica.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               ce.EficienciaAdiabatica = Double.Parse(arg3.Text.ToString());
+                               ce.EficienciaAdiabatica = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -286,10 +285,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Decrease (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, xe.DeltaP.GetValueOrDefault()),
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           xe.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                           xe.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                        }
                                        else
                                        {
@@ -301,10 +300,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, xe.POut.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               xe.POut = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                               xe.POut = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -316,10 +315,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Efficiency (%)", xe.EficienciaAdiabatica.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               xe.EficienciaAdiabatica = Double.Parse(arg3.Text.ToString());
+                               xe.EficienciaAdiabatica = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -364,10 +363,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, hc.DeltaP.GetValueOrDefault()),
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           hc.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                           hc.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                        }
                                        else
                                        {
@@ -379,10 +378,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, hc.OutletTemperature.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hc.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               hc.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -394,10 +393,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Heat Added (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, hc.DeltaQ.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hc.DeltaQ = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                               hc.DeltaQ = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -409,10 +408,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Efficiency (%)", hc.Eficiencia.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hc.Eficiencia = Double.Parse(arg3.Text.ToString());
+                               hc.Eficiencia = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -424,10 +423,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Vapor Fraction", hc.OutletVaporFraction.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hc.OutletVaporFraction = Double.Parse(arg3.Text.ToString());
+                               hc.OutletVaporFraction = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -472,10 +471,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, cc.DeltaP.GetValueOrDefault()),
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           cc.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                           cc.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                        }
                                        else
                                        {
@@ -487,10 +486,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, cc.OutletTemperature.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               cc.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               cc.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -502,10 +501,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Heat Removed (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, cc.DeltaQ.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               cc.DeltaQ = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                               cc.DeltaQ = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -517,10 +516,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Efficiency (%)", cc.Eficiencia.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               cc.Eficiencia = Double.Parse(arg3.Text.ToString());
+                               cc.Eficiencia = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -532,10 +531,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Vapor Fraction", cc.OutletVaporFraction.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               cc.OutletVaporFraction = Double.Parse(arg3.Text.ToString());
+                               cc.OutletVaporFraction = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -606,10 +605,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Increase (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, pump.DeltaP.GetValueOrDefault()),
                                    (TextBox arg3, EventArgs ev) =>
                                    {
-                                       if (Double.TryParse(arg3.Text.ToString(), out val))
+                                       if (arg3.Text.IsValidDoubleExpression())
                                        {
                                            arg3.TextColor = (SystemColors.ControlText);
-                                           pump.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                           pump.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                        }
                                        else
                                        {
@@ -621,10 +620,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, pump.Pout),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               pump.Pout = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                               pump.Pout = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -636,10 +635,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Efficiency (%)", pump.Eficiencia.GetValueOrDefault(),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               pump.Eficiencia = Double.Parse(arg3.Text.ToString());
+                               pump.Eficiencia = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -651,10 +650,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Power (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, pump.DeltaQ.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               pump.DeltaQ = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                               pump.DeltaQ = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -708,6 +707,15 @@ namespace DWSIM.UI.Desktop.Editors
                         case Valve.CalculationMode.OutletPressure:
                             pos5 = 0;
                             break;
+                        case Valve.CalculationMode.Kv_Liquid:
+                            pos5 = 2;
+                            break;
+                        case Valve.CalculationMode.Kv_Gas:
+                            pos5 = 3;
+                            break;
+                        case Valve.CalculationMode.Kv_Steam:
+                            pos5 = 4;
+                            break;
                     }
                     s.CreateAndAddDropDownRow(container, "Calculation Mode", StringResources.valvecalcmode().ToList(), pos5, (DropDown arg3, EventArgs ev) =>
                     {
@@ -719,6 +727,15 @@ namespace DWSIM.UI.Desktop.Editors
                             case 1:
                                 valve.CalcMode = Valve.CalculationMode.DeltaP;
                                 break;
+                            case 2:
+                                valve.CalcMode = Valve.CalculationMode.Kv_Liquid;
+                                break;
+                            case 3:
+                                valve.CalcMode = Valve.CalculationMode.Kv_Gas;
+                                break;
+                            case 4:
+                                valve.CalcMode = Valve.CalculationMode.Kv_Steam;
+                                break;
                         }
                     }, () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container,
@@ -726,10 +743,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, valve.OutletPressure.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               valve.OutletPressure = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                               valve.OutletPressure = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -741,10 +758,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, valve.DeltaP.GetValueOrDefault()),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       valve.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       valve.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -753,6 +770,34 @@ namespace DWSIM.UI.Desktop.Editors
                                }, () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container,
                                                  SimObject.GetPropertyDescription("Pressure Drop"));
+                    s.CreateAndAddTextBoxRow(container, nf, "Kv(max)", valve.Kv,
+                               (TextBox arg3, EventArgs ev) =>
+                               {
+                                   if (arg3.Text.IsValidDoubleExpression())
+                                   {
+                                       arg3.TextColor = (SystemColors.ControlText);
+                                       valve.Kv = arg3.Text.ToString().ParseExpressionToDouble();
+                                   }
+                                   else
+                                   {
+                                       arg3.TextColor = (Colors.Red);
+                                   }
+                               }, () => CallSolverIfNeeded());
+                    s.CreateAndAddCheckBoxRow(container, "Use Opening (%) versus Kv/Kvmax (%) relationship", valve.EnableOpeningKvRelationship, (sender, e) => { valve.EnableOpeningKvRelationship = sender.Checked.GetValueOrDefault(); });
+                    s.CreateAndAddStringEditorRow(container, "Kv/Kvmax (%) = f(OP(%))", valve.PercentOpeningVersusPercentKvExpression, (sender, e) => { valve.PercentOpeningVersusPercentKvExpression = sender.Text; }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Opening (%)", valve.OpeningPct,
+                               (TextBox arg3, EventArgs ev) =>
+                               {
+                                   if (arg3.Text.IsValidDoubleExpression())
+                                   {
+                                       arg3.TextColor = (SystemColors.ControlText);
+                                       valve.OpeningPct = arg3.Text.ToString().ParseExpressionToDouble();
+                                   }
+                                   else
+                                   {
+                                       arg3.TextColor = (Colors.Red);
+                                   }
+                               }, () => CallSolverIfNeeded());
                     break;
                 case ObjectType.ShortcutColumn:
                     var sc = (ShortcutColumn)SimObject;
@@ -776,10 +821,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "LK Mole Fraction in Bottoms", sc.m_lightkeymolarfrac,
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               sc.m_lightkeymolarfrac = Double.Parse(arg3.Text.ToString());
+                               sc.m_lightkeymolarfrac = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -791,10 +836,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "HK Mole Fraction in Distillate", sc.m_heavykeymolarfrac,
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               sc.m_heavykeymolarfrac = Double.Parse(arg3.Text.ToString());
+                               sc.m_heavykeymolarfrac = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -802,14 +847,14 @@ namespace DWSIM.UI.Desktop.Editors
                            }
                        }, () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container,
-                                                 SimObject.GetPropertyDescription("HK Mole Fraction in Bottoms"));
+                                                 SimObject.GetPropertyDescription("HK Mole Fraction in Distillate"));
                     s.CreateAndAddTextBoxRow(container, nf, "Reflux Ratio", sc.m_refluxratio,
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               sc.m_refluxratio = Double.Parse(arg3.Text.ToString());
+                               sc.m_refluxratio = arg3.Text.ToString().ParseExpressionToDouble();
                            }
                            else
                            {
@@ -821,10 +866,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Condenser Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, sc.m_condenserpressure),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               sc.m_condenserpressure = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                               sc.m_condenserpressure = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -836,10 +881,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Reboiler Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, sc.m_boilerpressure),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               sc.m_boilerpressure = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                               sc.m_boilerpressure = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -903,6 +948,9 @@ namespace DWSIM.UI.Desktop.Editors
                         case HeatExchangerCalcMode.PinchPoint:
                             pos7 = 7;
                             break;
+                        case HeatExchangerCalcMode.ThermalEfficiency:
+                            pos7 = 8;
+                            break;
                     }
 
                     s.CreateAndAddDropDownRow(container, "Calculation Mode", StringResources.hxcalcmode().ToList(), pos7, (DropDown arg3, EventArgs ev) =>
@@ -933,6 +981,9 @@ namespace DWSIM.UI.Desktop.Editors
                             case 7:
                                 hx.CalculationMode = HeatExchangerCalcMode.PinchPoint;
                                 break;
+                            case 8:
+                                hx.CalculationMode = HeatExchangerCalcMode.ThermalEfficiency;
+                                break;
                         }
                     }, () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container,
@@ -948,6 +999,7 @@ namespace DWSIM.UI.Desktop.Editors
                     strdescr.AppendLine("Shell and Tube (Rating): Exchanger Geometry (input on separate window)");
                     strdescr.AppendLine("Shell and Tube (Design): Outlet Temperatures and Exchanger Geometry (input on separate tab)");
                     strdescr.AppendLine("Pinch Point: Overall HTC and MITA");
+                    strdescr.AppendLine("Thermal Efficiency: HX Efficiency and Overall HTC");
                     strdescr.AppendLine("*Pressure drop is required for both fluids except for Shell and Tube Rating mode.");
 
                     s.CreateAndAddDescriptionRow(container, strdescr.ToString());
@@ -1003,10 +1055,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (Hot Fluid) (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, hx.HotSidePressureDrop),
                                (TextBox arg3, EventArgs ev2) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       hx.HotSidePressureDrop = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       hx.HotSidePressureDrop = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1018,10 +1070,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (Cold Fluid) (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, hx.ColdSidePressureDrop),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       hx.ColdSidePressureDrop = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       hx.ColdSidePressureDrop = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1033,10 +1085,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (Cold Fluid) (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, hx.ColdSideOutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.ColdSideOutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               hx.ColdSideOutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1048,10 +1100,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (Hot Fluid) (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, hx.HotSideOutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.HotSideOutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               hx.HotSideOutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1063,10 +1115,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Overall HTC (" + su.heat_transf_coeff + ")", cv.ConvertFromSI(su.heat_transf_coeff, hx.OverallCoefficient.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.OverallCoefficient = cv.ConvertToSI(su.heat_transf_coeff, Double.Parse(arg3.Text.ToString()));
+                               hx.OverallCoefficient = cv.ConvertToSI(su.heat_transf_coeff, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1078,10 +1130,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Heat Exchange Area (" + su.area + ")", cv.ConvertFromSI(su.heat_transf_coeff, hx.Area.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.Area = cv.ConvertToSI(su.area, Double.Parse(arg3.Text.ToString()));
+                               hx.Area = cv.ConvertToSI(su.area, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1093,10 +1145,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Heat Exchanged (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, hx.Q.GetValueOrDefault()),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.Q = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                               hx.Q = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1108,10 +1160,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Heat Loss (" + su.heatflow + ")", cv.ConvertFromSI(su.heatflow, hx.HeatLoss),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.HeatLoss = cv.ConvertToSI(su.heatflow, Double.Parse(arg3.Text.ToString()));
+                               hx.HeatLoss = cv.ConvertToSI(su.heatflow, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1121,10 +1173,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Minimum Temperature Difference (" + su.deltaT + ")", cv.ConvertFromSI(su.deltaT, hx.MITA),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               hx.MITA = cv.ConvertToSI(su.deltaT, Double.Parse(arg3.Text.ToString()));
+                               hx.MITA = cv.ConvertToSI(su.deltaT, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1133,6 +1185,19 @@ namespace DWSIM.UI.Desktop.Editors
                        }, () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container,
                                                  SimObject.GetPropertyDescription("MITA"));
+                    s.CreateAndAddTextBoxRow(container, nf, "Heat Transfer Efficiency (%)", hx.ThermalEfficiency,
+                       (TextBox arg3, EventArgs ev) =>
+                       {
+                           if (arg3.Text.IsValidDoubleExpression())
+                           {
+                               arg3.TextColor = (SystemColors.ControlText);
+                               hx.ThermalEfficiency = arg3.Text.ToString().ParseExpressionToDouble();
+                           }
+                           else
+                           {
+                               arg3.TextColor = (Colors.Red);
+                           }
+                       }, () => CallSolverIfNeeded());
                     s.CreateAndAddCheckBoxRow(container, "Ignore LMTD Error", hx.IgnoreLMTDError, (sender, e) => { hx.IgnoreLMTDError = sender.Checked.GetValueOrDefault(); });
                     s.CreateAndAddDescriptionRow(container,
                     SimObject.GetPropertyDescription("Ignore LMTD Error"));
@@ -1176,10 +1241,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, reactor.OutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               reactor.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               reactor.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1191,10 +1256,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, reactor.DeltaP.GetValueOrDefault()),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       reactor.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1243,10 +1308,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, reactor2.OutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               reactor2.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               reactor2.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1258,10 +1323,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, reactor2.DeltaP.GetValueOrDefault()),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor2.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       reactor2.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1274,12 +1339,12 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddDescriptionRow(container, "Tune the following parameters if you're having convergence issues.");
                     s.CreateAndAddCheckBoxRow(container, "Initialize Reaction Extents with Previous Values", reactor2.UsePreviousReactionExtents, (sender, e) => reactor2.UsePreviousReactionExtents = sender.Checked.GetValueOrDefault(), () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container, "This will use the reaction extents from a previous solution to initialize the next calculation.");
-                    s.CreateAndAddTextBoxRow(container, nf, "Reaction Extents Initializer", reactor2.ReactionExtentsInitializer, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2.ReactionExtentsInitializer = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Reaction Extents Initializer", reactor2.ReactionExtentsInitializer, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2.ReactionExtentsInitializer = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
                     s.CreateAndAddDescriptionRow(container, "Useful for a first estimate when a previous solution is not available and/or 'Initialize with Previous Values' is disabled. Enter a value between 0.0 and 1.0.");
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Internal Iterations", reactor2.InternalLoopMaximumIterations, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2.InternalLoopMaximumIterations = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum External Iterations", reactor2.ExternalLoopMaximumIterations, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2.ExternalLoopMaximumIterations = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for Internal Convergence Loop", reactor2.InternalLoopTolerance, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2.InternalLoopTolerance = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for External Convergence Loop", reactor2.ExternalLoopTolerance, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2.ExternalLoopTolerance = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Internal Iterations", reactor2.InternalLoopMaximumIterations, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2.InternalLoopMaximumIterations = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum External Iterations", reactor2.ExternalLoopMaximumIterations, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2.ExternalLoopMaximumIterations = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for Internal Convergence Loop", reactor2.InternalLoopTolerance, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2.InternalLoopTolerance = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for External Convergence Loop", reactor2.ExternalLoopTolerance, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2.ExternalLoopTolerance = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
                     break;
                 case ObjectType.RCT_Gibbs:
                     var reactor2g = (Reactor_Gibbs)SimObject;
@@ -1316,10 +1381,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, reactor2g.OutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               reactor2g.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               reactor2g.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1331,10 +1396,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, reactor2g.DeltaP.GetValueOrDefault()),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor2g.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       reactor2g.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1442,14 +1507,15 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddLabelRow(container, "Damping Factor");
                     s.CreateAndAddDescriptionRow(container, "Tune the following parameters if you're having convergence issues.");
                     s.CreateAndAddCheckBoxRow(container, "Use Damping Factor", reactor2g.EnableDamping, (sender, e) => reactor2g.EnableDamping = sender.Checked.GetValueOrDefault(), () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Damping Factor Minimum Value", reactor2g.DampingLowerLimit, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2g.DampingLowerLimit = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Damping Factor Maximum Value", reactor2g.DampingUpperLimit, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2g.DampingUpperLimit = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Damping Factor Minimum Value", reactor2g.DampingLowerLimit, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.DampingLowerLimit = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Damping Factor Maximum Value", reactor2g.DampingUpperLimit, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.DampingUpperLimit = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
                     s.CreateAndAddLabelRow(container, "Convergence Parameters");
                     s.CreateAndAddDescriptionRow(container, "Tune the following parameters if you're having convergence issues.");
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Internal Iterations", reactor2g.MaximumInternalIterations, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2g.MaximumInternalIterations  = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum External Iterations", reactor2g.MaximumExternalIterations, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2g.MaximumExternalIterations = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for Internal Convergence Loop", reactor2g.InternalTolerance, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2g.InternalTolerance = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for External Convergence Loop", reactor2g.ExternalTolerance, (sender, e) => { if (sender.Text.IsValidDouble()) reactor2g.ExternalTolerance = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Internal Iterations", reactor2g.MaximumInternalIterations, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.MaximumInternalIterations  = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum External Iterations", reactor2g.MaximumExternalIterations, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.MaximumExternalIterations = int.Parse(sender.Text); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for Internal Convergence Loop", reactor2g.InternalTolerance, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.InternalTolerance = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Maximum Error for External Convergence Loop", reactor2g.ExternalTolerance, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.ExternalTolerance = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Numerical Derivative Perturbation", reactor2g.DerivativePerturbation, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) reactor2g.DerivativePerturbation = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
                     break;
                 case ObjectType.RCT_CSTR:
                     var reactor3 = (Reactor_CSTR)SimObject;
@@ -1490,10 +1556,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, reactor3.OutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               reactor3.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               reactor3.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1505,10 +1571,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, reactor3.DeltaP.GetValueOrDefault()),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor3.DeltaP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                       reactor3.DeltaP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1520,10 +1586,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Reactor Volume (" + su.volume + ")", cv.ConvertFromSI(su.volume, reactor3.Volume),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor3.Volume = cv.ConvertToSI(su.volume, Double.Parse(arg3.Text.ToString()));
+                                       reactor3.Volume = cv.ConvertToSI(su.volume, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1535,10 +1601,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Catalyst Amount (" + su.mass + ")", cv.ConvertFromSI(su.mass, reactor3.CatalystAmount),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor3.CatalystAmount = cv.ConvertToSI(su.mass, Double.Parse(arg3.Text.ToString()));
+                                       reactor3.CatalystAmount = cv.ConvertToSI(su.mass, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1587,10 +1653,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, reactor4.OutletTemperature),
                        (TextBox arg3, EventArgs ev) =>
                        {
-                           if (Double.TryParse(arg3.Text.ToString(), out val))
+                           if (arg3.Text.IsValidDoubleExpression())
                            {
                                arg3.TextColor = (SystemColors.ControlText);
-                               reactor4.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                               reactor4.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                            }
                            else
                            {
@@ -1602,10 +1668,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Reactor Volume (" + su.volume + ")", cv.ConvertFromSI(su.volume, reactor4.Volume),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor4.Volume = cv.ConvertToSI(su.volume, Double.Parse(arg3.Text.ToString()));
+                                       reactor4.Volume = cv.ConvertToSI(su.volume, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1617,10 +1683,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Reactor Length (" + su.distance + ")", cv.ConvertFromSI(su.distance, reactor4.Length),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor4.Length = cv.ConvertToSI(su.distance, Double.Parse(arg3.Text.ToString()));
+                                       reactor4.Length = cv.ConvertToSI(su.distance, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1632,10 +1698,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Catalyst Loading (" + su.density + ")", cv.ConvertFromSI(su.volume, reactor4.CatalystLoading),
                                (TextBox arg3, EventArgs ev) =>
                                {
-                                   if (Double.TryParse(arg3.Text.ToString(), out val))
+                                   if (arg3.Text.IsValidDoubleExpression())
                                    {
                                        arg3.TextColor = (SystemColors.ControlText);
-                                       reactor4.CatalystLoading = cv.ConvertToSI(su.density, Double.Parse(arg3.Text.ToString()));
+                                       reactor4.CatalystLoading = cv.ConvertToSI(su.density, arg3.Text.ToString().ParseExpressionToDouble());
                                    }
                                    else
                                    {
@@ -1647,10 +1713,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Catalyst Diameter (" + su.diameter + ")", cv.ConvertFromSI(su.diameter, reactor4.CatalystParticleDiameter),
                               (TextBox arg3, EventArgs ev) =>
                               {
-                                  if (Double.TryParse(arg3.Text.ToString(), out val))
+                                  if (arg3.Text.IsValidDoubleExpression())
                                   {
                                       arg3.TextColor = (SystemColors.ControlText);
-                                      reactor4.CatalystParticleDiameter = cv.ConvertToSI(su.diameter, Double.Parse(arg3.Text.ToString()));
+                                      reactor4.CatalystParticleDiameter = cv.ConvertToSI(su.diameter, arg3.Text.ToString().ParseExpressionToDouble());
                                   }
                                   else
                                   {
@@ -1662,10 +1728,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Catalyst Void Fraction", reactor4.CatalystVoidFraction,
                              (TextBox arg3, EventArgs ev) =>
                              {
-                                 if (Double.TryParse(arg3.Text.ToString(), out val))
+                                 if (arg3.Text.IsValidDoubleExpression())
                                  {
                                      arg3.TextColor = (SystemColors.ControlText);
-                                     reactor4.CatalystVoidFraction = Double.Parse(arg3.Text.ToString());
+                                     reactor4.CatalystVoidFraction = arg3.Text.ToString().ParseExpressionToDouble();
                                  }
                                  else
                                  {
@@ -1731,10 +1797,10 @@ namespace DWSIM.UI.Desktop.Editors
                         s.CreateAndAddTextBoxRow(container, nf, cs.ComponentID + " Separation Spec Value", cs.SpecValue,
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        cs.SpecValue = Double.Parse(arg3.Text.ToString());
+                                        cs.SpecValue = arg3.Text.ToString().ParseExpressionToDouble();
                                     }
                                     else
                                     {
@@ -1783,10 +1849,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Split Ratio Stream 1", (double)splitter.Ratios[0],
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        splitter.Ratios[0] = Double.Parse(arg3.Text.ToString());
+                                        splitter.Ratios[0] = arg3.Text.ToString().ParseExpressionToDouble();
                                     }
                                     else
                                     {
@@ -1798,10 +1864,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Split Ratio Stream 2", (double)splitter.Ratios[1],
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        splitter.Ratios[1] = Double.Parse(arg3.Text.ToString());
+                                        splitter.Ratios[1] = arg3.Text.ToString().ParseExpressionToDouble();
                                     }
                                     else
                                     {
@@ -1813,10 +1879,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Split Ratio Stream 3", (double)splitter.Ratios[2],
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        splitter.Ratios[2] = Double.Parse(arg3.Text.ToString());
+                                        splitter.Ratios[2] = arg3.Text.ToString().ParseExpressionToDouble();
                                     }
                                     else
                                     {
@@ -1834,19 +1900,19 @@ namespace DWSIM.UI.Desktop.Editors
                     {
                         sm1 = cv.ConvertFromSI(su.molarflow, splitter.StreamFlowSpec);
                     }
-                    s.CreateAndAddTextBoxRow(container, nf, "Stream 1 Mass/Mole Flow Spec (" + su.massflow + "|" + su.molarflow + ")", sm1,
+                    s.CreateAndAddTextBoxRow(container, nf, "S1 Flow (" + su.massflow + "|" + su.molarflow + ")", sm1,
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
                                         if (splitter.OperationMode == DWSIM.UnitOperations.UnitOperations.Splitter.OpMode.StreamMassFlowSpec)
                                         {
-                                            splitter.StreamFlowSpec = cv.ConvertToSI(su.massflow, Double.Parse(arg3.Text.ToString()));
+                                            splitter.StreamFlowSpec = cv.ConvertToSI(su.massflow, arg3.Text.ToString().ParseExpressionToDouble());
                                         }
                                         else
                                         {
-                                            splitter.StreamFlowSpec = cv.ConvertToSI(su.molarflow, Double.Parse(arg3.Text.ToString()));
+                                            splitter.StreamFlowSpec = cv.ConvertToSI(su.molarflow, arg3.Text.ToString().ParseExpressionToDouble());
                                         }
                                     }
                                     else
@@ -1865,19 +1931,19 @@ namespace DWSIM.UI.Desktop.Editors
                     {
                         sm2 = cv.ConvertFromSI(su.molarflow, splitter.Stream2FlowSpec);
                     }
-                    s.CreateAndAddTextBoxRow(container, nf, "Stream 2 Mass/Mole Flow Spec (" + su.massflow + "|" + su.molarflow + ")", sm2,
+                    s.CreateAndAddTextBoxRow(container, nf, "S2 Flow (" + su.massflow + "|" + su.molarflow + ")", sm2,
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
                                         if (splitter.OperationMode == DWSIM.UnitOperations.UnitOperations.Splitter.OpMode.StreamMassFlowSpec)
                                         {
-                                            splitter.Stream2FlowSpec = cv.ConvertToSI(su.massflow, Double.Parse(arg3.Text.ToString()));
+                                            splitter.Stream2FlowSpec = cv.ConvertToSI(su.massflow, arg3.Text.ToString().ParseExpressionToDouble());
                                         }
                                         else
                                         {
-                                            splitter.Stream2FlowSpec = cv.ConvertToSI(su.molarflow, Double.Parse(arg3.Text.ToString()));
+                                            splitter.Stream2FlowSpec = cv.ConvertToSI(su.molarflow, arg3.Text.ToString().ParseExpressionToDouble());
                                         }
                                     }
                                     else
@@ -1923,10 +1989,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, pipe.OutletPressure),
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        pipe.OutletPressure = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                                        pipe.OutletPressure = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                                     }
                                     else
                                     {
@@ -1938,10 +2004,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Outlet Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, pipe.OutletTemperature),
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        pipe.OutletTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                                        pipe.OutletTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                                     }
                                     else
                                     {
@@ -1953,10 +2019,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Pressure Convergence Tolerance (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, pipe.TolP),
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        pipe.TolP = cv.ConvertToSI(su.deltaP, Double.Parse(arg3.Text.ToString()));
+                                        pipe.TolP = cv.ConvertToSI(su.deltaP, arg3.Text.ToString().ParseExpressionToDouble());
                                     }
                                     else
                                     {
@@ -1968,10 +2034,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Temperature Convergence Tolerance (" + su.deltaT + ")", cv.ConvertFromSI(su.deltaT, pipe.TolT),
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        pipe.TolT = cv.ConvertToSI(su.deltaT, Double.Parse(arg3.Text.ToString()));
+                                        pipe.TolT = cv.ConvertToSI(su.deltaT, arg3.Text.ToString().ParseExpressionToDouble());
                                     }
                                     else
                                     {
@@ -1998,10 +2064,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Separation Pressure (" + su.pressure + ")", cv.ConvertFromSI(su.pressure, vessel.FlashPressure),
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        vessel.FlashPressure = cv.ConvertToSI(su.pressure, Double.Parse(arg3.Text.ToString()));
+                                        vessel.FlashPressure = cv.ConvertToSI(su.pressure, arg3.Text.ToString().ParseExpressionToDouble());
                                     }
                                     else
                                     {
@@ -2019,10 +2085,10 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddTextBoxRow(container, nf, "Separation Temperature (" + su.temperature + ")", cv.ConvertFromSI(su.temperature, vessel.FlashTemperature),
                                 (TextBox arg3, EventArgs ev) =>
                                 {
-                                    if (Double.TryParse(arg3.Text.ToString(), out val))
+                                    if (arg3.Text.IsValidDoubleExpression())
                                     {
                                         arg3.TextColor = (SystemColors.ControlText);
-                                        vessel.FlashTemperature = cv.ConvertToSI(su.temperature, Double.Parse(arg3.Text.ToString()));
+                                        vessel.FlashTemperature = cv.ConvertToSI(su.temperature, arg3.Text.ToString().ParseExpressionToDouble());
                                     }
                                     else
                                     {
@@ -2032,13 +2098,13 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddDescriptionRow(container,
                                                  SimObject.GetPropertyDescription("Separation Temperature"));
                     s.CreateAndAddLabelRow(container, "Sizing Parameters");
-                    s.CreateAndAddTextBoxRow(container, nf, "Length/Height over Diameter Ratio", vessel.DimensionRatio, (sender, e) => { if (sender.Text.IsValidDouble()) vessel.DimensionRatio = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Surge Factor", vessel.SurgeFactor, (sender, e) => { if (sender.Text.IsValidDouble()) vessel.SurgeFactor = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Liquid Residence Time (" + su.time + ")", cv.ConvertFromSI(su.time, vessel.ResidenceTime), (sender, e) => { if (sender.Text.IsValidDouble()) vessel.DimensionRatio = cv.ConvertToSI(su.time, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Length/Height over Diameter Ratio", vessel.DimensionRatio, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) vessel.DimensionRatio = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Surge Factor", vessel.SurgeFactor, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) vessel.SurgeFactor = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Liquid Residence Time (" + su.time + ")", cv.ConvertFromSI(su.time, vessel.ResidenceTime), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) vessel.DimensionRatio = cv.ConvertToSI(su.time, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
                     break;
                 case ObjectType.CustomUO:
                     var scriptuo = (CustomUO)SimObject;
-                    s.CreateAndAddDropDownRow(container, "Python Interpreter", new List<string> { "IronPython", "Python.NET (Python 2.7)" }, (int)scriptuo.ExecutionEngine, (sender, e) => scriptuo.ExecutionEngine = (DWSIM.UnitOperations.UnitOperations.CustomUO.PythonExecutionEngine)sender.SelectedIndex);
+                    s.CreateAndAddDropDownRow(container, "Python Interpreter", new List<string> { "IronPython", "Python.NET" }, (int)scriptuo.ExecutionEngine, (sender, e) => scriptuo.ExecutionEngine = (DWSIM.UnitOperations.UnitOperations.CustomUO.PythonExecutionEngine)sender.SelectedIndex);
                     break;
                 case ObjectType.ExcelUO:
                     var exceluo = (ExcelUO)SimObject;
@@ -2094,19 +2160,19 @@ namespace DWSIM.UI.Desktop.Editors
                     s.CreateAndAddLabelRow(container, "Input Parameters");
                     foreach (var par in exceluo.InputParams.Values)
                     {
-                        s.CreateAndAddTextBoxRow(container, nf, par.Name + " (" + par.Unit + ")", par.Value, (sender, e) => { if (sender.Text.IsValidDouble()) par.Value = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
+                        s.CreateAndAddTextBoxRow(container, nf, par.Name + " (" + par.Unit + ")", par.Value, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) par.Value = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
                     }
                     break;
                 case ObjectType.Filter:
                     var filter = (Filter)SimObject;
                     s.CreateAndAddDropDownRow(container, "Calculation Mode", new List<string> { "Sizing", "Evaluation" }, (int)filter.CalcMode, (sender, e) => filter.CalcMode = (Filter.CalculationMode)sender.SelectedIndex);
-                    s.CreateAndAddTextBoxRow(container, nf, "Medium Resistance (" + su.mediumresistance + ")", cv.ConvertFromSI(su.mediumresistance, filter.FilterMediumResistance), (sender, e) => { if (sender.Text.IsValidDouble()) filter.FilterMediumResistance = cv.ConvertToSI(su.mediumresistance, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Cake Resistance (" + su.mediumresistance + ")", cv.ConvertFromSI(su.mediumresistance, filter.SpecificCakeResistance), (sender, e) => { if (sender.Text.IsValidDouble()) filter.SpecificCakeResistance = cv.ConvertToSI(su.mediumresistance, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Cycle Time (" + su.time + ")", cv.ConvertFromSI(su.time, filter.FilterCycleTime), (sender, e) => { if (sender.Text.IsValidDouble()) filter.FilterCycleTime = cv.ConvertToSI(su.time, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Total Filtering Area (" + su.area + ")", cv.ConvertFromSI(su.area, filter.TotalFilterArea), (sender, e) => { if (sender.Text.IsValidDouble()) filter.TotalFilterArea = cv.ConvertToSI(su.area, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, filter.PressureDrop), (sender, e) => { if (sender.Text.IsValidDouble()) filter.PressureDrop = cv.ConvertToSI(su.deltaP, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Cake Humidity (%)", filter.CakeRelativeHumidity, (sender, e) => { if (sender.Text.IsValidDouble()) filter.CakeRelativeHumidity = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
-                    s.CreateAndAddTextBoxRow(container, nf, "Submerged Fraction", filter.SubmergedAreaFraction, (sender, e) => { if (sender.Text.IsValidDouble()) filter.SubmergedAreaFraction = sender.Text.ToDoubleFromCurrent(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Medium Resistance (" + su.mediumresistance + ")", cv.ConvertFromSI(su.mediumresistance, filter.FilterMediumResistance), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.FilterMediumResistance = cv.ConvertToSI(su.mediumresistance, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Cake Resistance (" + su.mediumresistance + ")", cv.ConvertFromSI(su.mediumresistance, filter.SpecificCakeResistance), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.SpecificCakeResistance = cv.ConvertToSI(su.mediumresistance, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Cycle Time (" + su.time + ")", cv.ConvertFromSI(su.time, filter.FilterCycleTime), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.FilterCycleTime = cv.ConvertToSI(su.time, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Total Filtering Area (" + su.area + ")", cv.ConvertFromSI(su.area, filter.TotalFilterArea), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.TotalFilterArea = cv.ConvertToSI(su.area, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Pressure Drop (" + su.deltaP + ")", cv.ConvertFromSI(su.deltaP, filter.PressureDrop), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.PressureDrop = cv.ConvertToSI(su.deltaP, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Cake Humidity (%)", filter.CakeRelativeHumidity, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.CakeRelativeHumidity = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Submerged Fraction", filter.SubmergedAreaFraction, (sender, e) => { if (sender.Text.IsValidDoubleExpression()) filter.SubmergedAreaFraction = sender.Text.ParseExpressionToDouble(); }, () => CallSolverIfNeeded());
                     break;
                 case ObjectType.FlowsheetUO:
                     var fsuo = (Flowsheet)SimObject;
@@ -2144,9 +2210,9 @@ namespace DWSIM.UI.Desktop.Editors
                             var units = fsuo.Fsheet.SimulationObjects[item.Value.ObjectID].GetPropertyUnit(item.Value.ObjectProperty, su);
                             s.CreateAndAddTextBoxRow(container, nf, name + " (" + units + ")", value, (sender, e) =>
                             {
-                                if (sender.Text.IsValidDouble())
+                                if (sender.Text.IsValidDoubleExpression())
                                 {
-                                    fsuo.Fsheet.SimulationObjects[item.Value.ObjectID].SetPropertyValue(item.Value.ObjectProperty, sender.Text.ToDoubleFromCurrent(), su);
+                                    fsuo.Fsheet.SimulationObjects[item.Value.ObjectID].SetPropertyValue(item.Value.ObjectProperty, sender.Text.ParseExpressionToDouble(), su);
                                 };
                             }, () => CallSolverIfNeeded());
                         }
@@ -2154,7 +2220,7 @@ namespace DWSIM.UI.Desktop.Editors
                     break;
                 case ObjectType.Tank:
                     var tank = (Tank)SimObject;
-                    s.CreateAndAddTextBoxRow(container, nf, "Volume (" + su.volume + ")", cv.ConvertFromSI(su.volume, tank.Volume), (sender, e) => { if (sender.Text.IsValidDouble()) tank.Volume = cv.ConvertToSI(su.volume, sender.Text.ToDoubleFromCurrent()); }, () => CallSolverIfNeeded());
+                    s.CreateAndAddTextBoxRow(container, nf, "Volume (" + su.volume + ")", cv.ConvertFromSI(su.volume, tank.Volume), (sender, e) => { if (sender.Text.IsValidDoubleExpression()) tank.Volume = cv.ConvertToSI(su.volume, sender.Text.ParseExpressionToDouble()); }, () => CallSolverIfNeeded());
                     break;
                 case ObjectType.OrificePlate:
                     var op = (OrificePlate)SimObject;
@@ -2162,13 +2228,13 @@ namespace DWSIM.UI.Desktop.Editors
                         op.OrifType = (UnitOperations.UnitOperations.OrificePlate.OrificeType)sender.SelectedIndex;
                     }, () => CallSolverIfNeeded());
                     s.CreateAndAddTextBoxRow(container, nf, "Orifice Diameter (" + su.diameter + ")", op.OrificeDiameter, (sender, e) => {
-                        if (sender.Text.IsValidDouble()) op.OrificeDiameter = sender.Text.ToDoubleFromCurrent();
+                        if (sender.Text.IsValidDoubleExpression()) op.OrificeDiameter = sender.Text.ParseExpressionToDouble();
                     }, () => CallSolverIfNeeded());
                     s.CreateAndAddTextBoxRow(container, nf, "Internal Pipe Diameter (" + su.diameter + ")", op.InternalPipeDiameter, (sender, e) => {
-                        if (sender.Text.IsValidDouble()) op.InternalPipeDiameter = sender.Text.ToDoubleFromCurrent();
+                        if (sender.Text.IsValidDoubleExpression()) op.InternalPipeDiameter = sender.Text.ParseExpressionToDouble();
                     }, () => CallSolverIfNeeded());
                     s.CreateAndAddTextBoxRow(container, nf, "Correction Factor", op.CorrectionFactor, (sender, e) => {
-                        if (sender.Text.IsValidDouble()) op.CorrectionFactor = sender.Text.ToDoubleFromCurrent();
+                        if (sender.Text.IsValidDoubleExpression()) op.CorrectionFactor = sender.Text.ParseExpressionToDouble();
                     }, () => CallSolverIfNeeded());
                     break;
             }

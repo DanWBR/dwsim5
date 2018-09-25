@@ -6,7 +6,7 @@ Imports su = DWSIM.SharedClasses.SystemsOfUnits
 
 Public Class MaterialStreamEditor
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property MatStream As Streams.MaterialStream
 
@@ -36,7 +36,10 @@ Public Class MaterialStreamEditor
             TabPhaseComps.SelectedIndex = .CompoundsAmountSelectedTab
             TabCompoundPhaseProps.SelectedIndex = .CompoundsPropertySelectedTab
             TabPhaseProps.SelectedIndex = .PhasePropsSelectedTab
+            TabControlMain0.SelectedIndex = .MainSelectedTab0
         End With
+
+        rtbAnnotations.ToolbarVisible = True
 
     End Sub
 
@@ -60,7 +63,7 @@ Public Class MaterialStreamEditor
 
             chkActive.Checked = MatStream.GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -191,6 +194,10 @@ Public Class MaterialStreamEditor
             cbFlashAlg.Items.AddRange(flashalgos)
             If .PreferredFlashAlgorithmTag <> "" Then cbFlashAlg.SelectedItem = .PreferredFlashAlgorithmTag Else cbFlashAlg.SelectedIndex = 0
 
+            'compound amounts floating table
+
+            cbFloatingTableCompoundAmountBasis.SelectedIndex = MatStream.FloatingTableAmountBasis
+
             'annotation
 
             Try
@@ -205,8 +212,8 @@ Public Class MaterialStreamEditor
 
             If .Calculated Then
 
-                If Not TabControlMain.TabPages.Contains(TabPageResultsComp) Then TabControlMain.TabPages.Insert(1, TabPageResultsComp)
-                If Not TabControlMain.TabPages.Contains(TabPageResultsProps) Then TabControlMain.TabPages.Insert(2, TabPageResultsProps)
+                If Not TabControlMain.TabPages.Contains(TabPageResultsComp) Then TabControlMain.TabPages.Add(TabPageResultsComp)
+                If Not TabControlMain.TabPages.Contains(TabPageResultsProps) Then TabControlMain.TabPages.Add(TabPageResultsProps)
 
                 'result compositions
 
@@ -322,12 +329,12 @@ Public Class MaterialStreamEditor
 
             If .GraphicObject.InputConnectors(0).IsAttached Then
                 If .GraphicObject.InputConnectors(0).AttachedConnector.AttachedFrom.ObjectType = ObjectType.OT_Recycle Then
-                    TabPageInput.Enabled = True
+                    TabPageInputPane.Enabled = True
                 Else
-                    TabPageInput.Enabled = False
+                    TabPageInputPane.Enabled = False
                 End If
             Else
-                TabPageInput.Enabled = True
+                TabPageInputPane.Enabled = True
             End If
 
         End With
@@ -551,7 +558,7 @@ Public Class MaterialStreamEditor
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then MatStream.GraphicObject.Tag = lblTag.Text
         If Loaded Then MatStream.FlowSheet.UpdateOpenEditForms()
-        Me.Text = MatStream.GetDisplayName() & ": " & MatStream.GraphicObject.Tag
+        Me.Text = MatStream.GraphicObject.Tag & " (" & MatStream.GetDisplayName() & ")"
         DirectCast(MatStream.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
         lblTag.SelectionStart = Math.Max(0, lblTag.Text.Length)
@@ -612,7 +619,6 @@ Public Class MaterialStreamEditor
         For Each row As DataGridViewRow In gridInputComposition.Rows
             row.Cells(1).Value = row.Cells(1).Value / total
         Next
-        If Not committing Then ShowUncommittedChangesWarning(btnNormalizeInput)
     End Sub
 
     Private Sub btnEqualizeInput_Click(sender As Object, e As EventArgs) Handles btnEqualizeInput.Click
@@ -620,14 +626,12 @@ Public Class MaterialStreamEditor
         For Each row As DataGridViewRow In gridInputComposition.Rows
             row.Cells(1).Value = 1.0# / gridInputComposition.Rows.Count
         Next
-        ShowUncommittedChangesWarning(btnEqualizeInput)
     End Sub
 
     Private Sub btnEraseInput_Click(sender As Object, e As EventArgs) Handles btnEraseInput.Click
         For Each row As DataGridViewRow In gridInputComposition.Rows
             row.Cells(1).Value = 0.0#
         Next
-        ShowUncommittedChangesWarning(btnEraseInput)
     End Sub
 
     Private Sub btnCompAcceptChanges_Click(sender As Object, e As EventArgs) Handles btnCompAcceptChanges.Click
@@ -1008,43 +1012,43 @@ Public Class MaterialStreamEditor
 
             If sender Is tbTemp Then
                 oldvalue = .temperature.GetValueOrDefault
-                .temperature = Converter.ConvertToSI(cbUnitsT.SelectedItem.ToString, Double.Parse(tbTemp.Text))
+                .temperature = Converter.ConvertToSI(cbUnitsT.SelectedItem.ToString, tbTemp.Text.ParseExpressionToDouble)
                 newvalue = .temperature.GetValueOrDefault
                 propname = "PROP_MS_0"
             End If
             If sender Is tbPressure Then
                 oldvalue = .pressure.GetValueOrDefault
-                .pressure = Converter.ConvertToSI(cbUnitsP.SelectedItem.ToString, Double.Parse(tbPressure.Text))
+                .pressure = Converter.ConvertToSI(cbUnitsP.SelectedItem.ToString, tbPressure.Text.ParseExpressionToDouble)
                 newvalue = .pressure.GetValueOrDefault
                 propname = "PROP_MS_1"
             End If
             If sender Is tbMassFlow Then
                 oldvalue = .massflow.GetValueOrDefault
-                .massflow = Converter.ConvertToSI(cbUnitsW.SelectedItem.ToString, Double.Parse(tbMassFlow.Text))
+                .massflow = Converter.ConvertToSI(cbUnitsW.SelectedItem.ToString, tbMassFlow.Text.ParseExpressionToDouble)
                 newvalue = .massflow.GetValueOrDefault
                 propname = "PROP_MS_2"
             End If
             If sender Is tbMoleFlow Then
                 oldvalue = .molarflow.GetValueOrDefault
-                .molarflow = Converter.ConvertToSI(cbUnitsM.SelectedItem.ToString, Double.Parse(tbMoleFlow.Text))
+                .molarflow = Converter.ConvertToSI(cbUnitsM.SelectedItem.ToString, tbMoleFlow.Text.ParseExpressionToDouble)
                 newvalue = .molarflow.GetValueOrDefault
                 propname = "PROP_MS_3"
             End If
             If sender Is tbVolFlow Then
                 oldvalue = .volumetric_flow.GetValueOrDefault
-                .volumetric_flow = Converter.ConvertToSI(cbUnitsQ.SelectedItem.ToString, Double.Parse(tbVolFlow.Text))
+                .volumetric_flow = Converter.ConvertToSI(cbUnitsQ.SelectedItem.ToString, tbVolFlow.Text.ParseExpressionToDouble)
                 newvalue = .volumetric_flow.GetValueOrDefault
                 propname = "PROP_MS_4"
             End If
             If sender Is tbEnth Then
                 oldvalue = .enthalpy.GetValueOrDefault
-                .enthalpy = Converter.ConvertToSI(cbUnitsH.SelectedItem.ToString, Double.Parse(tbEnth.Text))
+                .enthalpy = Converter.ConvertToSI(cbUnitsH.SelectedItem.ToString, tbEnth.Text.ParseExpressionToDouble)
                 newvalue = .enthalpy.GetValueOrDefault
                 propname = "PROP_MS_7"
             End If
             If sender Is tbEntr Then
                 oldvalue = .entropy.GetValueOrDefault
-                .entropy = Converter.ConvertToSI(cbUnitsS.SelectedItem.ToString, Double.Parse(tbEntr.Text))
+                .entropy = Converter.ConvertToSI(cbUnitsS.SelectedItem.ToString, tbEntr.Text.ParseExpressionToDouble)
                 newvalue = .entropy.GetValueOrDefault
                 propname = "PROP_MS_8"
             End If
@@ -1053,17 +1057,17 @@ Public Class MaterialStreamEditor
 
         If sender Is tbFracSpec And rbSpecVapor.Checked Then
             oldvalue = MatStream.Phases(2).Properties.molarfraction.GetValueOrDefault
-            MatStream.Phases(2).Properties.molarfraction = Double.Parse(tbFracSpec.Text)
+            MatStream.Phases(2).Properties.molarfraction = tbFracSpec.Text.ParseExpressionToDouble
             newvalue = MatStream.Phases(2).Properties.molarfraction.GetValueOrDefault
             propname = "PROP_MS_27"
         ElseIf sender Is tbFracSpec And rbSpecLiquid.Checked Then
             oldvalue = 1.0# - MatStream.Phases(2).Properties.molarfraction.GetValueOrDefault
-            MatStream.Phases(2).Properties.molarfraction = 1.0# - Double.Parse(tbFracSpec.Text)
+            MatStream.Phases(2).Properties.molarfraction = 1.0# - tbFracSpec.Text.ParseExpressionToDouble
             newvalue = 1.0# - MatStream.Phases(2).Properties.molarfraction.GetValueOrDefault
             propname = "PROP_MS_27"
         ElseIf sender Is tbFracSpec And rbSpecSolid.Checked Then
             oldvalue = MatStream.Phases(7).Properties.molarfraction.GetValueOrDefault
-            MatStream.Phases(7).Properties.molarfraction = Double.Parse(tbFracSpec.Text)
+            MatStream.Phases(7).Properties.molarfraction = tbFracSpec.Text.ParseExpressionToDouble
             newvalue = MatStream.Phases(7).Properties.molarfraction.GetValueOrDefault
             propname = "PROP_MS_146"
         End If
@@ -1075,7 +1079,7 @@ Public Class MaterialStreamEditor
                                                                 .PropertyName = propname,
                                                                 .Tag = MatStream.FlowSheet.FlowsheetOptions.SelectedUnitSystem,
                                                                 .Name = String.Format(MatStream.FlowSheet.GetTranslatedString("UndoRedo_FlowsheetObjectPropertyChanged"), MatStream.GraphicObject.Tag, MatStream.FlowSheet.GetTranslatedString(.PropertyName), .OldValue, .NewValue)})
-        
+
         RequestCalc()
 
     End Sub
@@ -1106,16 +1110,10 @@ Public Class MaterialStreamEditor
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red
-        End If
-
-        If Loaded Then
-            ToolTip1.ToolTipTitle = MatStream.FlowSheet.GetTranslatedString("Informao")
-            ToolTip1.ToolTipIcon = ToolTipIcon.Info
-            ToolTip1.Show(MatStream.FlowSheet.GetTranslatedString("CommitChanges"), tbox, 0, tbox.Height + 4, 2000)
         End If
 
     End Sub
@@ -1129,10 +1127,6 @@ Public Class MaterialStreamEditor
         UpdateCompBasis(cbCalculatedAmountsBasis, gridCompLiq2, MatStream.Phases(4))
         UpdateCompBasis(cbCalculatedAmountsBasis, gridCompSolid, MatStream.Phases(7))
 
-    End Sub
-
-    Private Sub gridInputComposition_CellEndEdit(sender As Object, e As DataGridViewCellEventArgs) Handles gridInputComposition.CellEndEdit
-        ShowUncommittedChangesWarning(lblInputAmount)
     End Sub
 
     Private Sub gridInputComposition_CellValueChanged(sender As Object, e As DataGridViewCellEventArgs) Handles gridInputComposition.CellValueChanged
@@ -1412,7 +1406,7 @@ Public Class MaterialStreamEditor
 
     Sub UpdateCompPropBasis(cb As ComboBox, grid As DataGridView, phase As Interfaces.IPhase)
 
-       
+
         Dim W, Q As Double, suffix As String = ""
         W = phase.Properties.massflow.GetValueOrDefault
         Q = phase.Properties.molarflow.GetValueOrDefault
@@ -1483,10 +1477,8 @@ Public Class MaterialStreamEditor
 
     End Sub
 
-    Private Sub ShowUncommittedChangesWarning(ctrl As Control)
-        ToolTip1.ToolTipTitle = MatStream.FlowSheet.GetTranslatedString("Ateno2")
-        ToolTip1.ToolTipIcon = ToolTipIcon.Warning
-        ToolTip1.Show(MatStream.FlowSheet.GetTranslatedString("CommitChangesWarning"), ctrl, 0, ctrl.Height + 4, 3000)
+    Private Sub cbFloatingTableCompoundAmountBasis_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cbFloatingTableCompoundAmountBasis.SelectedIndexChanged
+        MatStream.FloatingTableAmountBasis = cbFloatingTableCompoundAmountBasis.SelectedIndex
     End Sub
 
     Private Sub SaveViewState()

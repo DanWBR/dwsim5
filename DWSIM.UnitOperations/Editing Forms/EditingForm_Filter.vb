@@ -6,7 +6,7 @@ Imports DWSIM.UnitOperations.UnitOperations
 
 Public Class EditingForm_Filter
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As UnitOperations.Filter
 
@@ -36,7 +36,7 @@ Public Class EditingForm_Filter
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -159,7 +159,7 @@ Public Class EditingForm_Filter
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -383,7 +383,7 @@ Public Class EditingForm_Filter
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red
@@ -407,13 +407,13 @@ Public Class EditingForm_Filter
 
         Dim uobj = SimObject
 
-        If sender Is tbPressureDrop Then uobj.PressureDrop = su.Converter.ConvertToSI(cbPDrop.SelectedItem.ToString, tbPressureDrop.Text)
-        If sender Is tbCakeRelativeHumidity Then uobj.CakeRelativeHumidity = tbPressureDrop.Text
-        If sender Is tbSubmergedArea Then uobj.SubmergedAreaFraction = tbSubmergedArea.Text
-        If sender Is tbCakeResistance Then uobj.SpecificCakeResistance = su.Converter.ConvertToSI(cbCakeResistance.SelectedItem.ToString, tbCakeResistance.Text)
-        If sender Is tbCycleTime Then uobj.FilterCycleTime = su.Converter.ConvertToSI(cbCycleTime.SelectedItem.ToString, tbCycleTime.Text)
-        If sender Is tbFilterMediumResistance Then uobj.FilterMediumResistance = su.Converter.ConvertToSI(cbFilterResistance.SelectedItem.ToString, tbFilterMediumResistance.Text)
-        If sender Is tbTotalArea Then uobj.TotalFilterArea = su.Converter.ConvertToSI(cbArea.SelectedItem.ToString, tbTotalArea.Text)
+        If sender Is tbPressureDrop Then uobj.PressureDrop = su.Converter.ConvertToSI(cbPDrop.SelectedItem.ToString, tbPressureDrop.Text.ParseExpressionToDouble)
+        If sender Is tbCakeRelativeHumidity Then uobj.CakeRelativeHumidity = tbPressureDrop.Text.ParseExpressionToDouble
+        If sender Is tbSubmergedArea Then uobj.SubmergedAreaFraction = tbSubmergedArea.Text.ParseExpressionToDouble
+        If sender Is tbCakeResistance Then uobj.SpecificCakeResistance = su.Converter.ConvertToSI(cbCakeResistance.SelectedItem.ToString, tbCakeResistance.Text.ParseExpressionToDouble)
+        If sender Is tbCycleTime Then uobj.FilterCycleTime = su.Converter.ConvertToSI(cbCycleTime.SelectedItem.ToString, tbCycleTime.Text.ParseExpressionToDouble)
+        If sender Is tbFilterMediumResistance Then uobj.FilterMediumResistance = su.Converter.ConvertToSI(cbFilterResistance.SelectedItem.ToString, tbFilterMediumResistance.Text.ParseExpressionToDouble)
+        If sender Is tbTotalArea Then uobj.TotalFilterArea = su.Converter.ConvertToSI(cbArea.SelectedItem.ToString, tbTotalArea.Text.ParseExpressionToDouble)
 
         RequestCalc()
 

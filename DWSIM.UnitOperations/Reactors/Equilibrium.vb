@@ -34,7 +34,7 @@ Namespace Reactors
 
         Inherits Reactor
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_ReactorConvEqGibbs
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_ReactorConvEqGibbs
 
         Private _IObj As InspectorItem
 
@@ -215,6 +215,7 @@ Namespace Reactors
 
             Dim pp As PropertyPackages.PropertyPackage = Me.PropertyPackage
 
+
             i = 0
             For Each s As String In N.Keys
                 DN(s) = 0
@@ -226,6 +227,7 @@ Namespace Reactors
 
             For Each s As String In DN.Keys
                 N(s) = N0(s) + DN(s)
+                If N(s) < 0.0 Then N(s) = 0.0
             Next
 
             Dim fw(c), fm(c), sumfm, sum1, sumn, sumw As Double
@@ -338,9 +340,9 @@ Namespace Reactors
                 delta1 = con_val(i) - con_lc(i)
                 delta2 = con_val(i) - con_uc(i)
                 If delta1 < 0 Then
-                    pen_val += -delta1 * 1000000.0#
+                    pen_val += -delta1 * 1000000.0# * (i + 1) ^ 2
                 ElseIf delta2 > 1 Then
-                    pen_val += -delta2 * 1000000.0#
+                    pen_val += -delta2 * 1000000.0# * (i + 1) ^ 2
                 Else
                     pen_val += 0.0#
                 End If
@@ -355,7 +357,9 @@ Namespace Reactors
 #End Region
 
         Public Overrides Function CloneXML() As Object
-            Return New Reactor_Equilibrium().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Reactor_Equilibrium()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -765,6 +769,8 @@ Namespace Reactors
 
                 _IObj = IObj2
 
+                tms.Phases(0).Properties.temperature = T
+
                 g1 = FunctionValue2G(REx)
 
                 IObj2?.SetCurrent
@@ -811,7 +817,11 @@ Namespace Reactors
                     Next
 
                     'Heat released (or absorbed) (kJ/s = kW) (Ideal Gas)
-                    DHr += rx.ReactionHeat * Me.ReactionExtents(Me.Reactions(i)) * rx.Components(rx.BaseReactant).StoichCoeff / 1000
+                    If rx.Components(rx.BaseReactant).StoichCoeff > 0 Then
+                        DHr += -rx.ReactionHeat * Me.ReactionExtents(Me.Reactions(i)) * rx.Components(rx.BaseReactant).StoichCoeff / 1000
+                    Else
+                        DHr += rx.ReactionHeat * Me.ReactionExtents(Me.Reactions(i)) * rx.Components(rx.BaseReactant).StoichCoeff / 1000
+                    End If
 
                     i += 1
                 Loop Until i = Me.Reactions.Count
@@ -830,7 +840,7 @@ Namespace Reactors
                 Dim sum1 As Double = 0
                 For Each subst As Compound In tms.Phases(0).Compounds.Values
                     If subst.MoleFraction.GetValueOrDefault < 0 Then
-                        subst.MolarFlow = 0
+                        subst.MolarFlow = 0.0
                     Else
                         sum1 += subst.MolarFlow.GetValueOrDefault
                     End If
@@ -865,7 +875,7 @@ Namespace Reactors
 
                         If Math.Abs(T - TLast) < ExternalLoopTolerance Then CalcFinished = True
 
-                        T = 0.7 * TLast + 0.3 * T
+                        T = 0.9 * TLast + 0.1 * T
 
                         ims.Phases(0).Properties.temperature = T
 
@@ -1161,11 +1171,13 @@ Namespace Reactors
             If f Is Nothing Then
                 f = New EditingForm_ReactorConvEqGibbs With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_ReactorConvEqGibbs With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

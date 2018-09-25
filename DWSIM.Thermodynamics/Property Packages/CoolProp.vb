@@ -22,11 +22,12 @@ Imports DWSIM.MathOps.MathEx
 
 Imports System.Runtime.InteropServices
 Imports System.Linq
+Imports DWSIM.Interfaces.Enums
 
 Namespace PropertyPackages
 
 
-    <System.Runtime.InteropServices.Guid(CoolPropPropertyPackage.ClassId)> _
+    <System.Runtime.InteropServices.Guid(CoolPropPropertyPackage.ClassId)>
     <System.Serializable()> Public Class CoolPropPropertyPackage
 
         Inherits PropertyPackages.PropertyPackage
@@ -49,7 +50,6 @@ Namespace PropertyPackages
             GetListOfSupportedCompounds()
 
             With Me.Parameters
-                .Item("PP_IDEAL_MIXRULE_LIQDENS") = 1
                 .Item("PP_USEEXPLIQDENS") = 1
             End With
 
@@ -493,11 +493,11 @@ Namespace PropertyPackages
                                 WriteWarningMessage("CoolProp Warning: T and/or P is/are outside the valid range for calculation of Liquid Thermal Conductivity, compound " &
                           subst.ConstantProperties.Name & ". Extrapolating curve to obtain a value...")
                                 Dim x1, x2, x3, x4, x5, p1, p2, p3, p4, p5 As Double
-                                x1 = Tb * 0.98
-                                x2 = Tb * 0.94
-                                x3 = Tb * 0.92
-                                x4 = Tb * 0.86
-                                x5 = Tb * 0.8
+                                x1 = Tmin + (Tb - Tmin) * 0.9
+                                x2 = Tmin + (Tb - Tmin) * 0.8
+                                x3 = Tmin + (Tb - Tmin) * 0.7
+                                x4 = Tmin + (Tb - Tmin) * 0.6
+                                x5 = Tmin + (Tb - Tmin) * 0.5
                                 p1 = CoolProp.PropsSI("L", "T", x1, "P", P, GetCoolPropName(sub1))
                                 p2 = CoolProp.PropsSI("L", "T", x2, "P", P, GetCoolPropName(sub1))
                                 p3 = CoolProp.PropsSI("L", "T", x3, "P", P, GetCoolPropName(sub1))
@@ -547,7 +547,7 @@ Namespace PropertyPackages
 
             Dim val As Double
             Dim i As Integer
-            Dim Tmin, Tmax, Tc As Double
+            Dim Tmin, Tmax, Tc, Pmin, Pmax, Tb As Double
             Dim vk(Me.CurrentMaterialStream.Phases(0).Compounds.Count - 1) As Double
             i = 0
             For Each subst As Interfaces.ICompound In Me.CurrentMaterialStream.Phases(1).Compounds.Values
@@ -556,18 +556,39 @@ Namespace PropertyPackages
                     Tmin = CoolProp.Props1SI(GetCoolPropName(sub1), "TMIN")
                     Tmax = CoolProp.Props1SI(GetCoolPropName(sub1), "TMAX")
                     Tc = CoolProp.Props1SI(GetCoolPropName(sub1), "TCRIT")
-                    If T > Tmin And T <= Tmax And T <= Tc Then
+                    Pmin = CoolProp.Props1SI(GetCoolPropName(sub1), "PMIN")
+                    Pmax = CoolProp.Props1SI(GetCoolPropName(sub1), "PMAX")
+                    If P > Pmin And P < Pmax Then
+                        Tb = Me.AUX_TSATi(P, i)
+                        If T < Tb And Abs(T - Tb) > 0.01 And T > Tmin Then
+                            Try
+                                vk(i) = CoolProp.PropsSI("D", "T", T, "P", P, GetCoolPropName(sub1))
+                            Catch ex As Exception
+                                WriteWarningMessage(ex.Message.ToString & ". Estimating value using Rackett [Fluid: " & subst.ConstantProperties.Name & "]")
+                                vk(i) = Auxiliary.PROPS.liq_dens_rackett(T, subst.ConstantProperties.Critical_Temperature, subst.ConstantProperties.Critical_Pressure,
+                                                           subst.ConstantProperties.Acentric_Factor, subst.ConstantProperties.Molar_Weight)
+                            End Try
+                        Else
+                            Try
+                                vk(i) = CoolProp.PropsSI("D", "T", T, "Q", 0, GetCoolPropName(sub1))
+                            Catch ex As Exception
+                                WriteWarningMessage(ex.Message.ToString & ". Estimating value using Rackett [Fluid: " & subst.ConstantProperties.Name & "]")
+                                vk(i) = Auxiliary.PROPS.liq_dens_rackett(T, subst.ConstantProperties.Critical_Temperature, subst.ConstantProperties.Critical_Pressure,
+                                                           subst.ConstantProperties.Acentric_Factor, subst.ConstantProperties.Molar_Weight)
+                            End Try
+                        End If
+                    ElseIf T > Tmin And T <= Tmax And T <= Tc Then
                         Try
                             vk(i) = CoolProp.PropsSI("D", "T", T, "Q", 0, GetCoolPropName(sub1))
                         Catch ex As Exception
                             WriteWarningMessage(ex.Message.ToString & ". Estimating value using Rackett [Fluid: " & subst.ConstantProperties.Name & "]")
                             vk(i) = Auxiliary.PROPS.liq_dens_rackett(T, subst.ConstantProperties.Critical_Temperature, subst.ConstantProperties.Critical_Pressure,
-                                                           subst.ConstantProperties.Acentric_Factor, subst.ConstantProperties.Molar_Weight)
+                                                       subst.ConstantProperties.Acentric_Factor, subst.ConstantProperties.Molar_Weight)
                         End Try
                     Else
                         WriteWarningMessage("CoolProp Warning: unable to calculate Liquid Phase Density for " &
-                                                                              subst.ConstantProperties.Name & " at T = " & T & " K and P = " & P &
-                                                                              " Pa. Estimating value using Rackett...")
+                                                                          subst.ConstantProperties.Name & " at T = " & T & " K and P = " & P &
+                                                                          " Pa. Estimating value using Rackett...")
                         vk(i) = Auxiliary.PROPS.liq_dens_rackett(T, subst.ConstantProperties.Critical_Temperature, subst.ConstantProperties.Critical_Pressure,
                                                        subst.ConstantProperties.Acentric_Factor, subst.ConstantProperties.Molar_Weight)
                     End If
@@ -576,11 +597,12 @@ Namespace PropertyPackages
                     vk(i) = Auxiliary.PROPS.liq_dens_rackett(T, subst.ConstantProperties.Critical_Temperature, subst.ConstantProperties.Critical_Pressure,
                                                    subst.ConstantProperties.Acentric_Factor, subst.ConstantProperties.Molar_Weight)
                 End If
-                If Vx(i) <> 0.0# Then vk(i) = Vx(i) / vk(i)
+                If Vx(i) <> 0.0# Then vk(i) = Vx(i) / vk(i) Else vk(i) = 0.0
                 If Double.IsNaN(vk(i)) Or Double.IsInfinity(vk(i)) Then vk(i) = 0.0#
                 i = i + 1
             Next
             val = 1 / MathEx.Common.Sum(vk)
+            If Double.IsNaN(val) Or Double.IsInfinity(val) Then val = 0.0#
 
             IObj?.Paragraphs.Add(String.Format("<h2>Results</h2>"))
             IObj?.Paragraphs.Add(String.Format("Density: {0} kg/m3", val))
@@ -591,41 +613,8 @@ Namespace PropertyPackages
 
         Public Overrides Function AUX_LIQDENSi(subst As Interfaces.ICompound, T As Double) As Double
 
-            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
-            Dim routinename As String = ComponentName & String.Format(" (Liquid Density - {0})", subst.Name)
-            Inspector.Host.CheckAndAdd(IObj, "", "AUX_LIQDENSi", routinename, "", True)
-            _IObj = IObj
+            Return AUX_LIQDENSi(subst.ConstantProperties, T)
 
-            IObj?.Paragraphs.Add(String.Format("<h2>Input Parameters</h2>"))
-            IObj?.Paragraphs.Add(String.Format("Temperature: {0} K", T))
-
-            Dim sub1 = subst.ConstantProperties.Name
-            Dim Tmin, Tmax, Tc, val As Double
-            If IsCompoundSupported(sub1) Then
-                Tmin = CoolProp.Props1SI(GetCoolPropName(sub1), "TMIN")
-                Tmax = CoolProp.Props1SI(GetCoolPropName(sub1), "TMAX")
-                Tc = CoolProp.Props1SI(GetCoolPropName(sub1), "TCRIT")
-                If T > Tmin And T <= Tmax And T <= Tc Then
-                    Try
-                        val = CoolProp.PropsSI("D", "T", T, "Q", 0, GetCoolPropName(sub1)) / 1000
-                    Catch ex As Exception
-                        WriteWarningMessage(ex.Message.ToString & ". Estimating value... [Fluid: " & sub1 & "]")
-                        val = MyBase.AUX_LIQDENSi(subst, T)
-                    End Try
-                Else
-                    WriteWarningMessage("CoolProp Warning: unable to calculate Liquid Density for " & sub1 & " at T = " & T & " K. Estimating value...")
-                    val = MyBase.AUX_LIQDENSi(subst, T)
-                End If
-            Else
-                WriteWarningMessage("CoolProp Warning: compound " & sub1 & " not supported. Estimating Liquid Density value...")
-                val = MyBase.AUX_LIQDENSi(subst, T)
-            End If
-
-            IObj?.Paragraphs.Add(String.Format("<h2>Results</h2>"))
-            IObj?.Paragraphs.Add(String.Format("Density: {0} kg/m3", val))
-            IObj?.Close()
-
-            Return val
         End Function
 
         Public Overrides Function AUX_LIQTHERMCONDi(cprop As Interfaces.ICompoundConstantProperties, T As Double) As Double
@@ -667,7 +656,7 @@ Namespace PropertyPackages
             Return val
         End Function
 
-        Public Overrides Function AUX_LIQVISCi(sub1 As String, T As Double) As Object
+        Public Overrides Function AUX_LIQVISCi(sub1 As String, T As Double, P As Double) As Double
 
             Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
             Dim routinename As String = ComponentName & String.Format(" (Liquid Viscosity - {0})", sub1)
@@ -677,25 +666,34 @@ Namespace PropertyPackages
             IObj?.Paragraphs.Add(String.Format("<h2>Input Parameters</h2>"))
             IObj?.Paragraphs.Add(String.Format("Temperature: {0} K", T))
 
-            Dim Tmin, Tmax, Tc, val As Double
+            Dim Tmin, Tmax, Tc, Pmin, Pmax, Tb, val As Double
             If IsCompoundSupported(sub1) Then
                 Tmin = CoolProp.Props1SI(GetCoolPropName(sub1), "TMIN")
                 Tmax = CoolProp.Props1SI(GetCoolPropName(sub1), "TMAX")
                 Tc = CoolProp.Props1SI(GetCoolPropName(sub1), "TCRIT")
-                If T > Tmin And T <= Tmax And T <= Tc Then
-                    Try
-                        val = CoolProp.PropsSI("V", "T", T, "Q", 0, GetCoolPropName(sub1))
-                    Catch ex As Exception
-                        WriteWarningMessage(ex.Message.ToString & ". Estimating value... [Fluid: " & sub1 & "]")
-                        val = MyBase.AUX_LIQVISCi(sub1, T)
-                    End Try
-                Else
-                    WriteWarningMessage("CoolProp Warning: unable to calculate Liquid Viscosity for " & sub1 & " at T = " & T & " K. Estimating value...")
-                    val = MyBase.AUX_LIQVISCi(sub1, T)
+                Pmin = CoolProp.Props1SI(GetCoolPropName(sub1), "PMIN")
+                Pmax = CoolProp.Props1SI(GetCoolPropName(sub1), "PMAX")
+                If P > Pmin And P < Pmax Then
+                    Tb = Me.AUX_TSATi(P, sub1)
+                    If T < Tb And Abs(T - Tb) > 0.01 And T > Tmin Then
+                        Try
+                            val = CoolProp.PropsSI("V", "T", T, "P", P, GetCoolPropName(sub1))
+                        Catch ex As Exception
+                            WriteWarningMessage(ex.Message.ToString & ". Estimating value... [Fluid: " & sub1 & "]")
+                            val = MyBase.AUX_LIQVISCi(sub1, T, P)
+                        End Try
+                    Else
+                        Try
+                            val = CoolProp.PropsSI("V", "T", T, "Q", 0, GetCoolPropName(sub1))
+                        Catch ex As Exception
+                            WriteWarningMessage(ex.Message.ToString & ". Estimating value... [Fluid: " & sub1 & "]")
+                            val = MyBase.AUX_LIQVISCi(sub1, T, P)
+                        End Try
+                    End If
                 End If
             Else
                 WriteWarningMessage("CoolProp Warning: compound " & sub1 & " not supported. Estimating Liquid Viscosity value...")
-                val = MyBase.AUX_LIQVISCi(sub1, T)
+                val = MyBase.AUX_LIQVISCi(sub1, T, P)
             End If
 
             IObj?.Paragraphs.Add(String.Format("<h2>Results</h2>"))
@@ -931,32 +929,7 @@ Namespace PropertyPackages
 
         Public Overrides Function AUX_LIQDENS(ByVal T As Double, Optional ByVal P As Double = 0.0, Optional ByVal Pvp As Double = 0.0, Optional ByVal phaseid As Integer = 3, Optional ByVal FORCE_EOS As Boolean = False) As Double
 
-            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
-            Dim routinename As String = ComponentName & String.Format(" (Liquid Density)")
-            Inspector.Host.CheckAndAdd(IObj, "", "AUX_LIQDENS", routinename, "", True)
-            _IObj = IObj
-
-            IObj?.Paragraphs.Add(String.Format("<h2>Input Parameters</h2>"))
-            IObj?.Paragraphs.Add(String.Format("Temperature: {0} K", T))
-            IObj?.Paragraphs.Add(String.Format("Pressure: {0} Pa", P))
-
-            Dim val As Double
-            Dim i As Integer
-            Dim vk(Me.CurrentMaterialStream.Phases(0).Compounds.Count - 1) As Double
-            i = 0
-            For Each subst As Interfaces.ICompound In Me.CurrentMaterialStream.Phases(phaseid).Compounds.Values
-                vk(i) = subst.MassFraction.GetValueOrDefault / Me.AUX_LIQDENSi(subst.ConstantProperties, T)
-                If Double.IsNaN(vk(i)) Or Double.IsInfinity(vk(i)) Then vk(i) = 0.0#
-                i = i + 1
-            Next
-            val = 1 / MathEx.Common.Sum(vk)
-
-            IObj?.Paragraphs.Add(String.Format("<h2>Results</h2>"))
-            IObj?.Paragraphs.Add(String.Format("Density: {0} kg/m3", val))
-            IObj?.Close()
-
-
-            Return val
+            Return AUX_LIQDENS(T, RET_VMOL(RET_PHASECODE(phaseid)), P, Pvp, False)
 
         End Function
 
@@ -1091,11 +1064,11 @@ Namespace PropertyPackages
                                     WriteWarningMessage("CoolProp Warning: T and/or P is/are outside the valid range for calculation of Liquid Cp, compound " &
                                                            subst.ConstantProperties.Name & ". Extrapolating curve to obtain a value...")
                                     Dim x1, x2, x3, x4, x5, p1, p2, p3, p4, p5 As Double
-                                    x1 = Tb * 0.98
-                                    x2 = Tb * 0.94
-                                    x3 = Tb * 0.92
-                                    x4 = Tb * 0.86
-                                    x5 = Tb * 0.8
+                                    x1 = Tmin + (Tb - Tmin) * 0.9
+                                    x2 = Tmin + (Tb - Tmin) * 0.8
+                                    x3 = Tmin + (Tb - Tmin) * 0.7
+                                    x4 = Tmin + (Tb - Tmin) * 0.6
+                                    x5 = Tmin + (Tb - Tmin) * 0.5
                                     p1 = CoolProp.PropsSI("C", "T", x1, "P", P, GetCoolPropName(sub1)) / 1000
                                     p2 = CoolProp.PropsSI("C", "T", x2, "P", P, GetCoolPropName(sub1)) / 1000
                                     p3 = CoolProp.PropsSI("C", "T", x3, "P", P, GetCoolPropName(sub1)) / 1000
@@ -1209,11 +1182,11 @@ Namespace PropertyPackages
                                     WriteWarningMessage("CoolProp Warning: T and/or P is/are outside the valid range for calculation of Liquid Cv, compound " &
                                                          subst.ConstantProperties.Name & ". Extrapolating curve to obtain a value...")
                                     Dim x1, x2, x3, x4, x5, p1, p2, p3, p4, p5 As Double
-                                    x1 = Tb * 0.98
-                                    x2 = Tb * 0.94
-                                    x3 = Tb * 0.92
-                                    x4 = Tb * 0.86
-                                    x5 = Tb * 0.8
+                                    x1 = Tmin + (Tb - Tmin) * 0.9
+                                    x2 = Tmin + (Tb - Tmin) * 0.8
+                                    x3 = Tmin + (Tb - Tmin) * 0.7
+                                    x4 = Tmin + (Tb - Tmin) * 0.6
+                                    x5 = Tmin + (Tb - Tmin) * 0.5
                                     p1 = CoolProp.PropsSI("O", "T", x1, "P", P, GetCoolPropName(sub1)) / 1000
                                     p2 = CoolProp.PropsSI("O", "T", x2, "P", P, GetCoolPropName(sub1)) / 1000
                                     p3 = CoolProp.PropsSI("O", "T", x3, "P", P, GetCoolPropName(sub1)) / 1000
@@ -1322,11 +1295,11 @@ Namespace PropertyPackages
                                     WriteWarningMessage("CoolProp Warning: T and/or P is/are outside the valid range for calculation of Liquid Enthalpy, compound " &
                                                          vn(i) & ". Extrapolating curve to obtain a value...")
                                     Dim x1, x2, x3, x4, x5, p1, p2, p3, p4, p5 As Double
-                                    x1 = Tb * 0.98
-                                    x2 = Tb * 0.94
-                                    x3 = Tb * 0.92
-                                    x4 = Tb * 0.86
-                                    x5 = Tb * 0.8
+                                    x1 = Tmin + (Tb - Tmin) * 0.9
+                                    x2 = Tmin + (Tb - Tmin) * 0.8
+                                    x3 = Tmin + (Tb - Tmin) * 0.7
+                                    x4 = Tmin + (Tb - Tmin) * 0.6
+                                    x5 = Tmin + (Tb - Tmin) * 0.5
                                     p1 = CoolProp.PropsSI("H", "T", x1, "P", P, GetCoolPropName(vn(i))) / 1000
                                     p2 = CoolProp.PropsSI("H", "T", x2, "P", P, GetCoolPropName(vn(i))) / 1000
                                     p3 = CoolProp.PropsSI("H", "T", x3, "P", P, GetCoolPropName(vn(i))) / 1000
@@ -1443,11 +1416,11 @@ Namespace PropertyPackages
                                     WriteWarningMessage("CoolProp Warning: T and/or P is/are outside the valid range for calculation of Liquid Entropy, compound " &
                                                          vn(i) & ". Extrapolating curve to obtain a value...")
                                     Dim x1, x2, x3, x4, x5, p1, p2, p3, p4, p5 As Double
-                                    x1 = Tb * 0.98
-                                    x2 = Tb * 0.94
-                                    x3 = Tb * 0.92
-                                    x4 = Tb * 0.86
-                                    x5 = Tb * 0.8
+                                    x1 = Tmin + (Tb - Tmin) * 0.9
+                                    x2 = Tmin + (Tb - Tmin) * 0.8
+                                    x3 = Tmin + (Tb - Tmin) * 0.7
+                                    x4 = Tmin + (Tb - Tmin) * 0.6
+                                    x5 = Tmin + (Tb - Tmin) * 0.5
                                     p1 = CoolProp.PropsSI("S", "T", x1, "P", P, GetCoolPropName(vn(i))) / 1000
                                     p2 = CoolProp.PropsSI("S", "T", x2, "P", P, GetCoolPropName(vn(i))) / 1000
                                     p3 = CoolProp.PropsSI("S", "T", x3, "P", P, GetCoolPropName(vn(i))) / 1000
@@ -1702,7 +1675,7 @@ Namespace PropertyPackages
                 Me.CurrentMaterialStream.Phases(phaseID).Properties.thermalConductivity = result
 
                 IObj?.SetCurrent
-                result = Me.AUX_LIQVISCm(T)
+                result = Me.AUX_LIQVISCm(T, P)
                 Me.CurrentMaterialStream.Phases(phaseID).Properties.viscosity = result
 
                 Me.CurrentMaterialStream.Phases(phaseID).Properties.kinematic_viscosity = result / Me.CurrentMaterialStream.Phases(phaseID).Properties.density.Value
@@ -1790,13 +1763,13 @@ Namespace PropertyPackages
             P = Me.CurrentMaterialStream.Phases(0).Properties.pressure.GetValueOrDefault
 
             Select Case phase
-                Case phase.Vapor
+                Case Phase.Vapor
                     state = "V"
                     fstate = PropertyPackages.State.Vapor
-                Case phase.Liquid, phase.Liquid1, phase.Liquid2, phase.Liquid3, phase.Aqueous
+                Case Phase.Liquid, Phase.Liquid1, Phase.Liquid2, Phase.Liquid3, Phase.Aqueous
                     state = "L"
                     fstate = PropertyPackages.State.Liquid
-                Case phase.Solid
+                Case Phase.Solid
                     state = "S"
                     fstate = PropertyPackages.State.Solid
             End Select
@@ -1859,7 +1832,7 @@ Namespace PropertyPackages
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_entropyF = result
                 Case "viscosity"
                     If state = "L" Then
-                        result = Me.AUX_LIQVISCm(T)
+                        result = Me.AUX_LIQVISCm(T, P)
                     Else
                         result = Me.AUX_VAPVISCMIX(T, P, Me.AUX_MMM(phase))
                     End If
@@ -1913,7 +1886,7 @@ Namespace PropertyPackages
         Public Overrides Function DW_CalcViscosidadeDinamica_ISOL(ByVal Phase1 As Phase, ByVal T As Double, ByVal P As Double) As Double
 
             If Phase1 = Phase.Liquid Then
-                Return Me.AUX_LIQVISCm(T)
+                Return Me.AUX_LIQVISCm(T, P)
             ElseIf Phase1 = Phase.Vapor Then
                 Return Me.AUX_VAPVISCm(T, Me.AUX_VAPDENS(T, P), Me.AUX_MMM(Phase.Vapor))
             End If
@@ -1958,6 +1931,33 @@ Namespace PropertyPackages
                 Return False
             End Get
         End Property
+
+        Public Overrides Function AUX_Z(Vx() As Double, T As Double, P As Double, state As PhaseName) As Double
+
+            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
+
+            Inspector.Host.CheckAndAdd(IObj, "", "AUX_Z", "Compressibility Factor", "Compressibility Factor Calculation Routine")
+
+            IObj?.SetCurrent()
+
+            Dim val As Double
+            If state = PhaseName.Liquid Then
+                val = P / (Me.AUX_LIQDENS(T, Vx, P) * 8.314 * T) / 1000 * AUX_MMM(Vx)
+            Else
+                val = P / (Me.AUX_VAPDENS(T, P) * 8.314 * T) / 1000 * AUX_MMM(Vx)
+            End If
+
+
+            IObj?.Paragraphs.Add("<h2>Results</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Compressibility Factor: {0}", val))
+
+            IObj?.Close()
+
+            Return val
+
+        End Function
+
     End Class
 
 End Namespace

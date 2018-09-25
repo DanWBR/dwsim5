@@ -30,7 +30,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Splitter
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Splitter
 
         Public Enum OpMode
             SplitRatios = 0
@@ -47,7 +47,9 @@ Namespace UnitOperations
         Public Property OperationMode As OpMode = OpMode.SplitRatios
 
         Public Overrides Function CloneXML() As Object
-            Return New Splitter().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Splitter()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -66,10 +68,12 @@ Namespace UnitOperations
                 m_ratios.Add(Double.Parse(xel.Value, ci))
             Next
 
-            OutCount = 0
-            For Each cp In GraphicObject.OutputConnectors
-                If cp.IsAttached Then OutCount += 1
-            Next
+            If Not GraphicObject Is Nothing Then
+                OutCount = 0
+                For Each cp In GraphicObject.OutputConnectors
+                    If cp.IsAttached Then OutCount += 1
+                Next
+            End If
 
             Return True
 
@@ -444,11 +448,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_Splitter With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Splitter With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()
@@ -491,6 +497,25 @@ Namespace UnitOperations
                 Return True
             End Get
         End Property
+
+        Public Overrides Function GetPropertyDescription(p As String) As String
+            If p.Equals("Specification") Then
+                Return "Define how you will specify this splitter block."
+            ElseIf p.Equals("Split Ratio Stream 1") Then
+                Return "If you chose 'Split Ratios' as the specification mode, enter the fraction of the inlet mass flow that will be directed to the outlet stream 1."
+            ElseIf p.Equals("Split Ratio Stream 2") Then
+                Return "If you chose 'Split Ratios' as the specification mode, enter the fraction of the inlet mass flow that will be directed to the outlet stream 2."
+            ElseIf p.Equals("Split Ratio Stream 3") Then
+                Return "If you chose 'Split Ratios' as the specification mode and have 3 outlet streams connected to this splitter, enter the fraction of the inlet mass flow that will be directed to the outlet stream 3."
+            ElseIf p.Equals("Stream 1 Mass/Mole Flow Spec") Then
+                Return "If you chose a Flow Spec as the specification mode, enter the flow amount of the stream 1. If only two outlet streams are connected, you don't need to specify a flow amount for the stream 2 as it will be calculated to close the mass balance."
+            ElseIf p.Equals("Stream 2 Mass/Mole Flow Spec") Then
+                Return "If you chose a Flow Spec as the specification mode, enter the flow amount of the stream 2. This is required only if you have 3 outlet streams connected to this splitter."
+            Else
+                Return p
+            End If
+        End Function
+
     End Class
 
 End Namespace

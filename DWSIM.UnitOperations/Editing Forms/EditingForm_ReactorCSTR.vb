@@ -7,7 +7,7 @@ Imports System.Drawing
 
 Public Class EditingForm_ReactorCSTR
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As Reactors.Reactor_CSTR
 
@@ -37,7 +37,7 @@ Public Class EditingForm_ReactorCSTR
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -131,8 +131,11 @@ Public Class EditingForm_ReactorCSTR
             cbReacSet.Items.Clear()
             cbReacSet.Items.AddRange(rsets)
 
-            If Not .FlowSheet.ReactionSets.ContainsKey(.ReactionSetID) Then .ReactionSetID = "DefaultSet"
-            cbReacSet.SelectedItem = .FlowSheet.ReactionSets(.ReactionSetID).Name
+            Try
+                If Not .FlowSheet.ReactionSets.ContainsKey(.ReactionSetID) Then .ReactionSetID = "DefaultSet"
+                cbReacSet.SelectedItem = .FlowSheet.ReactionSets(.ReactionSetID).Name
+            Catch ex As Exception
+            End Try
 
             'results
 
@@ -205,7 +208,7 @@ Public Class EditingForm_ReactorCSTR
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -374,7 +377,7 @@ Public Class EditingForm_ReactorCSTR
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red
@@ -396,12 +399,12 @@ Public Class EditingForm_ReactorCSTR
 
     Sub UpdateProps(sender As Object)
 
-        If sender Is tbOutletTemperature Then SimObject.OutletTemperature = su.Converter.ConvertToSI(cbTemp.SelectedItem.ToString, tbOutletTemperature.Text)
-        If sender Is tbVol Then SimObject.Volume = su.Converter.ConvertToSI(cbVol.SelectedItem.ToString, tbVol.Text)
-        If sender Is tbHeadspace Then SimObject.Headspace = su.Converter.ConvertToSI(cbHeadspace.SelectedItem.ToString, tbHeadspace.Text)
-        If sender Is tbPDrop Then SimObject.DeltaP = su.Converter.ConvertToSI(cbPDrop.SelectedItem.ToString, tbPDrop.Text)
-        If sender Is tbCatLoad Then SimObject.CatalystAmount = su.Converter.ConvertToSI(cbCatLoad.SelectedItem.ToString, tbCatLoad.Text)
-      
+        If sender Is tbOutletTemperature Then SimObject.OutletTemperature = su.Converter.ConvertToSI(cbTemp.SelectedItem.ToString, tbOutletTemperature.Text.ParseExpressionToDouble)
+        If sender Is tbVol Then SimObject.Volume = su.Converter.ConvertToSI(cbVol.SelectedItem.ToString, tbVol.Text.ParseExpressionToDouble)
+        If sender Is tbHeadspace Then SimObject.Headspace = su.Converter.ConvertToSI(cbHeadspace.SelectedItem.ToString, tbHeadspace.Text.ParseExpressionToDouble)
+        If sender Is tbPDrop Then SimObject.DeltaP = su.Converter.ConvertToSI(cbPDrop.SelectedItem.ToString, tbPDrop.Text.ParseExpressionToDouble)
+        If sender Is tbCatLoad Then SimObject.CatalystAmount = su.Converter.ConvertToSI(cbCatLoad.SelectedItem.ToString, tbCatLoad.Text.ParseExpressionToDouble)
+
         RequestCalc()
 
     End Sub

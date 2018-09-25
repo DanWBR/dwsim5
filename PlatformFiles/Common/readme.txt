@@ -1,6 +1,6 @@
 ﻿==================================================
 DWSIM - Open Source Process Simulator
-Version 5.2 Update 2
+Version 5.2 Update 21
 Copyright (c) 2017-2018 Daniel Medeiros
 Copyright (c) 2008-2016 Daniel Medeiros, Gregor Reichert, Gustavo Leon
 ==================================================
@@ -61,6 +61,119 @@ VERSION HISTORY / CHANGELOG
 ==================================================
 
 The full changelog, including code changes and their authors can be viewed at https://github.com/DanWBR/dwsim5/commits/master
+
+Version 5.2 Update 21
+
+- [FIX] Fixed a regression in Heat Exchanger model
+
+Version 5.2 Update 20
+
+- [FIX] Fixed Absorption Column setup on Cross-Platform UI
+
+Version 5.2 Update 19
+
+- [FIX] Fixed a regression in Steam Tables Property Package
+
+Version 5.2 Update 18
+
+- [NEW] Liquid Viscosity Pressure Correction
+- [FIX] Fixed Letsou-Stiel Liquid Viscosity estimation
+
+Version 5.2 Update 17
+
+- [CHG] Liquid Density calculation fixes and enhancements
+- [FIX] Minor bug fixes
+
+Version 5.2 Update 16
+
+- [NEW] Exposed Gibbs Reactor Numerical Derivative Perturbation
+- [FIX] Bug fixes (PFR, Orifice Plate)
+
+Version 5.2 Update 15
+
+- [CHG] Performance updates
+- [FIX] Fixed Pipe Segment UO diameter unit conversion
+- [FIX] Do not throw CAPE-OPEN UO 'Edit()' not implemented exception
+
+Version 5.2 Update 14
+
+- [NEW] Added support for OpenCL GPU acceleration on macOS and Linux
+- [FIX] Fixed Classic UI Material Stream Editor
+
+Version 5.2 Update 13
+
+- [NEW] Enhancements to input textboxes
+- [NEW] Enter math expressions on input textboxes
+
+Version 5.2 Update 12
+
+- [NEW] New Kv calculation mode for Valve model
+- [NEW] User-Defined Pipe Wall Material
+- [NEW] Unit locking mode for Spreadsheet (Classic UI)
+- [FIX] Fixed a bug with Pump calculations
+- [FIX] Fixed simulation comments not restoring correctly on Classic UI
+
+Version 5.2 Update 11
+
+- [NEW] Heat Exchanger thermal efficiency calculation mode
+- [CHG] Material Stream editor updates (Classic UI)
+- [FIX] Fixed Flowsheet Object cloning
+- [FIX] Fixed Liquid Phase Enthalpy calculation for some Property Packages
+
+Version 5.2 Update 10
+
+- [FIX] Fixed a bug with the CAPE-OPEN UO Socket
+- [FIX] Fixed Adjust Control Panel (Classic UI)
+- [FIX] Fixed Update reminder
+
+Version 5.2 Update 9
+
+- [NEW] Added Floating Table for compound amounts in Material Streams
+- [NEW] Copy data from chart objects
+- [FIX] Fixed bugs with the PFR and Equilibrium Reactors
+- [FIX] Fixed Adjust Control Panel (Classic UI)
+
+Version 5.2 Update 8
+
+- [NEW] Solution Inspector enhancements
+- [FIX] Fixed loading of mobile-saved simulation files
+- [FIX] Fixed a bug with the Equilibrium Reactor
+- [FIX] Other bug fixes
+
+Version 5.2 Update 7
+
+- [FIX] Fixed a bug with the Compound Creator Wizard
+- [FIX] Fixed a bug with the SVLE Flash Algorithm
+- [FIX] CAPE-OPEN fixes
+- [FIX] Fixed pipe segment diameter quick input (Classic UI)
+- [FIX] Other fixes and enhancements
+
+Version 5.2 Update 6
+
+- [NEW] Added Quality Check to Petroleum Characterization Tools
+- [CHG] Enhanced Petroleum Characterization Tools on Cross-Platform UI
+- [CHG] Removed Update checkboxes on Classic UI
+- [FIX] Fixed missing Expander on Cross-Platform UI
+- [FIX] Bug fixes
+
+Version 5.2 Update 5
+
+- [NEW] Data copy from property tables to clipboard (Cross-Platform UI)
+- [CHG] Limited the maximum mumber of simultaneous opened object editors
+- [FIX] Fixed data copy from property table to clipboard (Classic UI)
+- [FIX] Bug fixes
+
+Version 5.2 Update 4
+
+- [FIX] Bug fixes
+
+Version 5.2 Update 3
+
+- [FIX] Fixed a bug with the PFR model
+- [FIX] Fixed a bug with the Heat Exchanger model
+- [FIX] Fixed a bug with the Compound Separator model
+- [FIX] Report tool fixes (Classic UI)
+- [FIX] Touch Bar fix for macOS < 10.12.2
 
 Version 5.2 Update 2
 

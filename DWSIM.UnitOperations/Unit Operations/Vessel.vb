@@ -37,7 +37,7 @@ Namespace UnitOperations
         Dim BeH, BSGH, BSLH, AH, DH As Double
         Dim BeV, BSGV, BSLV, AV, DV As Double
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Vessel
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Vessel
 
         <NonSerialized> <Xml.Serialization.XmlIgnore> Public MixedStream As MaterialStream
 
@@ -134,7 +134,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Vessel().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Vessel()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -661,11 +663,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_Vessel With {.VesselObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Vessel With {.VesselObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

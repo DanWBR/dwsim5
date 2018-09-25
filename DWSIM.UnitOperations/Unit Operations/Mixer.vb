@@ -28,7 +28,7 @@ Namespace UnitOperations
 
         Inherits UnitOperations.UnitOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_Mixer
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_Mixer
 
         Public Enum PressureBehavior
             Average
@@ -60,7 +60,9 @@ Namespace UnitOperations
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Mixer().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Mixer()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -263,11 +265,13 @@ Namespace UnitOperations
             If f Is Nothing Then
                 f = New EditingForm_Mixer With {.MixerObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_Mixer With {.MixerObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

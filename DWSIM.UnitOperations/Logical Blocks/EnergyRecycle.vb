@@ -32,7 +32,7 @@ Namespace SpecialOps
 
         Inherits UnitOperations.SpecialOpBaseClass
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_EnergyRecycle
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_EnergyRecycle
 
         Protected m_ConvPar As ConvergenceParametersE
         Protected m_ConvHist As ConvergenceHistoryE
@@ -45,7 +45,9 @@ Namespace SpecialOps
         Protected m_IterationsTaken As Integer = 0
 
         Public Overrides Function CloneXML() As Object
-            Return New EnergyRecycle().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New EnergyRecycle()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -415,11 +417,13 @@ final:          Me.IterationsTaken = Me.IterationCount.ToString
             If f Is Nothing Then
                 f = New EditingForm_EnergyRecycle With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_EnergyRecycle With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

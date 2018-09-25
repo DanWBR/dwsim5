@@ -64,7 +64,6 @@ namespace DWSIM.UI.Desktop.Shared
             if (!SupressMessages)
             {
                 if (listeningaction != null) listeningaction(text, mtype);
-                //Console.WriteLine(text);
             }
         }
 
@@ -92,6 +91,8 @@ namespace DWSIM.UI.Desktop.Shared
 
             //var surface = ((DWSIM.Drawing.SkiaSharp.GraphicsSurface)this.GetSurface());
 
+            bool IsFormDisposed = false;
+
             if (PropertyPackages.Count == 0)
             {
                 ShowMessage("Please select a Property Package before solving the flowsheet.", IFlowsheet.MessageType.GeneralError);
@@ -110,27 +111,32 @@ namespace DWSIM.UI.Desktop.Shared
 
             Application.Instance.AsyncInvoke(() =>
             {
-                solvform = new Forms.SolvingFlowsheet();
-                solvform.lblMessage.Text = "Solving flowsheet model, please wait...";
-                solvform.btnAbort.Click += (sender, e) =>
+                if (!Application.Instance.Platform.IsWpf)
                 {
-                    Application.Instance.AsyncInvoke(() =>
+                    solvform = new Forms.SolvingFlowsheet();
+                    solvform.lblMessage.Text = "Solving flowsheet model, please wait...";
+                    solvform.btnAbort.Click += (sender, e) =>
                     {
-                        //surface.BackgroundColor = SkiaSharp.SKColors.White;
-                        FlowsheetForm.Enabled = true;
-                        FlowsheetControl.Invalidate();
-                        solvform.Close();
-                    });
-                    GlobalSettings.Settings.CalculatorStopRequested = true;
-                    if (GlobalSettings.Settings.TaskCancellationTokenSource != null)
-                    {
-                        try
+
+                        Application.Instance.AsyncInvoke(() =>
                         {
-                            GlobalSettings.Settings.TaskCancellationTokenSource.Cancel();
-                        }
-                        catch (Exception) { }
-                    }
-                };
+                                //surface.BackgroundColor = SkiaSharp.SKColors.White;
+                                FlowsheetForm.Enabled = true;
+                                    FlowsheetControl.Invalidate();
+                                    solvform.Close();
+                                    IsFormDisposed = true;
+                                });
+                            GlobalSettings.Settings.CalculatorStopRequested = true;
+                            if (GlobalSettings.Settings.TaskCancellationTokenSource != null)
+                            {
+                                try
+                                {
+                                    GlobalSettings.Settings.TaskCancellationTokenSource.Cancel();
+                                }
+                                catch (Exception) { }
+                            }
+                    };
+                }
             });
 
             Task st = new Task(() =>
@@ -150,22 +156,26 @@ namespace DWSIM.UI.Desktop.Shared
                     };
                 }
                 RequestCalculation(gobj);
-                if (GlobalSettings.Settings.RunningPlatform() == GlobalSettings.Settings.Platform.Mac) Task.Delay(1000).Wait();
+                Task.Delay(1000).Wait();
             });
 
             st.ContinueWith((t) =>
             {
-                Application.Instance.AsyncInvoke(() =>
+                if (!Application.Instance.Platform.IsWpf)
                 {
-                    //surface.BackgroundColor = SkiaSharp.SKColors.White;
-                    FlowsheetForm.Enabled = true;
-                    FlowsheetControl.Invalidate();
-                    if (solvform != null)
+                    Application.Instance.AsyncInvoke(() =>
                     {
-                        solvform.Close();
-                        solvform = null;
-                    }
-                });
+                        //surface.BackgroundColor = SkiaSharp.SKColors.White;
+                        FlowsheetForm.Enabled = true;
+                        FlowsheetControl.Invalidate();
+                        if (solvform != null)
+                        {
+                            solvform.Close();
+                            solvform = null;
+                            IsFormDisposed = true;
+                        }
+                    });
+                }
                 GlobalSettings.Settings.CalculatorStopRequested = false;
                 GlobalSettings.Settings.CalculatorBusy = false;
                 GlobalSettings.Settings.TaskCancellationTokenSource = new System.Threading.CancellationTokenSource();
@@ -206,17 +216,25 @@ namespace DWSIM.UI.Desktop.Shared
             }
             else
             {
-
-                Application.Instance.AsyncInvoke(() =>
+                if (!Application.Instance.Platform.IsWpf)
                 {
-                    FlowsheetForm.Enabled = false;
-                    FlowsheetControl.Invalidate();
-                    FlowsheetForm.Invalidate();
-                    if (solvform != null) solvform.ShowModalAsync(FlowsheetControl);
-                });
-
+                    Application.Instance.AsyncInvoke(() =>
+                    {
+                        FlowsheetForm.Enabled = false;
+                        FlowsheetControl.Invalidate();
+                        FlowsheetForm.Invalidate();
+                        if (solvform != null && !IsFormDisposed)
+                        {
+                            try
+                            {
+                                solvform.ShowModal(FlowsheetControl);
+                            }
+                            catch { }
+                        }
+                    });
+                }
                 st.Start();
-                
+
             }
 
         }

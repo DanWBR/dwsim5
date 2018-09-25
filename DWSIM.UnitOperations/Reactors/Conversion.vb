@@ -35,7 +35,7 @@ Namespace Reactors
 
         Inherits Reactor
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_ReactorConvEqGibbs
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_ReactorConvEqGibbs
 
         Public Sub New()
             MyBase.New()
@@ -50,7 +50,9 @@ Namespace Reactors
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Reactor_Conversion().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Reactor_Conversion()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -814,11 +816,13 @@ Namespace Reactors
             If f Is Nothing Then
                 f = New EditingForm_ReactorConvEqGibbs With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_ReactorConvEqGibbs With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()

@@ -59,7 +59,7 @@ Namespace Reactors
 
         <System.NonSerialized()> Dim ims As MaterialStream
 
-        <NonSerialized> <Xml.Serialization.XmlIgnore> Dim f As EditingForm_ReactorPFR
+        <NonSerialized> <Xml.Serialization.XmlIgnore> Public f As EditingForm_ReactorPFR
 
         Private VolumeFraction As Double = 1.0#
 
@@ -115,7 +115,9 @@ Namespace Reactors
         End Sub
 
         Public Overrides Function CloneXML() As Object
-            Return New Reactor_PFR().LoadData(Me.SaveData)
+            Dim obj As ICustomXMLSerialization = New Reactor_PFR()
+            obj.LoadData(Me.SaveData)
+            Return obj
         End Function
 
         Public Overrides Function CloneJSON() As Object
@@ -146,12 +148,26 @@ Namespace Reactors
             Dim scBC As Double = 0
             Dim BC As String = ""
 
+            Dim Qf As Double
+
+            If Me.Reactions.Count > 0 Then
+                Select Case FlowSheet.Reactions(Me.Reactions(0)).ReactionPhase
+                    Case PhaseName.Vapor
+                        Qf = ims.Phases(2).Properties.volumetric_flow.GetValueOrDefault()
+                    Case PhaseName.Liquid
+                        Qf = ims.Phases(3).Properties.volumetric_flow.GetValueOrDefault()
+                    Case PhaseName.Mixture
+                        Qf = ims.Phases(3).Properties.volumetric_flow.GetValueOrDefault() +
+                                ims.Phases(2).Properties.volumetric_flow.GetValueOrDefault()
+                End Select
+            End If
+
             j = 0
             For Each s As String In N00.Keys
                 If y(j) < 0 Then
                     C(s) = 0.0#
                 Else
-                    C(s) = y(j) * ResidenceTime / (Volume * VolumeFraction)
+                    C(s) = y(j) / Qf
                 End If
                 j = j + 1
             Next
@@ -426,6 +442,7 @@ Namespace Reactors
 
             Dim N0 As New Dictionary(Of String, Double)
             Dim N As New Dictionary(Of String, Double)
+            Dim Nnr As New Dictionary(Of String, Double)
             N00.Clear()
 
             Dim DHr, Hr, Hr0, Hp, T, T0, P, P0, Qf, Q, W As Double
@@ -448,6 +465,11 @@ Namespace Reactors
             'do the calculations on each dV
             Dim currvol As Double = 0.0#
             Dim prevvol As Double = 0.0#
+
+            Dim nloops As Integer = 1.0 / dV
+
+            Dim counter As Integer = 0
+
             Do
 
                 IObj?.SetCurrent
@@ -503,6 +525,7 @@ Namespace Reactors
                         rxn = FlowSheet.Reactions(ar(i))
 
                         Dim m0 As Double = 0.0#
+                        Dim m0nr As Double = 0.0#
 
                         'initial mole flows
                         For Each sb As ReactionStoichBase In rxn.Components.Values
@@ -518,13 +541,18 @@ Namespace Reactors
 
                             If m0 = 0.0# Then m0 = 0.0000000001
 
+                            m0nr = ims.Phases(0).Compounds(sb.CompName).MolarFlow.GetValueOrDefault - m0
+                            If m0nr < 0.0# Then m0nr = 0.0
+
                             If Not N0.ContainsKey(sb.CompName) Then
                                 N0.Add(sb.CompName, m0)
+                                Nnr.Add(sb.CompName, m0nr)
                                 N00.Add(sb.CompName, N0(sb.CompName))
                                 N.Add(sb.CompName, N0(sb.CompName))
                                 C0.Add(sb.CompName, N0(sb.CompName) / Qf)
                             Else
                                 N0(sb.CompName) = m0
+                                Nnr(sb.CompName) = m0nr
                                 N(sb.CompName) = N0(sb.CompName)
                                 C0(sb.CompName) = N0(sb.CompName) / Qf
                             End If
@@ -557,6 +585,16 @@ Namespace Reactors
                     IObj2?.SetCurrent
                     odesolver.Solve(vc, 0.0#, 0.1 * dV * Volume, dV * Volume, Sub(x As Double, y As Double()) vc = y)
 
+                    'Dim vec = MathNet.Numerics.LinearAlgebra.CreateVector.DenseOfArray(Of Double)(vc)
+
+                    'Dim result = MathNet.Numerics.OdeSolvers.RungeKutta.FourthOrder(vec, 0.0#, dV * Volume, 10,
+                    '                                                                Function(x As Double, v As MathNet.Numerics.LinearAlgebra.Vector(Of Double))
+                    '                                                                    Dim res = ODEFunc(x, v.ToArray)
+                    '                                                                    Return MathNet.Numerics.LinearAlgebra.CreateVector.DenseOfArray(Of Double)(res)
+                    '                                                                End Function)
+
+                    'vc = result.Last.ToArray
+
                     If Double.IsNaN(vc.Sum) Then Throw New Exception(FlowSheet.GetTranslatedString("PFRMassBalanceError"))
 
                     C.Clear()
@@ -565,7 +603,7 @@ Namespace Reactors
                         If vc(i) < 0.0# Then
                             vc(i) = 0.0#
                         End If
-                        C(sb.Key) = Convert.ToDouble(vc(i) * ResidenceTime / Volume / VolumeFraction)
+                        C(sb.Key) = vc(i) / Qf
                         i = i + 1
                     Next
 
@@ -620,15 +658,15 @@ Namespace Reactors
                     'compute new mole flows
                     For Each s2 As Compound In ims.Phases(0).Compounds.Values
                         If N.ContainsKey(s2.Name) Then
-                            Nsum += N(s2.Name)
+                            Nsum += N(s2.Name) + Nnr(s2.Name)
                         Else
                             Nsum += s2.MolarFlow.GetValueOrDefault
                         End If
                     Next
                     For Each s2 As Compound In ims.Phases(0).Compounds.Values
                         If N.ContainsKey(s2.Name) Then
-                            s2.MoleFraction = N(s2.Name) / Nsum
-                            s2.MolarFlow = N(s2.Name)
+                            s2.MoleFraction = (N(s2.Name) + Nnr(s2.Name)) / Nsum
+                            s2.MolarFlow = N(s2.Name) + Nnr(s2.Name)
                         Else
                             s2.MoleFraction = ims.Phases(0).Compounds(s2.Name).MolarFlow.GetValueOrDefault / Nsum
                             s2.MolarFlow = ims.Phases(0).Compounds(s2.Name).MolarFlow.GetValueOrDefault
@@ -746,7 +784,7 @@ Namespace Reactors
 
                     Dim vel As Double = Q / (PI * diameter ^ 2 / 4)
                     Dim L As Double = Me.dV * Me.Length
-                    Dim dp As Double = Me.CatalystParticleDiameter
+                    Dim dp As Double = Me.CatalystParticleDiameter / 1000.0
                     Dim ev As Double = Me.CatalystVoidFraction
 
                     Dim pdrop As Double = 150 * eta * L / dp ^ 2 * (1 - ev) ^ 2 / ev ^ 3 * vel + 1.75 * L * rho / dp * (1 - ev) / ev ^ 3 * vel ^ 2
@@ -762,7 +800,9 @@ Namespace Reactors
                 prevvol = currvol
                 currvol += dV * Volume
 
-            Loop Until currvol >= Volume
+                counter += 1
+
+            Loop Until counter > nloops
 
             Me.DeltaP = P0 - P
 
@@ -1027,11 +1067,13 @@ Namespace Reactors
             If f Is Nothing Then
                 f = New EditingForm_ReactorPFR With {.SimObject = Me}
                 f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                f.Tag = "ObjectEditor"
                 Me.FlowSheet.DisplayForm(f)
             Else
                 If f.IsDisposed Then
                     f = New EditingForm_ReactorPFR With {.SimObject = Me}
                     f.ShowHint = GlobalSettings.Settings.DefaultEditFormLocation
+                    f.Tag = "ObjectEditor"
                     Me.FlowSheet.DisplayForm(f)
                 Else
                     f.Activate()
@@ -1181,7 +1223,7 @@ Namespace Reactors
             Dim vn As New List(Of String)()
 
             For Each obj In points
-                vx.Add(DirectCast(obj, Double())(0) * Length / Volume)
+                vx.Add(DirectCast(obj, Double())(0))
             Next
 
             Dim j As Integer
@@ -1196,7 +1238,6 @@ Namespace Reactors
                 vn.Add(st)
             Next
             Dim color As OxyColor
-            
 
             Select Case name
 
@@ -1212,7 +1253,7 @@ Namespace Reactors
                     })
 
                     color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
-                    model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.volume, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.temperature, vya(ComponentConversions.Count).ToArray()), color)
+                    model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.temperature, vya(ComponentConversions.Count).ToArray()), color)
                     model.Series(model.Series.Count - 1).Title = "Temperature"
                     DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "temp"
 
@@ -1228,7 +1269,7 @@ Namespace Reactors
                     })
 
                     color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
-                    model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.volume, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.pressure, vya(ComponentConversions.Count + 1).ToArray()), color)
+                    model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.pressure, vya(ComponentConversions.Count + 1).ToArray()), color)
                     model.Series(model.Series.Count - 1).Title = "Pressure"
                     DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "press"
 
@@ -1245,7 +1286,7 @@ Namespace Reactors
 
                     For j = 0 To vn.Count - 1
                         color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
-                        model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.volume, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.molar_conc, vya(j).ToArray()), color)
+                        model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.molar_conc, vya(j).ToArray()), color)
                         model.Series(model.Series.Count - 1).Title = vn(j)
                         DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "conc"
                     Next

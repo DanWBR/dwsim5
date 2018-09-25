@@ -6,7 +6,20 @@ Public Class Host
 
     Public Shared Items As New List(Of InspectorItem)
 
-    Public Shared CurrentSolutionID As String = ""
+    Private Shared _currentsid As String = ""
+
+    Public Shared Property CurrentSolutionID As String
+        Get
+            Return _currentsid
+        End Get
+        Set(value As String)
+            _currentsid = value
+            If GlobalSettings.Settings.ClearInspectorHistoryOnNewCalculationRequest Then
+                Items.Clear()
+                GC.Collect()
+            End If
+        End Set
+    End Property
 
     Public Shared CurrentItem As InspectorItem
 
@@ -37,6 +50,7 @@ Public Class Host
             End With
             If Host.CurrentItem IsNot Nothing Then
                 ii.ParentID = Host.CurrentItem.ID
+                Host.CurrentItem.Paragraphs.Add(String.Format("<div style='color:gray'>[Calling function <i>{0}</i> ({1} - {2})]</div>", method, name, description))
                 Host.CurrentItem.Items.Add(ii)
             Else
                 ii.ParentID = -1

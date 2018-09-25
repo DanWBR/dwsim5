@@ -21,12 +21,12 @@ Imports DWSIM.Thermodynamics.PropertyPackages
 Imports DWSIM.Thermodynamics.PropertyPackages.Auxiliary
 Imports DWSIM.MathOps.MathEx
 Imports System.Linq
-
+Imports DWSIM.Interfaces.Enums
 
 Namespace PropertyPackages
 
-    <System.Runtime.InteropServices.Guid(SteamTablesPropertyPackage.ClassId)> _
-<System.Serializable()> Public Class SteamTablesPropertyPackage
+    <System.Runtime.InteropServices.Guid(SteamTablesPropertyPackage.ClassId)>
+    <System.Serializable()> Public Class SteamTablesPropertyPackage
 
         Inherits PropertyPackages.PropertyPackage
 
@@ -61,11 +61,16 @@ Namespace PropertyPackages
 
         Public Overrides Function AUX_VAPDENS(ByVal T As Double, ByVal P As Double) As Double
 
-            Return Me.m_iapws97.densW(T, P / 100000)
+            Dim Tsat As Double = m_iapws97.tSatW(P / 100000)
+            If T < Tsat Then
+                Return Me.m_iapws97.densSatVapTW(T)
+            Else
+                Return Me.m_iapws97.densW(T, P / 100000)
+            End If
 
         End Function
 
-        Public Overrides Sub DW_CalcEquilibrium(ByVal spec1 As PropertyPackages.FlashSpec, ByVal spec2 As PropertyPackages.FlashSpec)
+        Public Overrides Sub DW_CalcEquilibrium(ByVal spec1 As FlashSpec, ByVal spec2 As FlashSpec)
 
             Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
 
@@ -630,9 +635,9 @@ FINAL:
             P = Me.CurrentMaterialStream.Phases(0).Properties.pressure.GetValueOrDefault
 
             Select Case phase
-                Case phase.Vapor
+                Case Phase.Vapor
                     state = "V"
-                Case phase.Liquid, phase.Liquid1, phase.Liquid2, phase.Liquid3
+                Case Phase.Liquid, Phase.Liquid1, Phase.Liquid2, Phase.Liquid3
                     state = "L"
             End Select
 
@@ -767,29 +772,59 @@ FINAL:
 
             If phaseID = 3 Then
 
-                result = Me.m_iapws97.densSatLiqTW(T)
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.density = result
-                result = DW_CalcEnthalpy(RET_VMOL(Phase), T, P, State.Liquid)
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.enthalpy = result
-                result = DW_CalcEntropy(RET_VMOL(Phase), T, P, State.Liquid)
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.entropy = result
-                result = 1 / (Me.m_iapws97.densSatLiqTW(T) * 1000 / Me.AUX_MMM(PropertyPackages.Phase.Mixture)) / 8.314 / T * P
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.compressibilityFactor = result
-                result = Me.m_iapws97.cpSatLiqTW(T) '* 18
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.heatCapacityCp = result
-                result = Me.m_iapws97.cvSatLiqTW(T) '* 18
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.heatCapacityCv = result
-                result = Me.AUX_MMM(PropertyPackages.Phase.Mixture)
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight = result
-                result = Me.CurrentMaterialStream.Phases(phaseID).Properties.enthalpy.GetValueOrDefault * Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight.GetValueOrDefault
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_enthalpy = result
-                result = Me.CurrentMaterialStream.Phases(phaseID).Properties.entropy.GetValueOrDefault * Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight.GetValueOrDefault
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_entropy = result
-                result = Me.m_iapws97.thconSatLiqTW(T)
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.thermalConductivity = result
-                result = Me.m_iapws97.viscSatLiqTW(T)
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.viscosity = result
-                Me.CurrentMaterialStream.Phases(phaseID).Properties.kinematic_viscosity = result / Me.CurrentMaterialStream.Phases(phaseID).Properties.density.Value
+                If T > Tsat Then
+
+                    result = Me.m_iapws97.densSatLiqTW(T)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.density = result
+                    result = DW_CalcEnthalpy(RET_VMOL(Phase), T, P, State.Liquid)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.enthalpy = result
+                    result = DW_CalcEntropy(RET_VMOL(Phase), T, P, State.Liquid)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.entropy = result
+                    result = 1 / (Me.m_iapws97.densSatLiqTW(T) * 1000 / Me.AUX_MMM(PropertyPackages.Phase.Mixture)) / 8.314 / T * P
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.compressibilityFactor = result
+                    result = Me.m_iapws97.cpSatLiqTW(T) '* 18
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.heatCapacityCp = result
+                    result = Me.m_iapws97.cvSatLiqTW(T) '* 18
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.heatCapacityCv = result
+                    result = Me.AUX_MMM(PropertyPackages.Phase.Mixture)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight = result
+                    result = Me.CurrentMaterialStream.Phases(phaseID).Properties.enthalpy.GetValueOrDefault * Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight.GetValueOrDefault
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_enthalpy = result
+                    result = Me.CurrentMaterialStream.Phases(phaseID).Properties.entropy.GetValueOrDefault * Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight.GetValueOrDefault
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_entropy = result
+                    result = Me.m_iapws97.thconSatLiqTW(T)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.thermalConductivity = result
+                    result = Me.m_iapws97.viscSatLiqTW(T)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.viscosity = result
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.kinematic_viscosity = result / Me.CurrentMaterialStream.Phases(phaseID).Properties.density.Value
+
+                Else
+
+                    result = Me.m_iapws97.densW(T, P / 100000)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.density = result
+                    result = DW_CalcEnthalpy(RET_VMOL(Phase), T, P, State.Liquid)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.enthalpy = result
+                    result = DW_CalcEntropy(RET_VMOL(Phase), T, P, State.Liquid)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.entropy = result
+                    result = 1 / (Me.m_iapws97.densW(T, P / 100000) * 1000 / Me.AUX_MMM(PropertyPackages.Phase.Mixture)) / 8.314 / T * P
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.compressibilityFactor = result
+                    result = Me.m_iapws97.cpW(T, P / 100000) '* 18
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.heatCapacityCp = result
+                    result = Me.m_iapws97.cvW(T, P / 100000) '* 18
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.heatCapacityCv = result
+                    result = Me.AUX_MMM(PropertyPackages.Phase.Mixture)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight = result
+                    result = Me.CurrentMaterialStream.Phases(phaseID).Properties.enthalpy.GetValueOrDefault * Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight.GetValueOrDefault
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_enthalpy = result
+                    result = Me.CurrentMaterialStream.Phases(phaseID).Properties.entropy.GetValueOrDefault * Me.CurrentMaterialStream.Phases(phaseID).Properties.molecularWeight.GetValueOrDefault
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_entropy = result
+                    result = Me.m_iapws97.thconW(T, P / 100000)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.thermalConductivity = result
+                    result = Me.m_iapws97.viscW(T, P / 100000)
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.viscosity = result
+                    Me.CurrentMaterialStream.Phases(phaseID).Properties.kinematic_viscosity = result / Me.CurrentMaterialStream.Phases(phaseID).Properties.density.Value
+
+                End If
 
             ElseIf phaseID = 2 Then
 
@@ -1178,6 +1213,13 @@ FINAL:
                 Return True
             End Get
         End Property
+
+        Public Overrides Function AUX_Z(Vx() As Double, T As Double, P As Double, state As PhaseName) As Double
+
+            Return 1 / (Me.m_iapws97.densW(T, P / 100000) * 1000 / Me.AUX_MMM(PropertyPackages.Phase.Mixture)) / 8.314 / T * P
+
+        End Function
+
     End Class
 
 End Namespace

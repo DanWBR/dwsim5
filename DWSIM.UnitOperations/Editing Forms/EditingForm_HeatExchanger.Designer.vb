@@ -1,6 +1,6 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
 Partial Class EditingForm_HeatExchanger
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     'Form overrides dispose to clean up the component list.
     <System.Diagnostics.DebuggerNonUserCode()> _
@@ -43,6 +43,9 @@ Partial Class EditingForm_HeatExchanger
         Me.cbPropPack = New System.Windows.Forms.ComboBox()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.cbEfficiency = New System.Windows.Forms.ComboBox()
+        Me.tbEfficiency = New System.Windows.Forms.TextBox()
+        Me.Label21 = New System.Windows.Forms.Label()
         Me.cbHeatLoss = New System.Windows.Forms.ComboBox()
         Me.tbHeatLoss = New System.Windows.Forms.TextBox()
         Me.Label20 = New System.Windows.Forms.Label()
@@ -226,6 +229,9 @@ Partial Class EditingForm_HeatExchanger
         'GroupBox2
         '
         resources.ApplyResources(Me.GroupBox2, "GroupBox2")
+        Me.GroupBox2.Controls.Add(Me.cbEfficiency)
+        Me.GroupBox2.Controls.Add(Me.tbEfficiency)
+        Me.GroupBox2.Controls.Add(Me.Label21)
         Me.GroupBox2.Controls.Add(Me.cbHeatLoss)
         Me.GroupBox2.Controls.Add(Me.tbHeatLoss)
         Me.GroupBox2.Controls.Add(Me.Label20)
@@ -262,6 +268,27 @@ Partial Class EditingForm_HeatExchanger
         Me.GroupBox2.Name = "GroupBox2"
         Me.GroupBox2.TabStop = False
         Me.ToolTip1.SetToolTip(Me.GroupBox2, resources.GetString("GroupBox2.ToolTip"))
+        '
+        'cbEfficiency
+        '
+        resources.ApplyResources(Me.cbEfficiency, "cbEfficiency")
+        Me.cbEfficiency.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cbEfficiency.FormattingEnabled = True
+        Me.cbEfficiency.Items.AddRange(New Object() {resources.GetString("cbEfficiency.Items")})
+        Me.cbEfficiency.Name = "cbEfficiency"
+        Me.ToolTip1.SetToolTip(Me.cbEfficiency, resources.GetString("cbEfficiency.ToolTip"))
+        '
+        'tbEfficiency
+        '
+        resources.ApplyResources(Me.tbEfficiency, "tbEfficiency")
+        Me.tbEfficiency.Name = "tbEfficiency"
+        Me.ToolTip1.SetToolTip(Me.tbEfficiency, resources.GetString("tbEfficiency.ToolTip"))
+        '
+        'Label21
+        '
+        resources.ApplyResources(Me.Label21, "Label21")
+        Me.Label21.Name = "Label21"
+        Me.ToolTip1.SetToolTip(Me.Label21, resources.GetString("Label21.ToolTip"))
         '
         'cbHeatLoss
         '
@@ -486,7 +513,7 @@ Partial Class EditingForm_HeatExchanger
         resources.ApplyResources(Me.cbCalcMode, "cbCalcMode")
         Me.cbCalcMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cbCalcMode.FormattingEnabled = True
-        Me.cbCalcMode.Items.AddRange(New Object() {resources.GetString("cbCalcMode.Items"), resources.GetString("cbCalcMode.Items1"), resources.GetString("cbCalcMode.Items2"), resources.GetString("cbCalcMode.Items3"), resources.GetString("cbCalcMode.Items4"), resources.GetString("cbCalcMode.Items5"), resources.GetString("cbCalcMode.Items6"), resources.GetString("cbCalcMode.Items7")})
+        Me.cbCalcMode.Items.AddRange(New Object() {resources.GetString("cbCalcMode.Items"), resources.GetString("cbCalcMode.Items1"), resources.GetString("cbCalcMode.Items2"), resources.GetString("cbCalcMode.Items3"), resources.GetString("cbCalcMode.Items4"), resources.GetString("cbCalcMode.Items5"), resources.GetString("cbCalcMode.Items6"), resources.GetString("cbCalcMode.Items7"), resources.GetString("cbCalcMode.Items8")})
         Me.cbCalcMode.Name = "cbCalcMode"
         Me.ToolTip1.SetToolTip(Me.cbCalcMode, resources.GetString("cbCalcMode.ToolTip"))
         '
@@ -718,77 +745,80 @@ Partial Class EditingForm_HeatExchanger
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
-    Friend WithEvents chkActive As System.Windows.Forms.CheckBox
-    Friend WithEvents lblConnectedTo As System.Windows.Forms.Label
-    Friend WithEvents lblStatus As System.Windows.Forms.Label
-    Friend WithEvents Label13 As System.Windows.Forms.Label
-    Friend WithEvents Label12 As System.Windows.Forms.Label
-    Friend WithEvents Label11 As System.Windows.Forms.Label
-    Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
-    Friend WithEvents cbFlashAlg As System.Windows.Forms.ComboBox
-    Friend WithEvents Label10 As System.Windows.Forms.Label
-    Friend WithEvents cbPropPack As System.Windows.Forms.ComboBox
-    Friend WithEvents Label9 As System.Windows.Forms.Label
-    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
-    Friend WithEvents cbCalcMode As System.Windows.Forms.ComboBox
-    Friend WithEvents Label8 As System.Windows.Forms.Label
-    Friend WithEvents cbColdFluidPDrop As System.Windows.Forms.ComboBox
-    Friend WithEvents tbColdFluidPDrop As System.Windows.Forms.TextBox
-    Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents btnConfigureFlashAlg As System.Windows.Forms.Button
-    Friend WithEvents btnConfigurePP As System.Windows.Forms.Button
-    Friend WithEvents cbHotFluidPDrop As System.Windows.Forms.ComboBox
-    Friend WithEvents tbHotFluidPDrop As System.Windows.Forms.TextBox
-    Friend WithEvents Label2 As System.Windows.Forms.Label
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
-    Friend WithEvents btnDisconnectOutlet1 As System.Windows.Forms.Button
-    Friend WithEvents btnDisconnect1 As System.Windows.Forms.Button
-    Friend WithEvents Label7 As System.Windows.Forms.Label
-    Friend WithEvents cbOutlet1 As System.Windows.Forms.ComboBox
-    Friend WithEvents cbInlet1 As System.Windows.Forms.ComboBox
-    Friend WithEvents Label19 As System.Windows.Forms.Label
-    Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
-    Friend WithEvents lblTag As System.Windows.Forms.TextBox
-    Friend WithEvents cbHotFluidOutletT As System.Windows.Forms.ComboBox
-    Friend WithEvents tbHotFluidOutletT As System.Windows.Forms.TextBox
-    Friend WithEvents Label5 As System.Windows.Forms.Label
-    Friend WithEvents cbColdFluidOutletT As System.Windows.Forms.ComboBox
-    Friend WithEvents tbColdFluidOutletT As System.Windows.Forms.TextBox
-    Friend WithEvents Label4 As System.Windows.Forms.Label
-    Friend WithEvents btnCreateAndConnectOutlet1 As System.Windows.Forms.Button
-    Friend WithEvents btnCreateAndConnectInlet1 As System.Windows.Forms.Button
-    Friend WithEvents btnCreateAndConnectOutlet2 As System.Windows.Forms.Button
-    Friend WithEvents btnCreateAndConnectInlet2 As System.Windows.Forms.Button
-    Friend WithEvents btnDisconnectOutlet2 As System.Windows.Forms.Button
-    Friend WithEvents btnDisconnect2 As System.Windows.Forms.Button
-    Friend WithEvents Label1 As System.Windows.Forms.Label
-    Friend WithEvents cbOutlet2 As System.Windows.Forms.ComboBox
-    Friend WithEvents cbInlet2 As System.Windows.Forms.ComboBox
-    Friend WithEvents Label6 As System.Windows.Forms.Label
-    Friend WithEvents btnEditSTProps As System.Windows.Forms.Button
-    Friend WithEvents cbHeat As System.Windows.Forms.ComboBox
-    Friend WithEvents tbHeat As System.Windows.Forms.TextBox
-    Friend WithEvents cbArea As System.Windows.Forms.ComboBox
-    Friend WithEvents tbArea As System.Windows.Forms.TextBox
-    Friend WithEvents cbOverallHTC As System.Windows.Forms.ComboBox
-    Friend WithEvents tbOverallU As System.Windows.Forms.TextBox
-    Friend WithEvents Label17 As System.Windows.Forms.Label
-    Friend WithEvents Label16 As System.Windows.Forms.Label
-    Friend WithEvents Label15 As System.Windows.Forms.Label
-    Friend WithEvents Label14 As System.Windows.Forms.Label
-    Friend WithEvents cbFlowDir As System.Windows.Forms.ComboBox
-    Friend WithEvents chkIgnoreLMTD As System.Windows.Forms.CheckBox
-    Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
-    Friend WithEvents gridResults As System.Windows.Forms.DataGridView
-    Friend WithEvents cbMITA As System.Windows.Forms.ComboBox
-    Friend WithEvents tbMITA As System.Windows.Forms.TextBox
-    Friend WithEvents Label18 As System.Windows.Forms.Label
-    Friend WithEvents btnViewProfile As System.Windows.Forms.Button
-    Friend WithEvents DataGridViewTextBoxColumn1 As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents DataGridViewTextBoxColumn2 As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents Column1 As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents cbHeatLoss As ComboBox
-    Friend WithEvents tbHeatLoss As TextBox
-    Friend WithEvents Label20 As Label
+    Public WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Public WithEvents chkActive As System.Windows.Forms.CheckBox
+    Public WithEvents lblConnectedTo As System.Windows.Forms.Label
+    Public WithEvents lblStatus As System.Windows.Forms.Label
+    Public WithEvents Label13 As System.Windows.Forms.Label
+    Public WithEvents Label12 As System.Windows.Forms.Label
+    Public WithEvents Label11 As System.Windows.Forms.Label
+    Public WithEvents GroupBox3 As System.Windows.Forms.GroupBox
+    Public WithEvents cbFlashAlg As System.Windows.Forms.ComboBox
+    Public WithEvents Label10 As System.Windows.Forms.Label
+    Public WithEvents cbPropPack As System.Windows.Forms.ComboBox
+    Public WithEvents Label9 As System.Windows.Forms.Label
+    Public WithEvents GroupBox2 As System.Windows.Forms.GroupBox
+    Public WithEvents cbCalcMode As System.Windows.Forms.ComboBox
+    Public WithEvents Label8 As System.Windows.Forms.Label
+    Public WithEvents cbColdFluidPDrop As System.Windows.Forms.ComboBox
+    Public WithEvents tbColdFluidPDrop As System.Windows.Forms.TextBox
+    Public WithEvents Label3 As System.Windows.Forms.Label
+    Public WithEvents btnConfigureFlashAlg As System.Windows.Forms.Button
+    Public WithEvents btnConfigurePP As System.Windows.Forms.Button
+    Public WithEvents cbHotFluidPDrop As System.Windows.Forms.ComboBox
+    Public WithEvents tbHotFluidPDrop As System.Windows.Forms.TextBox
+    Public WithEvents Label2 As System.Windows.Forms.Label
+    Public WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Public WithEvents btnDisconnectOutlet1 As System.Windows.Forms.Button
+    Public WithEvents btnDisconnect1 As System.Windows.Forms.Button
+    Public WithEvents Label7 As System.Windows.Forms.Label
+    Public WithEvents cbOutlet1 As System.Windows.Forms.ComboBox
+    Public WithEvents cbInlet1 As System.Windows.Forms.ComboBox
+    Public WithEvents Label19 As System.Windows.Forms.Label
+    Public WithEvents ToolTip1 As System.Windows.Forms.ToolTip
+    Public WithEvents lblTag As System.Windows.Forms.TextBox
+    Public WithEvents cbHotFluidOutletT As System.Windows.Forms.ComboBox
+    Public WithEvents tbHotFluidOutletT As System.Windows.Forms.TextBox
+    Public WithEvents Label5 As System.Windows.Forms.Label
+    Public WithEvents cbColdFluidOutletT As System.Windows.Forms.ComboBox
+    Public WithEvents tbColdFluidOutletT As System.Windows.Forms.TextBox
+    Public WithEvents Label4 As System.Windows.Forms.Label
+    Public WithEvents btnCreateAndConnectOutlet1 As System.Windows.Forms.Button
+    Public WithEvents btnCreateAndConnectInlet1 As System.Windows.Forms.Button
+    Public WithEvents btnCreateAndConnectOutlet2 As System.Windows.Forms.Button
+    Public WithEvents btnCreateAndConnectInlet2 As System.Windows.Forms.Button
+    Public WithEvents btnDisconnectOutlet2 As System.Windows.Forms.Button
+    Public WithEvents btnDisconnect2 As System.Windows.Forms.Button
+    Public WithEvents Label1 As System.Windows.Forms.Label
+    Public WithEvents cbOutlet2 As System.Windows.Forms.ComboBox
+    Public WithEvents cbInlet2 As System.Windows.Forms.ComboBox
+    Public WithEvents Label6 As System.Windows.Forms.Label
+    Public WithEvents btnEditSTProps As System.Windows.Forms.Button
+    Public WithEvents cbHeat As System.Windows.Forms.ComboBox
+    Public WithEvents tbHeat As System.Windows.Forms.TextBox
+    Public WithEvents cbArea As System.Windows.Forms.ComboBox
+    Public WithEvents tbArea As System.Windows.Forms.TextBox
+    Public WithEvents cbOverallHTC As System.Windows.Forms.ComboBox
+    Public WithEvents tbOverallU As System.Windows.Forms.TextBox
+    Public WithEvents Label17 As System.Windows.Forms.Label
+    Public WithEvents Label16 As System.Windows.Forms.Label
+    Public WithEvents Label15 As System.Windows.Forms.Label
+    Public WithEvents Label14 As System.Windows.Forms.Label
+    Public WithEvents cbFlowDir As System.Windows.Forms.ComboBox
+    Public WithEvents chkIgnoreLMTD As System.Windows.Forms.CheckBox
+    Public WithEvents GroupBox6 As System.Windows.Forms.GroupBox
+    Public WithEvents gridResults As System.Windows.Forms.DataGridView
+    Public WithEvents cbMITA As System.Windows.Forms.ComboBox
+    Public WithEvents tbMITA As System.Windows.Forms.TextBox
+    Public WithEvents Label18 As System.Windows.Forms.Label
+    Public WithEvents btnViewProfile As System.Windows.Forms.Button
+    Public WithEvents DataGridViewTextBoxColumn1 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Public WithEvents DataGridViewTextBoxColumn2 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Public WithEvents Column1 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Public WithEvents cbHeatLoss As ComboBox
+    Public WithEvents tbHeatLoss As TextBox
+    Public WithEvents Label20 As Label
+    Public WithEvents cbEfficiency As ComboBox
+    Public WithEvents tbEfficiency As TextBox
+    Public WithEvents Label21 As Label
 End Class

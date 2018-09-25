@@ -5,7 +5,7 @@ Imports su = DWSIM.SharedClasses.SystemsOfUnits
 
 Public Class EditingForm_ComprExpndr
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As UnitOperations.UnitOpBaseClass
 
@@ -35,7 +35,7 @@ Public Class EditingForm_ComprExpndr
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -192,7 +192,7 @@ Public Class EditingForm_ComprExpndr
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -323,11 +323,11 @@ Public Class EditingForm_ComprExpndr
                     uobj.CalcMode = UnitOperations.Compressor.CalculationMode.EnergyStream
             End Select
 
-            If sender Is tbEfficiency Then uobj.EficienciaAdiabatica = Double.Parse(tbEfficiency.Text)
-            If sender Is tbPower Then uobj.DeltaQ = su.Converter.ConvertToSI(cbPower.SelectedItem.ToString, tbPower.Text)
-            If sender Is tbOutletPressure Then uobj.POut = su.Converter.ConvertToSI(cbPress.SelectedItem.ToString, tbOutletPressure.Text)
-            If sender Is tbPressureDrop Then uobj.DeltaP = su.Converter.ConvertToSI(cbPressureDropU.SelectedItem.ToString, tbPressureDrop.Text)
-      
+            If sender Is tbEfficiency Then uobj.EficienciaAdiabatica = Double.Parse(tbEfficiency.Text.ParseExpressionToDouble)
+            If sender Is tbPower Then uobj.DeltaQ = su.Converter.ConvertToSI(cbPower.SelectedItem.ToString, tbPower.Text.ParseExpressionToDouble)
+            If sender Is tbOutletPressure Then uobj.POut = su.Converter.ConvertToSI(cbPress.SelectedItem.ToString, tbOutletPressure.Text.ParseExpressionToDouble)
+            If sender Is tbPressureDrop Then uobj.DeltaP = su.Converter.ConvertToSI(cbPressureDropU.SelectedItem.ToString, tbPressureDrop.Text.ParseExpressionToDouble)
+
         Else
 
             Dim uobj = DirectCast(SimObject, UnitOperations.Expander)
@@ -341,10 +341,10 @@ Public Class EditingForm_ComprExpndr
                     uobj.CalcMode = UnitOperations.Expander.CalculationMode.PowerGenerated
             End Select
 
-            If sender Is tbEfficiency Then uobj.EficienciaAdiabatica = Double.Parse(tbEfficiency.Text)
-            If sender Is tbPower Then uobj.DeltaQ = su.Converter.ConvertToSI(cbPower.SelectedItem.ToString, tbPower.Text)
-            If sender Is tbOutletPressure Then uobj.POut = su.Converter.ConvertToSI(cbPress.SelectedItem.ToString, tbOutletPressure.Text)
-            If sender Is tbPressureDrop Then uobj.DeltaP = su.Converter.ConvertToSI(cbPressureDropU.SelectedItem.ToString, tbPressureDrop.Text)
+            If sender Is tbEfficiency Then uobj.EficienciaAdiabatica = Double.Parse(tbEfficiency.Text.ParseExpressionToDouble)
+            If sender Is tbPower Then uobj.DeltaQ = su.Converter.ConvertToSI(cbPower.SelectedItem.ToString, tbPower.Text.ParseExpressionToDouble)
+            If sender Is tbOutletPressure Then uobj.POut = su.Converter.ConvertToSI(cbPress.SelectedItem.ToString, tbOutletPressure.Text.ParseExpressionToDouble)
+            If sender Is tbPressureDrop Then uobj.DeltaP = su.Converter.ConvertToSI(cbPressureDropU.SelectedItem.ToString, tbPressureDrop.Text.ParseExpressionToDouble)
 
         End If
 
@@ -363,7 +363,7 @@ Public Class EditingForm_ComprExpndr
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red
@@ -547,6 +547,10 @@ Public Class EditingForm_ComprExpndr
         UpdateInfo()
         RequestCalc()
 
+    End Sub
+
+    Private Sub GroupBox2_MouseMove(sender As Object, e As MouseEventArgs) Handles GroupBox2.MouseMove
+        MyBase.Editor_MouseMove(sender, e)
     End Sub
 
 End Class

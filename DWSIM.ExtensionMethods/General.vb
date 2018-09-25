@@ -136,6 +136,35 @@ Public Module General
 
     End Function
 
+    <System.Runtime.CompilerServices.Extension()>
+    Public Function IsValidDoubleExpression(str As String) As Boolean
+
+        If Double.TryParse(str, New Double) Then
+            Return True
+        Else
+            Try
+                If Not SharedClasses.ExpressionParser.ParserInitialized Then SharedClasses.ExpressionParser.InitializeExpressionParser()
+                Dim Expr = SharedClasses.ExpressionParser.ExpContext.CompileGeneric(Of Double)(str)
+                Expr.Evaluate()
+                Return True
+            Catch ex As Exception
+                Return False
+            End Try
+        End If
+
+    End Function
+
+    <System.Runtime.CompilerServices.Extension()>
+    Public Function ParseExpressionToDouble(str As String) As Double
+        If Not SharedClasses.ExpressionParser.ParserInitialized Then SharedClasses.ExpressionParser.InitializeExpressionParser()
+        Try
+            Dim Expr = SharedClasses.ExpressionParser.ExpContext.CompileGeneric(Of Double)(str)
+            Return Expr.Evaluate()
+        Catch ex As Exception
+            Return Convert.ToDouble(str)
+        End Try
+    End Function
+
     <System.Runtime.CompilerServices.Extension()> _
     Public Function ToString(sourcearray As String(), ci As CultureInfo) As String
 
@@ -372,9 +401,13 @@ Public Module General
     <System.Runtime.CompilerServices.Extension()>
     Public Function ToDoubleFromCurrent(s As String) As Double
 
-        Dim ci As CultureInfo = CultureInfo.InstalledUICulture
+        Dim ci As CultureInfo = CultureInfo.CurrentUICulture
 
-        Return Double.Parse(s, ci)
+        If Double.TryParse(s, NumberStyles.Any, ci, New Double) Then
+            Return Double.Parse(s, ci)
+        Else
+            Return 0.0
+        End If
 
     End Function
 

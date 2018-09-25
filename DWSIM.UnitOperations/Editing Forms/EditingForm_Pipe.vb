@@ -7,7 +7,7 @@ Imports System.Drawing
 
 Public Class EditingForm_Pipe
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As UnitOperations.Pipe
 
@@ -37,7 +37,7 @@ Public Class EditingForm_Pipe
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -175,7 +175,7 @@ Public Class EditingForm_Pipe
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -311,7 +311,7 @@ Public Class EditingForm_Pipe
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red
@@ -333,10 +333,10 @@ Public Class EditingForm_Pipe
 
     Sub UpdateProps(sender As Object)
 
-        If sender Is tbOutletTemperature Then SimObject.OutletTemperature = su.Converter.ConvertToSI(cbTemp.SelectedItem.ToString, tbOutletTemperature.Text)
-        If sender Is tbOutletPressure Then SimObject.OutletPressure = su.Converter.ConvertToSI(cbPressure.SelectedItem.ToString, tbOutletPressure.Text)
-        If sender Is tbTtol Then SimObject.TolT = su.Converter.ConvertToSI(cbTtol.SelectedItem.ToString, tbTtol.Text)
-        If sender Is tbPtol Then SimObject.TolP = su.Converter.ConvertToSI(cbPtol.SelectedItem.ToString, tbPtol.Text)
+        If sender Is tbOutletTemperature Then SimObject.OutletTemperature = su.Converter.ConvertToSI(cbTemp.SelectedItem.ToString, tbOutletTemperature.Text.ParseExpressionToDouble)
+        If sender Is tbOutletPressure Then SimObject.OutletPressure = su.Converter.ConvertToSI(cbPressure.SelectedItem.ToString, tbOutletPressure.Text.ParseExpressionToDouble)
+        If sender Is tbTtol Then SimObject.TolT = su.Converter.ConvertToSI(cbTtol.SelectedItem.ToString, tbTtol.Text.ParseExpressionToDouble)
+        If sender Is tbPtol Then SimObject.TolP = su.Converter.ConvertToSI(cbPtol.SelectedItem.ToString, tbPtol.Text.ParseExpressionToDouble)
 
         RequestCalc()
 
@@ -435,11 +435,11 @@ Public Class EditingForm_Pipe
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Select Case cbPDropModel.SelectedIndex
             Case 0
-                Process.Start("https://cdn.ihs.com/fekete/help/Harmony/content/html_files/reference_material/calculations_and_correlations/pressure_loss_calculations.htm#Beggs_and_Brill_Correlation")
+                Process.Start("http://www.ihsenergy.ca/support/documentation_ca/Harmony/content/html_files/reference_material/calculations_and_correlations/pressure_loss_calculations.htm#Beggs_and_Brill_Correlation")
             Case 1
                 Process.Start("http://thermopedia.com/content/37/")
             Case 2
-                Process.Start("https://cdn.ihs.com/fekete/help/Harmony/content/html_files/reference_material/calculations_and_correlations/pressure_loss_calculations.htm#Petalas_and_Aziz_Mechanistic_Model")
+                Process.Start("http://www.ihsenergy.ca/support/documentation_ca/Harmony/content/html_files/reference_material/calculations_and_correlations/pressure_loss_calculations.htm#Petalas_and_Aziz_Mechanistic_Model")
         End Select
     End Sub
 End Class

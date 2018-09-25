@@ -29,6 +29,7 @@ Imports System.Xml.Serialization
 Imports System.Runtime.Serialization.Formatters
 Imports System.Threading.Tasks
 Imports DWSIM.MathOps.MathEx
+Imports DWSIM.Interfaces.Enums
 
 Namespace PropertyPackages
 
@@ -51,12 +52,13 @@ Namespace PropertyPackages
             m_par = New System.Collections.Generic.Dictionary(Of String, Double)
             With Me.Parameters
                 .Clear()
-                .Add("PP_IDEAL_MIXRULE_LIQDENS", 1)
                 .Add("PP_USEEXPLIQDENS", 1)
                 .Add("PP_USE_EOS_LIQDENS", 0)
+                .Add("PP_EXP_LIQDENS_PCORRECTION", 1)
                 .Add("PP_IDEAL_VAPOR_PHASE_FUG", 1)
                 .Add("PP_ENTH_CP_CALC_METHOD", 1)
                 .Add("PP_POYNTING", 1)
+                .Add("PP_LIQVISC_PCORRECTION", 1)
             End With
         End Sub
 
@@ -76,10 +78,10 @@ Namespace PropertyPackages
 
             If GlobalSettings.Settings.CAPEOPENMode Then
                 Dim f As New FormConfigPropertyPackage() With {._form = Me.Flowsheet, ._pp = Me, ._comps = _selectedcomps.ToDictionary(Of String, Interfaces.ICompoundConstantProperties)(Function(k) k.Key, Function(k) k.Value)}
-                                f.ShowDialog()
+                f.ShowDialog()
             Else
                 Dim f As New FormConfigPropertyPackage() With {._form = Me.Flowsheet, ._pp = Me, ._comps = Flowsheet.SelectedCompounds}
-                                f.ShowDialog()
+                f.ShowDialog()
             End If
 
         End Sub
@@ -125,16 +127,16 @@ Namespace PropertyPackages
         Public Overloads Overrides Sub DW_CalcCompPartialVolume(ByVal phase As Phase, ByVal T As Double, ByVal P As Double)
             Dim pi As Integer = 0
             Select Case phase
-                Case phase.Liquid
-                Case phase.Aqueous
+                Case Phase.Liquid
+                Case Phase.Aqueous
                     pi = 6
-                Case phase.Liquid1
+                Case Phase.Liquid1
                     pi = 3
-                Case phase.Liquid2
+                Case Phase.Liquid2
                     pi = 4
-                Case phase.Liquid3
+                Case Phase.Liquid3
                     pi = 5
-                Case phase.Vapor
+                Case Phase.Vapor
                     If Not Me.Parameters.ContainsKey("PP_IDEAL_VAPOR_PHASE_FUG") Then Me.Parameters.Add("PP_IDEAL_VAPOR_PHASE_FUG", 0)
                     If Me.Parameters("PP_IDEAL_VAPOR_PHASE_FUG") = 1 Then
                         Dim vapdens = AUX_VAPDENS(T, P)
@@ -284,7 +286,7 @@ Namespace PropertyPackages
 
         Public Overrides Function DW_CalcViscosidadeDinamica_ISOL(ByVal Phase1 As PropertyPackages.Phase, ByVal T As Double, ByVal P As Double) As Double
             If Phase1 = Phase.Liquid Then
-                Return Me.AUX_LIQVISCm(T)
+                Return Me.AUX_LIQVISCm(T, P)
             ElseIf Phase1 = Phase.Vapor Then
                 Return Me.AUX_VAPVISCm(T, Me.AUX_VAPDENS(T, P), Me.AUX_MMM(Phase.Vapor))
             Else
@@ -343,11 +345,11 @@ Namespace PropertyPackages
                     Case 0 'LK
                         H = Me.m_lk.H_LK_MIX("L", T, P, Vx, RET_VKij(), RET_VTC, RET_VPC, RET_VW, RET_VMM, Me.RET_Hid(298.15, T, Vx))
                     Case 1 'Ideal
-                        H = Me.RET_Hid(298.15, T, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
+                        H = Me.RET_Hid(298.15, T, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) + P / 1000 / Me.AUX_LIQDENS(T, Vx)
                     Case 2 'Excess
-                        H = Me.RET_Hid(298.15, T, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
+                        H = Me.RET_Hid(298.15, T, Vx) + P / 1000 / Me.AUX_LIQDENS(T, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
                     Case 3 'Experimental Liquid
-                        H = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx))
+                        H = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) + P / 1000 / Me.AUX_LIQDENS(T, Vx)
                 End Select
             ElseIf st = State.Vapor Then
                 Select Case Me.Parameters("PP_ENTH_CP_CALC_METHOD")
@@ -358,18 +360,18 @@ Namespace PropertyPackages
                     Case 2 'Excess
                         H = Me.RET_Hid(298.15, T, Vx)
                     Case 3 'Experimental Liquid
-                        H = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) + Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
+                        H = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) + P / 1000 / Me.AUX_LIQDENS(T, Vx) + Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
                 End Select
             ElseIf st = State.Solid Then
                 Select Case Me.Parameters("PP_ENTH_CP_CALC_METHOD")
                     Case 0 'LK
                         H = Me.m_lk.H_LK_MIX("L", T, P, Vx, RET_VKij(), RET_VTC, RET_VPC, RET_VW, RET_VMM, Me.RET_Hid(298.15, T, Vx)) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
                     Case 1 'Ideal
-                        H = Me.RET_Hid(298.15, T, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
+                        H = Me.RET_Hid(298.15, T, Vx) + P / 1000 / Me.AUX_LIQDENS(T, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
                     Case 2 'Excess
-                        H = Me.RET_Hid(298.15, T, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
+                        H = Me.RET_Hid(298.15, T, Vx) + P / 1000 / Me.AUX_LIQDENS(T, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
                     Case 3 'Experimental Liquid
-                        H = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
+                        H = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) + P / 1000 / Me.AUX_LIQDENS(T, Vx) - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T)
                 End Select
             End If
 
@@ -421,11 +423,11 @@ Namespace PropertyPackages
                     Case 0 'LK
                         S = Me.m_lk.S_LK_MIX("L", T, P, Vx, RET_VKij(), RET_VTC, RET_VPC, RET_VW, RET_VMM, Me.RET_Sid(298.15, T, P, Vx))
                     Case 1 'Ideal
-                        S = Me.RET_Sid(298.15, T, P, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
+                        S = Me.RET_Sid(298.15, T, P, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T
                     Case 2 'Excess
-                        S = Me.RET_Sid(298.15, T, P, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) / T - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
+                        S = Me.RET_Sid(298.15, T, P, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) / T + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
                     Case 3 'Experimental Liquid
-                        S = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) / T
+                        S = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) / T + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T
                 End Select
             ElseIf st = State.Vapor Then
                 Select Case Me.Parameters("PP_ENTH_CP_CALC_METHOD")
@@ -436,18 +438,18 @@ Namespace PropertyPackages
                     Case 2 'Excess
                         S = Me.RET_Sid(298.15, T, P, Vx)
                     Case 3 'Experimental Liquid
-                        S = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) / T + Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
+                        S = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) / T + Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T
                 End Select
             ElseIf st = State.Solid Then
                 Select Case Me.Parameters("PP_ENTH_CP_CALC_METHOD")
                     Case 0 'LK
                         S = Me.m_lk.S_LK_MIX("L", T, P, Vx, RET_VKij(), RET_VTC, RET_VPC, RET_VW, RET_VMM, Me.RET_Sid(298.15, T, P, Vx)) - Me.RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
                     Case 1 'Ideal
-                        S = Me.RET_Sid(298.15, T, P, Vx) - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T - Me.RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
+                        S = Me.RET_Sid(298.15, T, P, Vx) + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T - Me.RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
                     Case 2 'Excess
-                        S = Me.RET_Sid(298.15, T, P, Vx) - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) / T - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T - Me.RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
+                        S = Me.RET_Sid(298.15, T, P, Vx) + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T - Me.m_act.CalcExcessEnthalpy(T, Vx, Me.GetArguments()) / Me.AUX_MMM(Vx) / T - Me.RET_HVAPM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T - Me.RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
                     Case 3 'Experimental Liquid
-                        S = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) / T - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T
+                        S = AUX_INT_CPDTm_L(298.15, T, Me.AUX_CONVERT_MOL_TO_MASS(Vx)) / T - RET_HFUSM(Me.AUX_CONVERT_MOL_TO_MASS(Vx), T) / T + P / 1000 / Me.AUX_LIQDENS(T, Vx) / T
                 End Select
             End If
 
@@ -501,6 +503,7 @@ Namespace PropertyPackages
 
             IObj?.Paragraphs.Add(String.Format("Temperature: {0} K", T))
             IObj?.Paragraphs.Add(String.Format("Pressure: {0} Pa", P))
+            IObj?.Paragraphs.Add(String.Format("Compounds: {0}", RET_VNAMES.ToMathArrayString))
             IObj?.Paragraphs.Add(String.Format("Mole Fractions: {0}", DirectCast(Vx, Double()).ToMathArrayString))
             IObj?.Paragraphs.Add(String.Format("State: {0}", [Enum].GetName(st.GetType, st)))
 
@@ -509,25 +512,37 @@ Namespace PropertyPackages
             Dim fugcoeff(n), poy(n) As Double
             Dim i As Integer
 
+            Dim constprop = Me.DW_GetConstantProperties
+
             Dim Tc As Object = Me.RET_VTC()
             Dim Tr As Double
             If st = State.Liquid Then
 
                 If Not Me.Parameters.ContainsKey("PP_POYNTING") Then Me.Parameters.Add("PP_POYNTING", 1)
                 If Me.Parameters("PP_POYNTING") = 1 Then
-                    Dim constprop = Me.DW_GetConstantProperties
+                    IObj?.Paragraphs.Add(String.Format("<h2>Poynting Correction</h2>"))
+                    IObj?.Paragraphs.Add(String.Format("Poynting Correction Factor calculation is enabled."))
+                    IObj?.Paragraphs.Add("The Poynting factor is a correction factor for the liquid phase vapor pressure. 
+                                        Unless pressures are very high, the Poynting factor is usually small and the exponential term is near 1.")
+                    IObj?.Paragraphs.Add("<m>{\ln {\frac {f}{f_{\mathrm {sat} }}}={\frac {V_{\mathrm {m} }}{RT}}\int _{P_{\mathrm {sat} }}^{P}dp={\frac {V\left(P-P_{\mathrm {sat} }\right)}{RT}}.}</m>")
+                    IObj?.Paragraphs.Add("This fraction is known as the Poynting correction factor. Using <mi>f_{sat}=\phi_{sat} P_{sat}</mi>, where <mi>\phi_{sat}</mi> is the fugacity coefficient,")
+                    IObj?.Paragraphs.Add("<m>f=\varphi _{\mathrm {sat} }P_{\mathrm {sat} }\exp \left({\frac {V\left(P-P_{\mathrm {sat} }\right)}{RT}}\right).</m>")
                     Dim Psati, vli As Double
                     For i = 0 To n
                         If T < 0.98 * Tc(i) Then
                             IObj?.SetCurrent()
+                            IObj?.Paragraphs.Add(String.Format("<b>{0}</b>", constprop(i).Name))
                             vli = 1 / AUX_LIQDENSi(constprop(i), T) * constprop(i).Molar_Weight
                             If Double.IsNaN(vli) Then
                                 IObj?.SetCurrent()
                                 vli = 1 / AUX_LIQDENSi(constprop(i), constprop(i).Normal_Boiling_Point) * constprop(i).Molar_Weight
                             End If
+                            IObj?.Paragraphs.Add(String.Format("Molar Volume (V) @ {0} K: {1} m3/kmol", T, vli))
                             IObj?.SetCurrent()
                             Psati = AUX_PVAPi(i, T)
+                            IObj?.Paragraphs.Add(String.Format("Vapor Pressure (Psat) @ {0} K: {1} Pa", T, Psati))
                             poy(i) = Math.Exp(vli * Abs(P - Psati) / (8314.47 * T))
+                            IObj?.Paragraphs.Add(String.Format("Poynting Correction Factor: {0}", poy(i)))
                         End If
                     Next
                 Else
@@ -537,15 +552,29 @@ Namespace PropertyPackages
                 End If
 
                 IObj?.SetCurrent()
+                IObj?.Paragraphs.Add(String.Format("<h2>Activity Coefficients</h2>"))
                 ativ = Me.m_act.CalcActivityCoefficients(T, Vx, Me.GetArguments())
+
+                IObj?.Paragraphs.Add(String.Format("Calculated Activity Coefficients: {0}", ativ.ToMathArrayString))
+
+                IObj?.Paragraphs.Add(String.Format("<h2>Fugacity Coefficients</h2>"))
 
                 For i = 0 To n
                     Tr = T / Tc(i)
+                    IObj?.Paragraphs.Add(String.Format("<b>{0}</b>", constprop(i).Name))
+                    IObj?.Paragraphs.Add("Reduced Temperature (<mi>T_r=T/T_c</mi>): " & Tr.ToString)
                     If Tr >= 1.02 Then
                         IObj?.SetCurrent()
+                        IObj?.Paragraphs.Add("<m>f_i = H_i/P</m>")
                         lnfug(i) = Log(AUX_KHenry(Me.RET_VNAMES(i), T) / P)
+                        IObj?.Paragraphs.Add(String.Format("Henry's Constant (H) @ {0} K: {1} Pa", T, Exp(lnfug(i)) * P))
                     ElseIf Tr < 0.98 Then
+                        IObj?.Paragraphs.Add("<m>f_i = \gamma_i Poy_i P_{sat_i}/P</m>")
+                        IObj?.Paragraphs.Add(String.Format("Activity Coefficient: {0}", ativ(i)))
+                        IObj?.Paragraphs.Add(String.Format("Vapor Pressure (Psat) @ {0} K: {1} Pa", T, Me.AUX_PVAPi(i, T)))
+                        IObj?.Paragraphs.Add(String.Format("Poynting Correction Factor: {0}", poy(i)))
                         lnfug(i) = Log(ativ(i) * Me.AUX_PVAPi(i, T) / (P)) + Log(poy(i))
+                        IObj?.Paragraphs.Add(String.Format("Fugacity Coefficient: {0}", Exp(lnfug(i))))
                     Else 'do interpolation at proximity of critical point
                         IObj?.SetCurrent()
                         Dim a2 As Double = AUX_KHenry(Me.RET_VNAMES(i), 1.02 * Tc(i))
@@ -695,7 +724,7 @@ Namespace PropertyPackages
                     Me.CurrentMaterialStream.Phases(phaseID).Properties.molar_entropyF = result
                 Case "viscosity"
                     If state = "L" Then
-                        result = Me.AUX_LIQVISCm(T)
+                        result = Me.AUX_LIQVISCm(T, P)
                     Else
                         result = Me.AUX_VAPVISCm(T, Me.CurrentMaterialStream.Phases(phaseID).Properties.density.GetValueOrDefault, Me.AUX_MMM(phase))
                     End If
@@ -837,7 +866,7 @@ Namespace PropertyPackages
                 result = Me.AUX_CONDTL(T)
                 Me.CurrentMaterialStream.Phases(phaseID).Properties.thermalConductivity = result
                 IObj?.SetCurrent
-                result = Me.AUX_LIQVISCm(T)
+                result = Me.AUX_LIQVISCm(T, P)
                 Me.CurrentMaterialStream.Phases(phaseID).Properties.viscosity = result
                 Me.CurrentMaterialStream.Phases(phaseID).Properties.kinematic_viscosity = result / Me.CurrentMaterialStream.Phases(phaseID).Properties.density.Value
 
@@ -938,6 +967,36 @@ Namespace PropertyPackages
                 Return True
             End Get
         End Property
+
+        Public Overrides Function AUX_Z(Vx() As Double, T As Double, P As Double, state As PhaseName) As Double
+
+            Dim IObj As Inspector.InspectorItem = Inspector.Host.GetNewInspectorItem()
+
+            Inspector.Host.CheckAndAdd(IObj, "", "AUX_Z", "Compressibility Factor", "Compressibility Factor Calculation Routine")
+
+            IObj?.SetCurrent()
+
+            Dim TCM As Double = RET_VTC().MultiplyY(Vx).Sum
+            Dim PCM As Double = RET_VPC().MultiplyY(Vx).Sum
+            Dim WM As Double = RET_VW().MultiplyY(Vx).Sum
+
+            Dim val As Double
+            If state = PhaseName.Liquid Then
+                val = m_lk.Z_LK("L", T / TCM, P / PCM, WM)(0)
+            Else
+                val = m_lk.Z_LK("V", T / TCM, P / PCM, WM)(0)
+            End If
+
+            IObj?.Paragraphs.Add("<h2>Results</h2>")
+
+            IObj?.Paragraphs.Add(String.Format("Compressibility Factor: {0}", val))
+
+            IObj?.Close()
+
+            Return val
+
+        End Function
+
 
     End Class
 

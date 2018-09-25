@@ -388,6 +388,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Corrigir Densidade Experimental do Líquido com Pressão.
+        '''</summary>
+        Friend Shared ReadOnly Property PP_EXP_LIQDENS_PCORRECTION() As String
+            Get
+                Return ResourceManager.GetString("PP_EXP_LIQDENS_PCORRECTION", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to Algoritmo Flash (2 = Definição Global, 0 = LA ELV, 1 = IO ELV, 3 = IO ELLV, 4 = Gibbs ELV, 5 = Gibbs ELLV, 6 = NL ELLV, 7 = NL ESL, 8 = NL Imisc., 9 = LLE Simples).
         '''</summary>
         Friend Shared ReadOnly Property PP_FLASHALGORITHM() As String
@@ -447,6 +456,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property PP_IGNORE_VAPOR_FRACTION_LIMIT() As String
             Get
                 Return ResourceManager.GetString("PP_IGNORE_VAPOR_FRACTION_LIMIT", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Corrigir Viscosidade do Líquido com Pressão.
+        '''</summary>
+        Friend Shared ReadOnly Property PP_LIQVISC_PCORRECTION() As String
+            Get
+                Return ResourceManager.GetString("PP_LIQVISC_PCORRECTION", resourceCulture)
             End Get
         End Property
         

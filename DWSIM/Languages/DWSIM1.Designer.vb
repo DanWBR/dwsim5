@@ -1568,6 +1568,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Esta célula contém a unidade que será lida ou escrita para a variável da célula esquerda adjacente..
+        '''</summary>
+        Friend Shared ReadOnly Property CellUnitLocked() As String
+            Get
+                Return ResourceManager.GetString("CellUnitLocked", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to O valor desta célula será escrito em um objeto no fluxograma..
         '''</summary>
         Friend Shared ReadOnly Property CellWillWrite() As String
@@ -2117,6 +2126,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Quantidades das Substâncias - Base: .
+        '''</summary>
+        Friend Shared ReadOnly Property CompoundAmounts() As String
+            Get
+                Return ResourceManager.GetString("CompoundAmounts", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to O componente já está adicionado à simulação. Importação cancelada..
         '''</summary>
         Friend Shared ReadOnly Property CompoundExists() As String
@@ -2131,6 +2149,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property CompoundNotFound() As String
             Get
                 Return ResourceManager.GetString("CompoundNotFound", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Substâncias / Fases.
+        '''</summary>
+        Friend Shared ReadOnly Property CompoundsPhases() As String
+            Get
+                Return ResourceManager.GetString("CompoundsPhases", resourceCulture)
             End Get
         End Property
         
@@ -7039,6 +7066,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Fração.
+        '''</summary>
+        Friend Shared ReadOnly Property Fraction() As String
+            Get
+                Return ResourceManager.GetString("Fraction", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to 2. Frações das correntes.
         '''</summary>
         Friend Shared ReadOnly Property Fraesdascorrentes2() As String
@@ -10072,6 +10108,24 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Ativo (clique para desativar).
+        '''</summary>
+        Friend Shared ReadOnly Property ObjectIsActive() As String
+            Get
+                Return ResourceManager.GetString("ObjectIsActive", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Inativo (clique para ativar).
+        '''</summary>
+        Friend Shared ReadOnly Property ObjectIsInactive() As String
+            Get
+                Return ResourceManager.GetString("ObjectIsInactive", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to Objeto.
         '''</summary>
         Friend Shared ReadOnly Property Objeto() As String
@@ -12907,6 +12961,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Rugosidade.
+        '''</summary>
+        Friend Shared ReadOnly Property Rugosity() As String
+            Get
+                Return ResourceManager.GetString("Rugosity", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to Tempo de cálculo da última execução.
         '''</summary>
         Friend Shared ReadOnly Property Runtime() As String
@@ -14338,6 +14401,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Cond. Térmica.
+        '''</summary>
+        Friend Shared ReadOnly Property ThermCond() As String
+            Get
+                Return ResourceManager.GetString("ThermCond", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to Tipo.
         '''</summary>
         Friend Shared ReadOnly Property Tipo() As String
@@ -14478,6 +14550,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property Tolernciapreclculode2() As String
             Get
                 Return ResourceManager.GetString("Tolernciapreclculode2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Total.
+        '''</summary>
+        Friend Shared ReadOnly Property Total() As String
+            Get
+                Return ResourceManager.GetString("Total", resourceCulture)
             End Get
         End Property
         
@@ -14896,6 +14977,24 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to Atualização Disponível.
+        '''</summary>
+        Friend Shared ReadOnly Property UpdateAvailable() As String
+            Get
+                Return ResourceManager.GetString("UpdateAvailable", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Uma versão atualizada do DWSIM está disponível no site oficial. Mantenha o DWSIM atualizado para corrigir problemas e aproveitar novos recursos..
+        '''</summary>
+        Friend Shared ReadOnly Property UpdatedVersionAvailable() As String
+            Get
+                Return ResourceManager.GetString("UpdatedVersionAvailable", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to Atualizar ao salvar.
         '''</summary>
         Friend Shared ReadOnly Property UpdateOnSave() As String
@@ -14946,6 +15045,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property UsarDeltaPfornecido() As String
             Get
                 Return ResourceManager.GetString("UsarDeltaPfornecido", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Definido Pelo Usuário.
+        '''</summary>
+        Friend Shared ReadOnly Property UserDefined() As String
+            Get
+                Return ResourceManager.GetString("UserDefined", resourceCulture)
             End Get
         End Property
         
@@ -16053,6 +16161,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property VolumeMolar() As String
             Get
                 Return ResourceManager.GetString("VolumeMolar", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Fração Volumétrica.
+        '''</summary>
+        Friend Shared ReadOnly Property VolumetricFraction() As String
+            Get
+                Return ResourceManager.GetString("VolumetricFraction", resourceCulture)
             End Get
         End Property
         

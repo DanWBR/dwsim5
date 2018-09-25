@@ -18,32 +18,23 @@
 'Imports DWSIM.SimulationObjects
 Imports System.ComponentModel
 Imports DWSIM.Thermodynamics.BaseClasses
-Imports System.Runtime.Serialization.Formatters
-Imports System.Runtime.Serialization
 Imports System.IO
 Imports System.Linq
-Imports ICSharpCode.SharpZipLib.Core
-Imports ICSharpCode.SharpZipLib.Zip
 Imports WeifenLuo.WinFormsUI.Docking
-Imports WeifenLuo.WinFormsUI
 Imports DWSIM.Thermodynamics.PropertyPackages
 Imports System.Runtime.Serialization.Formatters.Binary
-Imports DWSIM.DrawingTools
-Imports Infralution.Localization
 Imports System.Globalization
-Imports DWSIM.DWSIM.Flowsheet
+Imports DWSIM.SharedClasses.DWSIM.Flowsheet
 Imports System.Threading.Tasks
-Imports System.Xml.Serialization
-Imports System.Xml
 Imports System.Reflection
 Imports Microsoft.Win32
 Imports System.Text
-Imports System.Xml.Linq
 Imports DWSIM.DrawingTools.GraphicObjects
-Imports System.Net
 Imports DWSIM.GraphicObjects
 Imports DWSIM.SharedClasses.Extras
 Imports System.Dynamic
+Imports DWSIM.SharedClasses.Flowsheet.Optimization
+Imports ICSharpCode.SharpZipLib.Zip
 
 Public Class FormMain
 
@@ -72,6 +63,9 @@ Public Class FormMain
 
     Public COMonitoringObjects As New Dictionary(Of String, UnitOperations.UnitOperations.Auxiliary.CapeOpen.CapeOpenUnitOpInfo)
     Public WithEvents timer1 As New Timer
+
+    Public calculatorassembly, unitopassembly As Assembly
+    Public aTypeList As New List(Of Type)
 
 #Region "    Form Events"
 
@@ -192,6 +186,12 @@ Public Class FormMain
     Public Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
 
         If GlobalSettings.Settings.OldUI Then
+
+            calculatorassembly = My.Application.Info.LoadedAssemblies.Where(Function(x) x.FullName.Contains("DWSIM.Thermodynamics,")).FirstOrDefault
+            unitopassembly = My.Application.Info.LoadedAssemblies.Where(Function(x) x.FullName.Contains("DWSIM.UnitOperations")).FirstOrDefault
+
+            aTypeList.AddRange(calculatorassembly.GetTypes().Where(Function(x) If(x.GetInterface("DWSIM.Interfaces.ISimulationObject") IsNot Nothing, True, False)))
+            aTypeList.AddRange(unitopassembly.GetTypes().Where(Function(x) If(x.GetInterface("DWSIM.Interfaces.ISimulationObject") IsNot Nothing, True, False)))
 
             My.Application.MainThreadId = Threading.Thread.CurrentThread.ManagedThreadId
 
@@ -687,6 +687,28 @@ Public Class FormMain
 
     End Sub
 
+    Sub CheckForUpdates()
+
+        ' check for updates
+        Task.Factory.StartNew(Function()
+                                  Dim updfile = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + "version.info"
+                                  Dim uinfo = "0"
+                                  If (File.Exists(updfile)) Then uinfo = File.ReadAllText(updfile)
+                                  GlobalSettings.Settings.CurrentRunningVersion = Assembly.GetExecutingAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetExecutingAssembly().GetName().Version.Minor.ToString() + "." + uinfo
+                                  Return SharedClasses.UpdateCheck.CheckForUpdates()
+                              End Function).ContinueWith(Sub(t)
+                                                             If (t.Result) Then
+                                                                 Dim whatsnew = SharedClasses.UpdateCheck.GetWhatsNew()
+                                                                 Me.UIThreadInvoke(Sub()
+                                                                                       If MessageBox.Show(DWSIM.App.GetLocalString("UpdatedVersionAvailable") & vbCrLf & vbCrLf & whatsnew, DWSIM.App.GetLocalString("UpdateAvailable"), MessageBoxButtons.OKCancel, MessageBoxIcon.Information) = DialogResult.OK Then
+                                                                                           Process.Start("http://dwsim.inforside.com.br/wiki/index.php?title=Downloads#DWSIM_for_Desktop_Systems")
+                                                                                       End If
+                                                                                   End Sub)
+                                                             End If
+                                                         End Sub, TaskContinuationOptions.ExecuteSynchronously)
+
+    End Sub
+
     Sub OpenWelcomeScreen()
 
         If GlobalSettings.Settings.OldUI AndAlso My.Settings.BackupFiles.Count > 0 Then
@@ -699,6 +721,8 @@ Public Class FormMain
             Dim frmw As New FormWelcome
             frmw.ShowDialog(Me)
         End If
+
+        CheckForUpdates()
 
     End Sub
 
@@ -1206,7 +1230,7 @@ Public Class FormMain
 
             For Each xel As XElement In data
                 Try
-                    Dim obj As New DWSIM.Optimization.SensitivityAnalysisCase
+                    Dim obj As New SensitivityAnalysisCase
                     obj.LoadData(xel.Elements.ToList)
                     form.Collections.OPT_SensAnalysisCollection.Add(obj)
                 Catch ex As Exception
@@ -1284,7 +1308,7 @@ Public Class FormMain
                 form.WriteToLog(ex.Message.ToString & ": " & ex.InnerException.ToString, Color.Red, MessageType.GeneralError)
             Next
         Else
-            form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("carregadocomsucesso"), Color.Blue, DWSIM.Flowsheet.MessageType.Information)
+            form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("carregadocomsucesso"), Color.Blue, MessageType.Information)
         End If
 
         form.UpdateFormText()
@@ -1311,13 +1335,6 @@ Public Class FormMain
             xdoc = XDocument.Load(fstr)
         End Using
 
-        For Each xel1 As XElement In xdoc.Descendants
-            SharedClasses.Utility.UpdateElement(xel1)
-            SharedClasses.Utility.UpdateElementFromNewUI(xel1)
-        Next
-
-        If Not ProgressFeedBack Is Nothing Then ProgressFeedBack.Invoke(5)
-
         Try
             If My.Settings.SimulationUpgradeWarning Then
                 Dim versiontext = xdoc.Element("DWSIM_Simulation_Data").Element("GeneralInfo").Element("BuildVersion").Value
@@ -1330,6 +1347,38 @@ Public Class FormMain
         Catch ex As Exception
         End Try
 
+        'check version
+
+        Dim sver = New Version("1.0.0.0")
+
+        Try
+            sver = New Version(xdoc.Element("DWSIM_Simulation_Data").Element("GeneralInfo").Element("BuildVersion").Value)
+        Catch ex As Exception
+        End Try
+
+        If sver < New Version("5.0.0.0") Then
+            Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                                   SharedClasses.Utility.UpdateElement(xel1)
+                                               End Sub)
+        End If
+
+        'check saved from Classic UI
+
+        Dim savedfromclui As Boolean = False
+
+        Try
+            savedfromclui = Boolean.Parse(xdoc.Element("DWSIM_Simulation_Data").Element("GeneralInfo").Element("SavedFromClassicUI").Value)
+        Catch ex As Exception
+        End Try
+
+        If Not savedfromclui Then
+            Parallel.ForEach(xdoc.Descendants, Sub(xel1)
+                                                   SharedClasses.Utility.UpdateElementFromNewUI(xel1)
+                                               End Sub)
+        End If
+
+        If Not ProgressFeedBack Is Nothing Then ProgressFeedBack.Invoke(5)
+
         Dim form As FormFlowsheet = New FormFlowsheet()
         Settings.CAPEOPENMode = False
         My.Application.ActiveSimulation = form
@@ -1340,6 +1389,24 @@ Public Class FormMain
 
         Try
             form.Options.LoadData(data)
+        Catch ex As Exception
+            excs.Add(New Exception("Error Loading Flowsheet Settings", ex))
+        End Try
+
+        Try
+            form.Options.FlashAlgorithms.Clear()
+
+            Dim el As XElement = (From xel As XElement In data Select xel Where xel.Name = "FlashAlgorithms").SingleOrDefault
+
+            If Not el Is Nothing Then
+                For Each xel As XElement In el.Elements
+                    Dim obj As PropertyPackages.Auxiliary.FlashAlgorithms.FlashAlgorithm = CType(New PropertyPackages.RaoultPropertyPackage().ReturnInstance(xel.Element("Type").Value), Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms.FlashAlgorithm)
+                    obj.LoadData(xel.Elements.ToList)
+                    form.Options.FlashAlgorithms.Add(obj)
+                Next
+            Else
+                form.Options.FlashAlgorithms.Add(New Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms.NestedLoops() With {.Tag = .Name})
+            End If
         Catch ex As Exception
             excs.Add(New Exception("Error Loading Flowsheet Settings", ex))
         End Try
@@ -1520,7 +1587,7 @@ Public Class FormMain
 
         For Each xel As XElement In data
             Try
-                Dim obj As New DWSIM.Optimization.OptimizationCase
+                Dim obj As New OptimizationCase
                 obj.LoadData(xel.Elements.ToList)
                 form.Collections.OPT_OptimizationCollection.Add(obj)
             Catch ex As Exception
@@ -1532,7 +1599,7 @@ Public Class FormMain
 
         For Each xel As XElement In data
             Try
-                Dim obj As New DWSIM.Optimization.SensitivityAnalysisCase
+                Dim obj As New SensitivityAnalysisCase
                 obj.LoadData(xel.Elements.ToList)
                 form.Collections.OPT_SensAnalysisCollection.Add(obj)
             Catch ex As Exception
@@ -1732,7 +1799,7 @@ Public Class FormMain
                 form.WriteToLog(ex.Message.ToString & ": " & ex.InnerException.ToString, Color.Red, MessageType.GeneralError)
             Next
         Else
-            form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("carregadocomsucesso"), Color.Blue, DWSIM.Flowsheet.MessageType.Information)
+            form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("carregadocomsucesso"), Color.Blue, MessageType.Information)
         End If
 
         form.UpdateFormText()
@@ -1828,7 +1895,7 @@ Public Class FormMain
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("PropertyPackages"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("PropertyPackages")
 
-        For Each pp As KeyValuePair(Of String, PropertyPackage) In form.Options.PropertyPackages
+        For Each pp In form.Options.PropertyPackages
             Dim createdms As Boolean = False
             If pp.Value.CurrentMaterialStream Is Nothing Then
                 Dim ms As New Streams.MaterialStream("", "", form, pp.Value)
@@ -1865,14 +1932,14 @@ Public Class FormMain
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("OptimizationCases"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("OptimizationCases")
 
-        For Each pp As DWSIM.Optimization.OptimizationCase In form.Collections.OPT_OptimizationCollection
+        For Each pp As OptimizationCase In form.Collections.OPT_OptimizationCollection
             xel.Add(New XElement("OptimizationCase", {pp.SaveData().ToArray()}))
         Next
 
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("SensitivityAnalysis"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("SensitivityAnalysis")
 
-        For Each pp As DWSIM.Optimization.SensitivityAnalysisCase In form.Collections.OPT_SensAnalysisCollection
+        For Each pp As SensitivityAnalysisCase In form.Collections.OPT_SensAnalysisCollection
             xel.Add(New XElement("SensitivityAnalysisCase", {pp.SaveData().ToArray()}))
         Next
 
@@ -1892,7 +1959,7 @@ Public Class FormMain
                                    End If
                                    form.Options.FilePath = Me.filename
                                    form.UpdateFormText()
-                                   form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("salvocomsucesso"), Color.Blue, DWSIM.Flowsheet.MessageType.Information)
+                                   form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("salvocomsucesso"), Color.Blue, MessageType.Information)
                                    'Me.ToolStripStatusLabel1.Text = ""
                                End Sub))
 
@@ -1924,6 +1991,7 @@ Public Class FormMain
         xel.Add(New XElement("BuildDate", CType("01/01/2000", DateTime).AddDays(My.Application.Info.Version.Build).AddSeconds(My.Application.Info.Version.Revision * 2)))
         xel.Add(New XElement("OSInfo", My.Computer.Info.OSFullName & ", Version " & My.Computer.Info.OSVersion & ", " & My.Computer.Info.OSPlatform & " Platform"))
         xel.Add(New XElement("SavedOn", Date.Now))
+        xel.Add(New XElement("SavedFromClassicUI", True))
 
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("SimulationObjects"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("SimulationObjects")
@@ -1970,13 +2038,13 @@ Public Class FormMain
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("GraphicObjects")
 
         For Each go As GraphicObject In form.FormSurface.FlowsheetDesignSurface.DrawingObjects
-            If Not go.IsConnector Then xel.Add(New XElement("GraphicObject", go.SaveData().ToArray()))
+            If Not go.IsConnector And Not go.ObjectType = ObjectType.GO_FloatingTable Then xel.Add(New XElement("GraphicObject", go.SaveData().ToArray()))
         Next
 
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("PropertyPackages"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("PropertyPackages")
 
-        For Each pp As KeyValuePair(Of String, PropertyPackage) In form.Options.PropertyPackages
+        For Each pp In form.Options.PropertyPackages
             Dim createdms As Boolean = False
             If pp.Value.CurrentMaterialStream Is Nothing Then
                 Dim ms As New Streams.MaterialStream("", "", form, pp.Value)
@@ -2013,14 +2081,14 @@ Public Class FormMain
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("OptimizationCases"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("OptimizationCases")
 
-        For Each pp As DWSIM.Optimization.OptimizationCase In form.Collections.OPT_OptimizationCollection
+        For Each pp As OptimizationCase In form.Collections.OPT_OptimizationCollection
             xel.Add(New XElement("OptimizationCase", {pp.SaveData().ToArray()}))
         Next
 
         xdoc.Element("DWSIM_Simulation_Data").Add(New XElement("SensitivityAnalysis"))
         xel = xdoc.Element("DWSIM_Simulation_Data").Element("SensitivityAnalysis")
 
-        For Each pp As DWSIM.Optimization.SensitivityAnalysisCase In form.Collections.OPT_SensAnalysisCollection
+        For Each pp As SensitivityAnalysisCase In form.Collections.OPT_SensAnalysisCollection
             xel.Add(New XElement("SensitivityAnalysisCase", {pp.SaveData().ToArray()}))
         Next
 
@@ -2092,7 +2160,7 @@ Public Class FormMain
                                        End If
                                        form.Options.FilePath = Me.filename
                                        form.UpdateFormText()
-                                       form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("salvocomsucesso"), Color.Blue, DWSIM.Flowsheet.MessageType.Information)
+                                       form.WriteToLog(DWSIM.App.GetLocalString("Arquivo") & Me.filename & DWSIM.App.GetLocalString("salvocomsucesso"), Color.Blue, MessageType.Information)
                                        'Me.ToolStripStatusLabel1.Text = ""
                                    End Sub))
         End If
@@ -2734,7 +2802,7 @@ Label_00CC:
                         Try
                             'SaveF(form2.Options.FilePath, form2)
                         Catch ex As Exception
-                            MessageBox.Show(ex.Message, DWSIM.App.GetLocalString("Erro"), MessageBoxButtons.OK, MessageBoxIcon.Error)
+                            MessageBox.Show(DWSIM.App.GetLocalString("Erro"), ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error)
                         Finally
                             'Me.ToolStripStatusLabel1.Text = ""
                         End Try
@@ -3058,6 +3126,25 @@ Label_00CC:
             If Not Me.bgSaveBackup.IsBusy Then Me.bgSaveBackup.RunWorkerAsync()
         End If
 
+    End Sub
+
+    Private Sub bgSaveBackup_DoWork(ByVal sender As Object, ByVal e As System.ComponentModel.DoWorkEventArgs) Handles bgSaveBackup.DoWork
+        If Not My.Application.CalculatorBusy Then
+            Dim bw As BackgroundWorker = CType(sender, BackgroundWorker)
+            Dim folder As String = My.Settings.BackupFolder
+            If Not Directory.Exists(My.Settings.BackupFolder) Then Directory.CreateDirectory(My.Settings.BackupFolder)
+            Dim path As String = ""
+            For Each form0 As Form In Me.MdiChildren
+                If TypeOf form0 Is FormFlowsheet Then
+                    path = folder + IO.Path.DirectorySeparatorChar + CType(form0, FormFlowsheet).Options.BackupFileName
+                    Me.SaveXMLZIP(path, form0)
+                    If Not My.Settings.BackupFiles.Contains(path) Then
+                        My.Settings.BackupFiles.Add(path)
+                        If Not DWSIM.App.IsRunningOnMono Then My.Settings.Save()
+                    End If
+                End If
+            Next
+        End If
     End Sub
 
     Private Sub bgSaveBackup_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles bgSaveBackup.RunWorkerCompleted

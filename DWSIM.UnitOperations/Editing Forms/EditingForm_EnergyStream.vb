@@ -5,7 +5,7 @@ Imports su = DWSIM.SharedClasses.SystemsOfUnits
 
 Public Class EditingForm_EnergyStream
 
-    Inherits WeifenLuo.WinFormsUI.Docking.DockContent
+    Inherits SharedClasses.ObjectEditorForm
 
     Public Property SimObject As Streams.EnergyStream
 
@@ -33,7 +33,7 @@ Public Class EditingForm_EnergyStream
 
             chkActive.Checked = .GraphicObject.Active
 
-            Me.Text = .GetDisplayName() & ": " & .GraphicObject.Tag
+            Me.Text = .GraphicObject.Tag & " (" & .GetDisplayName() & ")"
 
             lblTag.Text = .GraphicObject.Tag
             If .Calculated Then
@@ -102,7 +102,7 @@ Public Class EditingForm_EnergyStream
 
     Private Sub lblTag_TextChanged(sender As Object, e As EventArgs) Handles lblTag.TextChanged
         If Loaded Then SimObject.GraphicObject.Tag = lblTag.Text
-        Me.Text = SimObject.GetDisplayName() & ": " & SimObject.GraphicObject.Tag
+        Me.Text = SimObject.GraphicObject.Tag & " (" & SimObject.GetDisplayName() & ")"
         If Loaded Then SimObject.FlowSheet.UpdateOpenEditForms()
         DirectCast(SimObject.FlowSheet, Interfaces.IFlowsheetGUI).UpdateInterface()
         lblTag.Focus()
@@ -146,7 +146,7 @@ Public Class EditingForm_EnergyStream
 
     Sub UpdateProps(sender As Object)
 
-        If sender Is tbEnergyFlow Then SimObject.EnergyFlow = su.Converter.ConvertToSI(cbEnergyFlow.SelectedItem.ToString, tbEnergyFlow.Text)
+        If sender Is tbEnergyFlow Then SimObject.EnergyFlow = su.Converter.ConvertToSI(cbEnergyFlow.SelectedItem.ToString, tbEnergyFlow.Text.ParseExpressionToDouble)
 
         RequestCalc()
 
@@ -162,7 +162,7 @@ Public Class EditingForm_EnergyStream
 
         Dim tbox = DirectCast(sender, TextBox)
 
-        If Double.TryParse(tbox.Text, New Double()) Then
+        If tbox.Text.IsValidDoubleExpression Then
             tbox.ForeColor = Drawing.Color.Blue
         Else
             tbox.ForeColor = Drawing.Color.Red

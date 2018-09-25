@@ -127,7 +127,7 @@ Partial Class FormDataRegression
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
         Me.tbParam = New System.Windows.Forms.TextBox()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
-        Me.ParâmetrosDeInteraçãoToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ParaetrosDeInteracaoToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SalvarEmBancoDeDadosXMLToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
@@ -831,16 +831,16 @@ Partial Class FormDataRegression
         'MenuStrip1
         '
         resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
-        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ParâmetrosDeInteraçãoToolStripMenuItem})
+        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ParaetrosDeInteracaoToolStripMenuItem})
         Me.MenuStrip1.Name = "MenuStrip1"
         '
-        'ParâmetrosDeInteraçãoToolStripMenuItem
+        'ParaetrosDeInteracaoToolStripMenuItem
         '
-        resources.ApplyResources(Me.ParâmetrosDeInteraçãoToolStripMenuItem, "ParâmetrosDeInteraçãoToolStripMenuItem")
-        Me.ParâmetrosDeInteraçãoToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SalvarEmBancoDeDadosXMLToolStripMenuItem})
-        Me.ParâmetrosDeInteraçãoToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert
-        Me.ParâmetrosDeInteraçãoToolStripMenuItem.MergeIndex = 2
-        Me.ParâmetrosDeInteraçãoToolStripMenuItem.Name = "ParâmetrosDeInteraçãoToolStripMenuItem"
+        resources.ApplyResources(Me.ParaetrosDeInteracaoToolStripMenuItem, "ParaetrosDeInteracaoToolStripMenuItem")
+        Me.ParaetrosDeInteracaoToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SalvarEmBancoDeDadosXMLToolStripMenuItem})
+        Me.ParaetrosDeInteracaoToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert
+        Me.ParaetrosDeInteracaoToolStripMenuItem.MergeIndex = 2
+        Me.ParaetrosDeInteracaoToolStripMenuItem.Name = "ParaetrosDeInteracaoToolStripMenuItem"
         '
         'SalvarEmBancoDeDadosXMLToolStripMenuItem
         '
@@ -1015,7 +1015,7 @@ Partial Class FormDataRegression
     Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
     Friend WithEvents tbParam As System.Windows.Forms.TextBox
     Friend WithEvents MenuStrip1 As System.Windows.Forms.MenuStrip
-    Friend WithEvents ParâmetrosDeInteraçãoToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents ParaetrosDeInteracaoToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents SalvarEmBancoDeDadosXMLToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents SaveFileDialog1 As System.Windows.Forms.SaveFileDialog
     Friend WithEvents btnTransfere As System.Windows.Forms.Button

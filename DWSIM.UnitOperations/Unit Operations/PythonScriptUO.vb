@@ -314,7 +314,7 @@ Namespace UnitOperations
 
                                                                                                    Dim sys As Object = PythonEngine.ImportModule("sys")
 
-                                                                                                   If Not GlobalSettings.Settings.IsRunningOnMono Then
+                                                                                                   If Not GlobalSettings.Settings.IsRunningOnMono() Then
                                                                                                        Dim codeToRedirectOutput As String = "import sys" & vbCrLf + "from io import BytesIO as StringIO" & vbCrLf + "sys.stdout = mystdout = StringIO()" & vbCrLf + "sys.stdout.flush()" & vbCrLf + "sys.stderr = mystderr = StringIO()" & vbCrLf + "sys.stderr.flush()"
                                                                                                        PythonEngine.RunSimpleString(codeToRedirectOutput)
                                                                                                    End If
@@ -352,7 +352,7 @@ Namespace UnitOperations
 
                                                                                                    PythonEngine.Exec(txtcode, Nothing, locals.Handle)
 
-                                                                                                   If Not GlobalSettings.Settings.IsRunningOnMono Then
+                                                                                                   If Not GlobalSettings.Settings.IsRunningOnMono() Then
                                                                                                        FlowSheet.ShowMessage(sys.stdout.getvalue().ToString(), IFlowsheet.MessageType.Information)
                                                                                                    End If
 

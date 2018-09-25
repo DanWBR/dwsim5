@@ -64,7 +64,7 @@ namespace DWSIM.UI.Desktop.WPF
                 wpfgrid.RowHeaderWidth = 50;
                 wpfgrid.EnableColumnVirtualization = true;
                 wpfgrid.EnableRowVirtualization = true;
-                VirtualizingPanel.SetVirtualizationMode(wpfgrid, VirtualizationMode.Recycling);
+                //VirtualizingPanel.SetVirtualizationMode(wpfgrid, VirtualizationMode.Recycling);
                 VirtualizingStackPanel.SetIsVirtualizing(wpfgrid, true);
                 wpfgrid.LoadingRow += (sender, e) =>
                 {

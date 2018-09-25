@@ -75,6 +75,6 @@ DWSIM.UI.Desktop.WPF|Cross-Platform UI Windows Presentation Foundation (WPF) Pla
 
 ### Compiling
 
-- DWSIM can be compiled using Visual Studio 2017 on Windows.
+- This branch can be compiled on Linux and macOS using MonoDevelop v7.5.x (Linux) and Visual Studio for Mac (macOS) + Mono v5.12.0 or newer.
 - To compile everything, change the Build target to 'Debug' or 'Release' and 'x64'.
 - To get pre-release [Eto.Forms](https://github.com/picoe/Eto) packages, add https://www.myget.org/F/eto/ as a NuGet package source.

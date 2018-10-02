@@ -55,10 +55,6 @@
     <Compile Include="Renderers\OxyPlot.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DWSIM.Drawing.SkiaSharp\DWSIM.DrawingTools.SkiaSharp.vbproj">
-      <Project>{77040ecc-07b9-4b21-8b1f-7e45764e35f0}</Project>
-      <Name>DWSIM.DrawingTools.SkiaSharp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DWSIM.Interfaces\DWSIM.Interfaces.vbproj">
       <Project>{50bfd69a-487e-4b38-86ea-48acd85a0eb1}</Project>
       <Name>DWSIM.Interfaces</Name>

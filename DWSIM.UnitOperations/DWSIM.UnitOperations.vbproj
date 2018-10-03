@@ -10,7 +10,7 @@
     <AssemblyName>DWSIM.UnitOperations</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -445,7 +445,7 @@
       <DependentUpon>EditingForm_Column_Results.vb</DependentUpon>
     </Compile>
     <Compile Include="Editing Forms\Supporting\EditingForm_Column_Results.vb">
-      <SubType>UserControl</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Editing Forms\Supporting\EditingForm_Column_Stages.designer.vb">
       <DependentUpon>EditingForm_Column_Stages.vb</DependentUpon>

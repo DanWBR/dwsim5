@@ -3075,18 +3075,6 @@ Public Class FormFlowsheet
         Me.FormSurface.FlowsheetDesignSurface.Invalidate()
     End Sub
 
-    Private Sub AssistenteDeCriaçãoDeSubstânciasToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AssistenteDeCriaçãoDeSubstânciasToolStripMenuItem.Click
-
-        FrmStSim1.loaded = False
-
-        Dim wform As New UI.Desktop.Editors.CompoundCreatorWizard(Me)
-        wform.SetupAndDisplayPage(1)
-
-        'start dispatcher for WPF Interop
-        If Not GlobalSettings.Settings.IsRunningOnMono Then System.Windows.Threading.Dispatcher.Run()
-
-    End Sub
-
     Private Sub ToolStripSplitButton1_ButtonClick(sender As Object, e As EventArgs)
         If DWSIM.App.IsRunningOnMono Then
             Me.FrmStSim1 = New FormSimulSettings()

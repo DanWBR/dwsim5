@@ -137,7 +137,6 @@
     <Compile Include="Class1.vb" />
     <Compile Include="data.vb" />
     <Compile Include="DewPointFinder.vb" />
-    <Compile Include="EtoForm.vb" />
     <Compile Include="Form1.Designer.vb">
       <DependentUpon>Form1.vb</DependentUpon>
     </Compile>
@@ -203,11 +202,6 @@
     <ProjectReference Include="..\DWSIM.ExtensionMethods\DWSIM.ExtensionMethods.vbproj">
       <Project>{1e12c010-2661-4896-9c00-90f8b41ed10a}</Project>
       <Name>DWSIM.ExtensionMethods</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\DWSIM.FlowsheetBase\DWSIM.FlowsheetBase.vbproj">
-      <Project>{aea79e29-5dff-4aa8-b431-087a67a1467b}</Project>
-      <Name>DWSIM.FlowsheetBase</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\DWSIM.Serializers.XML\DWSIM.XMLSerializer.vbproj">

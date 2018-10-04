@@ -30,7 +30,6 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -215,6 +214,7 @@
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="indigo-dotnet">
       <HintPath>References\indigo-dotnet.dll</HintPath>
@@ -1121,7 +1121,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -1569,7 +1568,6 @@
     <None Include="Resources\save_16.png" />
   </ItemGroup>
   <ItemGroup>
-    <BaseApplicationManifest Include="My Project\app.manifest" />
     <None Include="Resources\asterisk_orange.png" />
   </ItemGroup>
   <ItemGroup>
@@ -2376,23 +2374,12 @@
 xcopy "$(SolutionDir)PlatformFiles\Common\*" "$(TargetDir)" /E /Y /F /D
 xcopy "$(SolutionDir)PlatformFiles\Windows\CoolProp.dll" "$(TargetDir)" /E /Y /F /D
 
-) else if "$(PlatformName)"=="x64" (
+else if "$(PlatformName)" == "x64" (
 
 xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_XP\" /E /Y /F /D
 
 del "$(SolutionDir)DistPackages\Windows_XP\DWSIM.vshost.*"
 del "$(SolutionDir)DistPackages\Windows_XP\*.tmp"
-
-) else if "$(PlatformName)"=="x86" (
-
-xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
-
-del "$(SolutionDir)DistPackages\Windows_XP_32\DWSIM.vshost.*"
-del "$(SolutionDir)DistPackages\Windows_XP_32\*.tmp"
-
-)
-
-if "$(PlatformName)" == "x64" (
 
 xcopy "$(TargetDir)*" "$(SolutionDir)DistPackages\Windows_XP\" /E /Y /F /D
 
@@ -2409,6 +2396,11 @@ rmdir /S /Q "$(SolutionDir)DistPackages\Windows_XP\ECE"
 del "$(SolutionDir)DistPackages\Windows_XP\*vshost*"
 
 ) else if "$(PlatformName)" == "x86" (
+
+xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
+
+del "$(SolutionDir)DistPackages\Windows_XP_32\DWSIM.vshost.*"
+del "$(SolutionDir)DistPackages\Windows_XP_32\*.tmp"
 
 xcopy "$(TargetDir)*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
 

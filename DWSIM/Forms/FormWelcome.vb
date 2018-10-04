@@ -135,7 +135,6 @@ Public Class FormWelcome
 
         Dim lview = DirectCast(sender, ListView)
 
-
         If File.Exists(lview.SelectedItems(0).Tag) Then
 
             Me.Hide()
@@ -148,21 +147,21 @@ Public Class FormWelcome
             Application.DoEvents()
 
             FormMain.filename = lview.SelectedItems(0).Tag
-            Select Case Path.GetExtension(lview.SelectedItems(0).Tag).ToLower
+            Select Case Path.GetExtension(lview.SelectedItems(0).Tag.ToString).ToLower
                 Case ".dwxml"
                     'FormMain.ToolStripStatusLabel1.Text = DWSIM.App.GetLocalString("Abrindosimulao") + " " + lview.SelectedItems(0).Tag + "..."
                     Application.DoEvents()
                     Application.DoEvents()
-                    FormMain.LoadXML(lview.SelectedItems(0).Tag, Sub(x)
-                                                                     Me.Invoke(Sub() floading.ProgressBar1.Value = x)
-                                                                 End Sub)
+                    FormMain.LoadXML(lview.SelectedItems(0).Tag.ToString, Sub(x)
+                                                                              Me.Invoke(Sub() floading.ProgressBar1.Value = x)
+                                                                          End Sub)
                 Case ".dwxmz"
                     'FormMain.ToolStripStatusLabel1.Text = DWSIM.App.GetLocalString("Abrindosimulao") + " " + lview.SelectedItems(0).Tag + "..."
                     Application.DoEvents()
                     Application.DoEvents()
-                    FormMain.LoadAndExtractXMLZIP(lview.SelectedItems(0).Tag, Sub(x)
-                                                                                  Me.Invoke(Sub() floading.ProgressBar1.Value = x)
-                                                                              End Sub)
+                    FormMain.LoadAndExtractXMLZIP(lview.SelectedItems(0).Tag.ToString, Sub(x)
+                                                                                           Me.Invoke(Sub() floading.ProgressBar1.Value = x)
+                                                                                       End Sub)
                 Case ".dwsim"
                     'FormMain.ToolStripStatusLabel1.Text = DWSIM.App.GetLocalString("Abrindosimulao") + " " + lview.SelectedItems(0).Tag + "..."
                     'Application.DoEvents()
@@ -172,7 +171,7 @@ Public Class FormWelcome
                     'FormMain.ToolStripStatusLabel1.Text = DWSIM.App.GetLocalString("Abrindosimulao") + " " + lview.SelectedItems(0).Tag + "..."
                     Application.DoEvents()
                     Application.DoEvents()
-                    FormMain.LoadMobileXML(lview.SelectedItems(0).Tag)
+                    FormMain.LoadMobileXML(lview.SelectedItems(0).Tag.ToString)
                 Case ".dwcsd"
                     Dim NewMDIChild As New FormCompoundCreator()
                     NewMDIChild.MdiParent = FormMain

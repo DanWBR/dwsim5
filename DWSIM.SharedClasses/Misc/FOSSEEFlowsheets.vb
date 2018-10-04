@@ -162,11 +162,7 @@ label0:
                                                    If pa IsNot Nothing Then pa.Invoke(e.ProgressPercentage)
                                                End Sub
 
-        Dim t = wc.DownloadFileTaskAsync(New Uri(address), fpath)
-
-        While Not t.IsCompleted OrElse t.IsFaulted
-            Thread.Sleep(100)
-        End While
+        wc.DownloadFile(New Uri(address), fpath)
 
         Return fpath
 

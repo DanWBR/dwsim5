@@ -32,10 +32,10 @@ Namespace DWSIM
 
         Public Shared Sub InitializeSettings()
 
-            'initialize Eto.Forms
-            Dim platform As New Eto.Wpf.Platform()
-            Dim etoinst = New Eto.Forms.Application(platform)
-            etoinst.Attach()
+            ''initialize Eto.Forms
+            'Dim platform As New Eto.Wpf.Platform()
+            'Dim etoinst = New Eto.Forms.Application(platform)
+            'etoinst.Attach()
 
             'set language
             GlobalSettings.Settings.CultureInfo = My.Settings.CultureInfo

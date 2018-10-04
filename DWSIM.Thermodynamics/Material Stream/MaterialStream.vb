@@ -770,7 +770,7 @@ Namespace Streams
                     Dim props = ASource.Phases(i).Properties.GetType().GetProperties()
 
                     For Each p In props
-                        p.SetValue(Phases(i).Properties, p.GetValue(ASource.Phases(i).Properties))
+                        p.SetValue(Phases(i).Properties, p.GetValue(ASource.Phases(i).Properties, Nothing), Nothing)
                     Next
 
                 End If

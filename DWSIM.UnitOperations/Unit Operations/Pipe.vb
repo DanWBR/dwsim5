@@ -2543,76 +2543,76 @@ Final3:     T = bbb
 
         Public Overrides Function GetChartModel(name As String) As Object
 
-            Dim su = FlowSheet.FlowsheetOptions.SelectedUnitSystem
+            'Dim su = FlowSheet.FlowsheetOptions.SelectedUnitSystem
 
-            Dim model = New PlotModel() With {.Subtitle = name, .Title = GraphicObject.Tag}
+            'Dim model = New PlotModel() With {.Subtitle = name, .Title = GraphicObject.Tag}
 
-            model.TitleFontSize = 11
-            model.SubtitleFontSize = 10
+            'model.TitleFontSize = 11
+            'model.SubtitleFontSize = 10
 
-            model.Axes.Add(New LinearAxis() With {
-                .MajorGridlineStyle = LineStyle.Dash,
-                .MinorGridlineStyle = LineStyle.Dot,
-                .Position = AxisPosition.Bottom,
-                .FontSize = 10,
-                .Title = "Length (" + su.distance + ")"
-            })
+            'model.Axes.Add(New LinearAxis() With {
+            '    .MajorGridlineStyle = LineStyle.Dash,
+            '    .MinorGridlineStyle = LineStyle.Dot,
+            '    .Position = AxisPosition.Bottom,
+            '    .FontSize = 10,
+            '    .Title = "Length (" + su.distance + ")"
+            '})
 
-            model.Axes.Add(New LinearAxis() With {
-                .MajorGridlineStyle = LineStyle.Dash,
-                .MinorGridlineStyle = LineStyle.Dot,
-                .Position = AxisPosition.Left,
-                .FontSize = 10
-            })
+            'model.Axes.Add(New LinearAxis() With {
+            '    .MajorGridlineStyle = LineStyle.Dash,
+            '    .MinorGridlineStyle = LineStyle.Dot,
+            '    .Position = AxisPosition.Left,
+            '    .FontSize = 10
+            '})
 
-            model.LegendFontSize = 11
-            model.LegendPlacement = LegendPlacement.Outside
-            model.LegendOrientation = LegendOrientation.Horizontal
-            model.LegendPosition = LegendPosition.BottomCenter
-            model.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView
+            'model.LegendFontSize = 11
+            'model.LegendPlacement = LegendPlacement.Outside
+            'model.LegendOrientation = LegendOrientation.Horizontal
+            'model.LegendPosition = LegendPosition.BottomCenter
+            'model.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView
 
-            Dim px = PopulateData(0)
+            'Dim px = PopulateData(0)
 
-            Select Case name
-                Case "Temperature Profile"
-                    model.AddLineSeries(px, PopulateData(3))
-                    model.Axes(1).Title = "Temperature (" + su.temperature + ")"
-                Case "Pressure Profile"
-                    model.AddLineSeries(px, PopulateData(2))
-                    model.Axes(1).Title = "Pressure (" + su.pressure + ")"
-                Case "Heat Flow Profile"
-                    model.AddLineSeries(px, PopulateData(6))
-                    model.Axes(1).Title = "Heat Flow (" + su.heatflow + ")"
-                Case "Liquid Velocity Profile"
-                    model.AddLineSeries(px, PopulateData(4))
-                    model.Axes(1).Title = "Velocity (" + su.velocity + ")"
-                Case "Vapor Velocity Profile"
-                    model.AddLineSeries(px, PopulateData(5))
-                    model.Axes(1).Title = "Velocity (" + su.velocity + ")"
-                Case "Inclination Profile"
-                    model.AddLineSeries(px, PopulateData(1))
-                    model.Axes(1).Title = "Elevation (" + su.distance + ")"
-                Case "Liquid Holdup Profile"
-                    model.AddLineSeries(px, PopulateData(7))
-                    model.Axes(1).Title = "Holdup"
-                Case "Overall HTC Profile"
-                    model.AddLineSeries(px, PopulateData(8))
-                    model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
-                Case "Internal HTC Profile"
-                    model.AddLineSeries(px, PopulateData(9))
-                    model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
-                Case "Wall k/L Profile"
-                    model.AddLineSeries(px, PopulateData(10))
-                    model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
-                Case "Insulation k/L Profile"
-                    model.AddLineSeries(px, PopulateData(11))
-                    model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
-                Case "External HTC Profile"
-                    model.AddLineSeries(px, PopulateData(12))
-                    model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
-            End Select
+            'Select Case name
+            '    Case "Temperature Profile"
+            '        model.AddLineSeries(px, PopulateData(3))
+            '        model.Axes(1).Title = "Temperature (" + su.temperature + ")"
+            '    Case "Pressure Profile"
+            '        model.AddLineSeries(px, PopulateData(2))
+            '        model.Axes(1).Title = "Pressure (" + su.pressure + ")"
+            '    Case "Heat Flow Profile"
+            '        model.AddLineSeries(px, PopulateData(6))
+            '        model.Axes(1).Title = "Heat Flow (" + su.heatflow + ")"
+            '    Case "Liquid Velocity Profile"
+            '        model.AddLineSeries(px, PopulateData(4))
+            '        model.Axes(1).Title = "Velocity (" + su.velocity + ")"
+            '    Case "Vapor Velocity Profile"
+            '        model.AddLineSeries(px, PopulateData(5))
+            '        model.Axes(1).Title = "Velocity (" + su.velocity + ")"
+            '    Case "Inclination Profile"
+            '        model.AddLineSeries(px, PopulateData(1))
+            '        model.Axes(1).Title = "Elevation (" + su.distance + ")"
+            '    Case "Liquid Holdup Profile"
+            '        model.AddLineSeries(px, PopulateData(7))
+            '        model.Axes(1).Title = "Holdup"
+            '    Case "Overall HTC Profile"
+            '        model.AddLineSeries(px, PopulateData(8))
+            '        model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
+            '    Case "Internal HTC Profile"
+            '        model.AddLineSeries(px, PopulateData(9))
+            '        model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
+            '    Case "Wall k/L Profile"
+            '        model.AddLineSeries(px, PopulateData(10))
+            '        model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
+            '    Case "Insulation k/L Profile"
+            '        model.AddLineSeries(px, PopulateData(11))
+            '        model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
+            '    Case "External HTC Profile"
+            '        model.AddLineSeries(px, PopulateData(12))
+            '        model.Axes(1).Title = "Heat Transfer Coefficient (" + su.heat_transf_coeff + ")"
+            'End Select
 
-            Return model
+            Return Nothing
 
         End Function
 

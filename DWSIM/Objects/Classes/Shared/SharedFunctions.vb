@@ -32,22 +32,10 @@ Namespace DWSIM
 
         Public Shared Sub InitializeSettings()
 
-            'initialize Eto.Forms
-            If IsRunningOnMono() Then
-                Dim platform As New Eto.WinForms.Platform()
-                platform.Add(Of CodeEditorControl.ICodeEditor)(Function() New WinForms.CodeEditorControlHandler())
-                platform.Add(Of SKControl.ISKControl)(Function() New Eto.Forms.Controls.SkiaSharp.WinForms.SKControlHandler())
-                platform.Add(Of SKGLControl.ISKGLControl)(Function() New Eto.Forms.Controls.SkiaSharp.WinForms.SKGLControlHandler())
-                Dim etoinst = New Eto.Forms.Application(platform)
-                etoinst.Attach()
-            Else
-                Dim platform As New Eto.Wpf.Platform()
-                platform.Add(Of CodeEditorControl.ICodeEditor)(Function() New WPF.CodeEditorControlHandler())
-                platform.Add(Of SKControl.ISKControl)(Function() New Eto.Forms.Controls.SkiaSharp.WPF.SKControlHandler())
-                platform.Add(Of SKGLControl.ISKGLControl)(Function() New Eto.Forms.Controls.SkiaSharp.WPF.SKGLControlHandler())
-                Dim etoinst = New Eto.Forms.Application(platform)
-                etoinst.Attach()
-            End If
+            ''initialize Eto.Forms
+            'Dim platform As New Eto.Wpf.Platform()
+            'Dim etoinst = New Eto.Forms.Application(platform)
+            'etoinst.Attach()
 
             'set language
             GlobalSettings.Settings.CultureInfo = My.Settings.CultureInfo

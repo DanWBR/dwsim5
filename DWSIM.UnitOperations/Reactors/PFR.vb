@@ -1197,103 +1197,105 @@ Namespace Reactors
 
         Public Overrides Function GetChartModel(name As String) As Object
 
-            Dim su = FlowSheet.FlowsheetOptions.SelectedUnitSystem
+            'Dim su = FlowSheet.FlowsheetOptions.SelectedUnitSystem
 
-            Dim model = New PlotModel() With {.Subtitle = name, .Title = GraphicObject.Tag}
+            'Dim model = New PlotModel() With {.Subtitle = name, .Title = GraphicObject.Tag}
 
-            model.TitleFontSize = 11
-            model.SubtitleFontSize = 10
+            'model.TitleFontSize = 11
+            'model.SubtitleFontSize = 10
 
-            model.Axes.Add(New LinearAxis() With { _
-                .MajorGridlineStyle = LineStyle.Dash, _
-                .MinorGridlineStyle = LineStyle.Dot, _
-                .Position = AxisPosition.Bottom, _
-                .FontSize = 10, _
-                .Title = "Length (" + su.distance + ")" _
-            })
+            'model.Axes.Add(New LinearAxis() With { _
+            '    .MajorGridlineStyle = LineStyle.Dash, _
+            '    .MinorGridlineStyle = LineStyle.Dot, _
+            '    .Position = AxisPosition.Bottom, _
+            '    .FontSize = 10, _
+            '    .Title = "Length (" + su.distance + ")" _
+            '})
 
-            model.LegendFontSize = 9
-            model.LegendPlacement = LegendPlacement.Outside
-            model.LegendOrientation = LegendOrientation.Horizontal
-            model.LegendPosition = LegendPosition.BottomCenter
-            model.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView
+            'model.LegendFontSize = 9
+            'model.LegendPlacement = LegendPlacement.Outside
+            'model.LegendOrientation = LegendOrientation.Horizontal
+            'model.LegendPosition = LegendPosition.BottomCenter
+            'model.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView
 
-            Dim vx As New List(Of Double)(), vy As New List(Of Double)()
-            Dim vya As New List(Of List(Of Double))()
-            Dim vn As New List(Of String)()
+            'Dim vx As New List(Of Double)(), vy As New List(Of Double)()
+            'Dim vya As New List(Of List(Of Double))()
+            'Dim vn As New List(Of String)()
 
-            For Each obj In points
-                vx.Add(DirectCast(obj, Double())(0))
-            Next
+            'For Each obj In points
+            '    vx.Add(DirectCast(obj, Double())(0))
+            'Next
 
-            Dim j As Integer
-            For j = 1 To ComponentConversions.Count + 2
-                vy = New List(Of Double)()
-                For Each obj In points
-                    vy.Add(DirectCast(obj, Double())(j))
-                Next
-                vya.Add(vy)
-            Next
-            For Each st In ComponentConversions.Keys
-                vn.Add(st)
-            Next
-            Dim color As OxyColor
+            'Dim j As Integer
+            'For j = 1 To ComponentConversions.Count + 2
+            '    vy = New List(Of Double)()
+            '    For Each obj In points
+            '        vy.Add(DirectCast(obj, Double())(j))
+            '    Next
+            '    vya.Add(vy)
+            'Next
+            'For Each st In ComponentConversions.Keys
+            '    vn.Add(st)
+            'Next
+            'Dim color As OxyColor
 
-            Select Case name
+            'Select Case name
 
-                Case "Temperature Profile"
+            '    Case "Temperature Profile"
 
-                    model.Axes.Add(New LinearAxis() With { _
-                        .MajorGridlineStyle = LineStyle.Dash, _
-                        .MinorGridlineStyle = LineStyle.Dot, _
-                        .Position = AxisPosition.Left, _
-                        .FontSize = 10, _
-                        .Title = "Temperature (" + su.temperature + ")", _
-                        .Key = "temp"
-                    })
+            '        model.Axes.Add(New LinearAxis() With { _
+            '            .MajorGridlineStyle = LineStyle.Dash, _
+            '            .MinorGridlineStyle = LineStyle.Dot, _
+            '            .Position = AxisPosition.Left, _
+            '            .FontSize = 10, _
+            '            .Title = "Temperature (" + su.temperature + ")", _
+            '            .Key = "temp"
+            '        })
 
-                    color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
-                    model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.temperature, vya(ComponentConversions.Count).ToArray()), color)
-                    model.Series(model.Series.Count - 1).Title = "Temperature"
-                    DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "temp"
+            '        color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
+            '        model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.temperature, vya(ComponentConversions.Count).ToArray()), color)
+            '        model.Series(model.Series.Count - 1).Title = "Temperature"
+            '        DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "temp"
 
-                Case "Pressure Profile"
+            '    Case "Pressure Profile"
 
-                    model.Axes.Add(New LinearAxis() With { _
-                        .MajorGridlineStyle = LineStyle.Dash, _
-                        .MinorGridlineStyle = LineStyle.Dot, _
-                        .Position = AxisPosition.Left, _
-                        .FontSize = 10, _
-                        .Title = "Pressure (" + su.pressure + ")", _
-                        .Key = "press"
-                    })
+            '        model.Axes.Add(New LinearAxis() With { _
+            '            .MajorGridlineStyle = LineStyle.Dash, _
+            '            .MinorGridlineStyle = LineStyle.Dot, _
+            '            .Position = AxisPosition.Left, _
+            '            .FontSize = 10, _
+            '            .Title = "Pressure (" + su.pressure + ")", _
+            '            .Key = "press"
+            '        })
 
-                    color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
-                    model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.pressure, vya(ComponentConversions.Count + 1).ToArray()), color)
-                    model.Series(model.Series.Count - 1).Title = "Pressure"
-                    DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "press"
+            '        color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
+            '        model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.pressure, vya(ComponentConversions.Count + 1).ToArray()), color)
+            '        model.Series(model.Series.Count - 1).Title = "Pressure"
+            '        DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "press"
 
-                Case "Concentration Profile"
+            '    Case "Concentration Profile"
 
-                    model.Axes.Add(New LinearAxis() With { _
-                        .MajorGridlineStyle = LineStyle.Dash, _
-                        .MinorGridlineStyle = LineStyle.Dot, _
-                        .Position = AxisPosition.Left, _
-                        .FontSize = 10, _
-                        .Title = "Concentration (" + su.molar_conc + ")", _
-                        .Key = "conc"
-                    })
+            '        model.Axes.Add(New LinearAxis() With { _
+            '            .MajorGridlineStyle = LineStyle.Dash, _
+            '            .MinorGridlineStyle = LineStyle.Dot, _
+            '            .Position = AxisPosition.Left, _
+            '            .FontSize = 10, _
+            '            .Title = "Concentration (" + su.molar_conc + ")", _
+            '            .Key = "conc"
+            '        })
 
-                    For j = 0 To vn.Count - 1
-                        color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
-                        model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.molar_conc, vya(j).ToArray()), color)
-                        model.Series(model.Series.Count - 1).Title = vn(j)
-                        DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "conc"
-                    Next
+            '        For j = 0 To vn.Count - 1
+            '            color = OxyColor.FromRgb(Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)), Convert.ToByte(New Random().[Next](0, 255)))
+            '            model.AddLineSeries(SystemsOfUnits.Converter.ConvertArrayFromSI(su.distance, vx.ToArray()), SystemsOfUnits.Converter.ConvertArrayFromSI(su.molar_conc, vya(j).ToArray()), color)
+            '            model.Series(model.Series.Count - 1).Title = vn(j)
+            '            DirectCast(model.Series(model.Series.Count - 1), OxyPlot.Series.LineSeries).YAxisKey = "conc"
+            '        Next
 
-            End Select
+            'End Select
 
-            Return model
+            'Return model
+
+            Return Nothing
 
         End Function
 

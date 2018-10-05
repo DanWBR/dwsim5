@@ -29,7 +29,7 @@ Public Class Host
 
     End Sub
 
-    Public Shared Function GetNewInspectorItem(<CallerMemberName> Optional memberName As String = "", <CallerFilePath> Optional fileName As String = "", <CallerLineNumber> Optional lineNumber As Integer = 0) As InspectorItem
+    Public Shared Function GetNewInspectorItem(Optional memberName As String = "", Optional fileName As String = "", Optional lineNumber As Integer = 0) As InspectorItem
 
         If GlobalSettings.Settings.InspectorEnabled Then
             Return New Inspector.InspectorItem With {.CodePath = (fileName & "#L" & lineNumber).Replace(fileName.Substring(0, fileName.IndexOf("\dwsim5\") + 7), "https://github.com/DanWBR/dwsim5/blob/master").Replace("\", "/")}

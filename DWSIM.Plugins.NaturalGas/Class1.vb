@@ -9,7 +9,6 @@ Imports DWSIM.Interfaces
 
     'this variable will reference the active flowsheet in DWSIM, set before plugin's window is opened.
     Public fsheet As DWSIM.FormFlowsheet
-    Public fsheet2 As DWSIM.FlowsheetBase.FlowsheetBase
 
     Public ReadOnly Property Author() As String Implements DWSIM.Interfaces.IUtilityPlugin.Author, IUtilityPlugin5.Author
         Get
@@ -48,11 +47,7 @@ Imports DWSIM.Interfaces
     End Property
 
     Public Function SetFlowsheet(form As IFlowsheet) As Boolean Implements DWSIM.Interfaces.IUtilityPlugin.SetFlowsheet, IUtilityPlugin5.SetFlowsheet
-        If TypeOf form Is DWSIM.FlowsheetBase.FlowsheetBase Then
-            fsheet2 = CType(form, DWSIM.FlowsheetBase.FlowsheetBase)
-        Else
-            fsheet = CType(form, DWSIM.FormFlowsheet)
-        End If
+        fsheet = CType(form, DWSIM.FormFlowsheet)
         Return True
     End Function
 
@@ -69,8 +64,6 @@ Imports DWSIM.Interfaces
                 Dim f As New Form1
                 f.fsheet = Me.fsheet
                 Return f
-            Else
-                Return New EtoForm(fsheet2).GetForm()
             End If
         End Get
     End Property

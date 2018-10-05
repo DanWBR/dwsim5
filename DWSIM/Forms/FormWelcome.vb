@@ -84,13 +84,7 @@ Public Class FormWelcome
         FOSSEEList.Items.Add(New ListViewItem("Downloading flowsheet list, please wait...", 1) With {.Tag = ""})
 
         Task.Factory.StartNew(Function()
-                                  Return SharedClasses.FOSSEEFlowsheets.GetFOSSEEFlowsheets(Sub(px)
-                                                                                                Me.UIThreadInvoke(Sub()
-                                                                                                                      FOSSEEList.Items.Clear()
-                                                                                                                      FOSSEEList.Items.Add(New ListViewItem("Downloading flowsheet list, please wait... (" & px & "%)", 1) With {.Tag = ""})
-                                                                                                                  End Sub)
-
-                                                                                            End Sub)
+                                  Return SharedClasses.FOSSEEFlowsheets.GetFOSSEEFlowsheets()
                               End Function).ContinueWith(Sub(t)
                                                              Me.UIThreadInvoke(Sub()
                                                                                    FOSSEEList.Items.Clear()
@@ -308,8 +302,6 @@ Public Class FormWelcome
                 sb.AppendLine(("Title: " + item.Title))
                 sb.AppendLine(("Author: " + item.ProposerName))
                 sb.AppendLine(("Institution: " + item.Institution))
-                sb.AppendLine(("Created with: " + item.DWSIMVersion))
-                sb.AppendLine(("Reference: " + item.Reference))
                 sb.AppendLine()
                 sb.AppendLine("Click 'Yes' to download and open this flowsheet.")
                 If MessageBox.Show(sb.ToString, "Open FOSSEE Flowsheet", MessageBoxButtons.YesNo, MessageBoxIcon.Information) = DialogResult.Yes Then
@@ -336,9 +328,9 @@ Public Class FormWelcome
                                                                                              floading.Show()
                                                                                              Application.DoEvents()
                                                                                              Try
-                                                                                                 FormMain.LoadXML(xdoc, Sub(x)
-                                                                                                                            Me.Invoke(Sub() floading.ProgressBar1.Value = x)
-                                                                                                                        End Sub)
+                                                                                                 FormMain.LoadXML2(xdoc, Sub(x)
+                                                                                                                             Me.Invoke(Sub() floading.ProgressBar1.Value = x)
+                                                                                                                         End Sub)
                                                                                                  Me.Close()
                                                                                              Catch ex As Exception
                                                                                                  MessageBox.Show(tk.Exception, "Error loading file", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -351,6 +343,14 @@ Public Class FormWelcome
                 End If
             End If
         End If
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Process.Start("https://dwsim.fossee.in/flowsheeting-project")
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        Process.Start("https://fossee.in/")
     End Sub
 
 End Class

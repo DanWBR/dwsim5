@@ -15,6 +15,7 @@ using DWSIM.Interfaces;
 using System.Reflection;
 using System.Text;
 using s = DWSIM.GlobalSettings.Settings;
+using c = DWSIM.UI.Shared.Common;
 
 namespace DWSIM.UI
 {
@@ -63,7 +64,7 @@ namespace DWSIM.UI
             Icon = Eto.Drawing.Icon.FromResource(imgprefix + "DWSIM_ico.ico");
 
             var bgcolor = new Color(0.051f, 0.447f, 0.651f);
-
+            
             if (s.DarkMode) bgcolor = SystemColors.ControlBackground;
 
             Eto.Style.Add<Button>("main", button =>
@@ -199,13 +200,7 @@ namespace DWSIM.UI
 
             Task.Factory.StartNew(() =>
             {
-                return SharedClasses.FOSSEEFlowsheets.GetFOSSEEFlowsheets((p) => {
-                    Application.Instance.AsyncInvoke(() =>
-                    {
-                        FOSSEEList.Items.Clear();
-                        FOSSEEList.Items.Add(new ListItem { Text = "Downloading flowsheet list, please wait... (" + p + "%)" });
-                    });
-                });
+                return SharedClasses.FOSSEEFlowsheets.GetFOSSEEFlowsheets();
             }).ContinueWith((t) =>
             {
                 Application.Instance.Invoke(() =>
@@ -270,8 +265,6 @@ namespace DWSIM.UI
                     sb.AppendLine("Title: " + item.Title);
                     sb.AppendLine("Author: " + item.ProposerName);
                     sb.AppendLine("Institution: " + item.Institution);
-                    sb.AppendLine("Created with: " + item.DWSIMVersion);
-                    sb.AppendLine("Reference: " + item.Reference);
                     sb.AppendLine();
                     sb.AppendLine("Click 'Yes' to download and open this flowsheet.");
 
@@ -303,10 +296,27 @@ namespace DWSIM.UI
                 };
             };
 
+            var fosseecontainer = c.GetDefaultContainer();
+            fosseecontainer.BackgroundColor = bgcolor;
+            var l1 = c.CreateAndAddLabelRow3(fosseecontainer, "About the Project");
+            var l2 = c.CreateAndAddDescriptionRow(fosseecontainer, "FOSSEE, IIT Bombay, invites chemical engineering students, faculty and practitioners to the flowsheeting project using DWSIM. We want you to convert existing flowsheets into DWSIM and get honoraria and certificates.");
+            var bu1 = c.CreateAndAddButtonRow(fosseecontainer, "Submit a Flowsheet", null, (b1, e1) => Process.Start("https://dwsim.fossee.in/flowsheeting-project"));
+            var bu2 = c.CreateAndAddButtonRow(fosseecontainer, "About FOSSEE", null, (b2, e2) => Process.Start("https://fossee.in/"));
+            var l3 = c.CreateAndAddLabelRow3(fosseecontainer, "Completed Flowsheets");
+            l1.TextColor = Colors.White;
+            l2.TextColor = Colors.White;
+            l3.TextColor = Colors.White;
+            bu1.TextColor = Colors.White;
+            bu2.TextColor = Colors.White;
+            bu1.BackgroundColor = bgcolor;
+            bu2.BackgroundColor = bgcolor;
+            fosseecontainer.Add(FOSSEEList);
+            fosseecontainer.EndVertical();
+
             var tabview = new TabControl();
             var tab1 = new TabPage(MostRecentList) { Text = "Recent Files" }; ;
             var tab2 = new TabPage(SampleList) { Text = "Samples" }; ;
-            var tab2a = new TabPage(FOSSEEList) { Text = "FOSSEE Flowsheets" }; ;
+            var tab2a = new TabPage(fosseecontainer) { Text = "FOSSEE Flowsheets" }; ;
             var tab3 = new TabPage(FoldersList) { Text = "Recent Folders" }; ;
             tabview.Pages.Add(tab1);
             tabview.Pages.Add(tab2);

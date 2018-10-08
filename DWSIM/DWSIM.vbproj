@@ -2374,6 +2374,7 @@
 xcopy "$(SolutionDir)PlatformFiles\Common\*" "$(TargetDir)" /E /Y /F /D
 xcopy "$(SolutionDir)PlatformFiles\Windows\CoolProp.dll" "$(TargetDir)" /E /Y /F /D
 
+)
 else if "$(PlatformName)" == "x64" (
 
 xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_XP\" /E /Y /F /D
@@ -2399,13 +2400,7 @@ del "$(SolutionDir)DistPackages\Windows_XP\*vshost*"
 
 xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
 
-del "$(SolutionDir)DistPackages\Windows_XP_32\DWSIM.vshost.*"
-del "$(SolutionDir)DistPackages\Windows_XP_32\*.tmp"
-
-xcopy "$(TargetDir)*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
-
 xcopy "$(SolutionDir)PlatformFiles\Common\*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
-xcopy "$(SolutionDir)PlatformFiles\Windows\*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F /D
 xcopy "$(SolutionDir)PlatformFiles\Windows_32\*" "$(SolutionDir)DistPackages\Windows_XP_32\" /E /Y /F
 
 xcopy "$(SolutionDir)DWSIM\bin\Release\plugins\*" "$(SolutionDir)DistPackages\Windows_XP_32\plugins\" /E /Y /F /D
@@ -2415,6 +2410,7 @@ rmdir /S /Q "$(SolutionDir)DistPackages\Windows_XP_32\x86"
 rmdir /S /Q "$(SolutionDir)DistPackages\Windows_XP_32\ECE"
 
 del "$(SolutionDir)DistPackages\Windows_XP_32\*vshost*"
+del "$(SolutionDir)DistPackages\Windows_XP_32\*.tmp"
 
 )</PostBuildEvent>
   </PropertyGroup>

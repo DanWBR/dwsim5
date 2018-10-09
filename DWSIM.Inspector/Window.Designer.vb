@@ -27,22 +27,26 @@ Partial Class Window
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.TableLayoutPanel2 = New System.Windows.Forms.TableLayoutPanel()
         Me.Label1 = New System.Windows.Forms.Label()
+        Me.Label3 = New System.Windows.Forms.Label()
         Me.itemSelector = New System.Windows.Forms.TreeView()
         Me.SetsBox = New System.Windows.Forms.ListBox()
+        Me.TableLayoutPanel3 = New System.Windows.Forms.TableLayoutPanel()
         Me.currentItemViewer = New System.Windows.Forms.WebBrowser()
+        Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.Label4 = New System.Windows.Forms.Label()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Label2 = New System.Windows.Forms.Label()
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.Label4 = New System.Windows.Forms.Label()
-        Me.TableLayoutPanel3 = New System.Windows.Forms.TableLayoutPanel()
+        Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.TableLayoutPanel1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
         Me.SplitContainer1.SuspendLayout()
         Me.TableLayoutPanel2.SuspendLayout()
-        Me.Panel1.SuspendLayout()
         Me.TableLayoutPanel3.SuspendLayout()
+        Me.Panel2.SuspendLayout()
+        Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
         'TableLayoutPanel1
@@ -89,8 +93,8 @@ Partial Class Window
         Me.TableLayoutPanel2.Location = New System.Drawing.Point(0, 0)
         Me.TableLayoutPanel2.Name = "TableLayoutPanel2"
         Me.TableLayoutPanel2.RowCount = 4
-        Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
-        Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100.0!))
+        Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25.0!))
+        Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 95.0!))
         Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
         Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
         Me.TableLayoutPanel2.Size = New System.Drawing.Size(231, 411)
@@ -108,6 +112,18 @@ Partial Class Window
         Me.Label1.Text = "Reports"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
+        'Label3
+        '
+        Me.Label3.AutoSize = True
+        Me.Label3.Dock = System.Windows.Forms.DockStyle.Left
+        Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.Location = New System.Drawing.Point(3, 0)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(180, 25)
+        Me.Label3.TabIndex = 1
+        Me.Label3.Text = "Available Solution Report Sets"
+        Me.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
         'itemSelector
         '
         Me.itemSelector.Dock = System.Windows.Forms.DockStyle.Fill
@@ -121,19 +137,67 @@ Partial Class Window
         '
         Me.SetsBox.Dock = System.Windows.Forms.DockStyle.Fill
         Me.SetsBox.FormattingEnabled = True
-        Me.SetsBox.Location = New System.Drawing.Point(3, 23)
+        Me.SetsBox.Location = New System.Drawing.Point(3, 28)
         Me.SetsBox.Name = "SetsBox"
-        Me.SetsBox.Size = New System.Drawing.Size(225, 94)
+        Me.SetsBox.Size = New System.Drawing.Size(225, 89)
         Me.SetsBox.TabIndex = 2
+        '
+        'TableLayoutPanel3
+        '
+        Me.TableLayoutPanel3.ColumnCount = 1
+        Me.TableLayoutPanel3.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.TableLayoutPanel3.Controls.Add(Me.currentItemViewer, 0, 1)
+        Me.TableLayoutPanel3.Controls.Add(Me.Panel2, 0, 0)
+        Me.TableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel3.Location = New System.Drawing.Point(0, 0)
+        Me.TableLayoutPanel3.Name = "TableLayoutPanel3"
+        Me.TableLayoutPanel3.RowCount = 2
+        Me.TableLayoutPanel3.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 27.0!))
+        Me.TableLayoutPanel3.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.TableLayoutPanel3.Size = New System.Drawing.Size(460, 411)
+        Me.TableLayoutPanel3.TabIndex = 1
         '
         'currentItemViewer
         '
         Me.currentItemViewer.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.currentItemViewer.Location = New System.Drawing.Point(3, 23)
+        Me.currentItemViewer.Location = New System.Drawing.Point(3, 30)
         Me.currentItemViewer.MinimumSize = New System.Drawing.Size(20, 20)
         Me.currentItemViewer.Name = "currentItemViewer"
-        Me.currentItemViewer.Size = New System.Drawing.Size(454, 385)
+        Me.currentItemViewer.ScriptErrorsSuppressed = True
+        Me.currentItemViewer.Size = New System.Drawing.Size(454, 378)
         Me.currentItemViewer.TabIndex = 0
+        '
+        'Panel2
+        '
+        Me.Panel2.Controls.Add(Me.Button1)
+        Me.Panel2.Controls.Add(Me.Label4)
+        Me.Panel2.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Panel2.Location = New System.Drawing.Point(0, 0)
+        Me.Panel2.Margin = New System.Windows.Forms.Padding(0)
+        Me.Panel2.Name = "Panel2"
+        Me.Panel2.Size = New System.Drawing.Size(460, 27)
+        Me.Panel2.TabIndex = 2
+        '
+        'Button1
+        '
+        Me.Button1.Dock = System.Windows.Forms.DockStyle.Right
+        Me.Button1.Location = New System.Drawing.Point(361, 0)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(99, 27)
+        Me.Button1.TabIndex = 1
+        Me.Button1.Text = "Save HTML"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'Label4
+        '
+        Me.Label4.Dock = System.Windows.Forms.DockStyle.Left
+        Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label4.Location = New System.Drawing.Point(0, 0)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(99, 27)
+        Me.Label4.TabIndex = 2
+        Me.Label4.Text = "Selected Report"
+        Me.Label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'Panel1
         '
@@ -154,44 +218,11 @@ Partial Class Window
         Me.Label2.Text = "The Solution Inspector brings a human-readable, hierarchized view of all model ca" &
     "lculations in a Flowsheet Solver run."
         '
-        'Label3
+        'SaveFileDialog1
         '
-        Me.Label3.AutoSize = True
-        Me.Label3.Dock = System.Windows.Forms.DockStyle.Left
-        Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(3, 0)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(180, 20)
-        Me.Label3.TabIndex = 1
-        Me.Label3.Text = "Available Solution Report Sets"
-        Me.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'Label4
-        '
-        Me.Label4.AutoSize = True
-        Me.Label4.Dock = System.Windows.Forms.DockStyle.Left
-        Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(3, 0)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(99, 20)
-        Me.Label4.TabIndex = 2
-        Me.Label4.Text = "Selected Report"
-        Me.Label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'TableLayoutPanel3
-        '
-        Me.TableLayoutPanel3.ColumnCount = 1
-        Me.TableLayoutPanel3.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.TableLayoutPanel3.Controls.Add(Me.Label4, 0, 0)
-        Me.TableLayoutPanel3.Controls.Add(Me.currentItemViewer, 0, 1)
-        Me.TableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.TableLayoutPanel3.Location = New System.Drawing.Point(0, 0)
-        Me.TableLayoutPanel3.Name = "TableLayoutPanel3"
-        Me.TableLayoutPanel3.RowCount = 2
-        Me.TableLayoutPanel3.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
-        Me.TableLayoutPanel3.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.TableLayoutPanel3.Size = New System.Drawing.Size(460, 411)
-        Me.TableLayoutPanel3.TabIndex = 1
+        Me.SaveFileDialog1.DefaultExt = "html"
+        Me.SaveFileDialog1.Filter = "HTML File|*.html"
+        Me.SaveFileDialog1.Title = "Save Report to HTML File"
         '
         'Window
         '
@@ -209,10 +240,10 @@ Partial Class Window
         Me.SplitContainer1.ResumeLayout(False)
         Me.TableLayoutPanel2.ResumeLayout(False)
         Me.TableLayoutPanel2.PerformLayout()
+        Me.TableLayoutPanel3.ResumeLayout(False)
+        Me.Panel2.ResumeLayout(False)
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
-        Me.TableLayoutPanel3.ResumeLayout(False)
-        Me.TableLayoutPanel3.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -229,4 +260,7 @@ Partial Class Window
     Friend WithEvents Label3 As Windows.Forms.Label
     Friend WithEvents Label2 As Windows.Forms.Label
     Friend WithEvents TableLayoutPanel3 As Windows.Forms.TableLayoutPanel
+    Friend WithEvents Panel2 As Windows.Forms.Panel
+    Friend WithEvents Button1 As Windows.Forms.Button
+    Friend WithEvents SaveFileDialog1 As Windows.Forms.SaveFileDialog
 End Class

@@ -2374,8 +2374,7 @@
 xcopy "$(SolutionDir)PlatformFiles\Common\*" "$(TargetDir)" /E /Y /F /D
 xcopy "$(SolutionDir)PlatformFiles\Windows\CoolProp.dll" "$(TargetDir)" /E /Y /F /D
 
-)
-else if "$(PlatformName)" == "x64" (
+) else if "$(PlatformName)" == "x64" (
 
 xcopy "$(TargetDir)\*" "$(SolutionDir)DistPackages\Windows_XP\" /E /Y /F /D
 

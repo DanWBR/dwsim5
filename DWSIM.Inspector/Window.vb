@@ -94,9 +94,7 @@ Public Class Window
                     Dim nesteditems = GetItems(Host.Items.ToList)
                     Dim sitem = nesteditems.Where(Function(x) x.ID = DirectCast(itemSelector.SelectedNode, TreeNode).Tag.ToString).FirstOrDefault
                     If Not sitem Is Nothing Then
-                        Dim htmlfile = IO.Path.Combine(My.Computer.FileSystem.SpecialDirectories.Temp, "dwsiminspector_currentitem.htm")
-                        IO.File.WriteAllText(htmlfile, sitem.GetHTML())
-                        currentItemViewer.Url = New Uri(htmlfile)
+                        currentItemViewer.DocumentText = sitem.GetHTML()
                     Else
                         MessageBox.Show("Selected report not found.")
                     End If
@@ -144,6 +142,12 @@ Public Class Window
         For Each i As TreeNode In item.Nodes
             GetTreeItems(i, items)
         Next
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        If SaveFileDialog1.ShowDialog = DialogResult.OK Then
+            IO.File.WriteAllText(SaveFileDialog1.FileName, currentItemViewer.DocumentText)
+        End If
     End Sub
 
 End Class

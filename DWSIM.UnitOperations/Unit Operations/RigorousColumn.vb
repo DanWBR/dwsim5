@@ -3459,56 +3459,56 @@ Namespace UnitOperations
         End Function
 
         Public Overrides Function GetChartModel(name As String) As Object
-            Dim su = FlowSheet.FlowsheetOptions.SelectedUnitSystem
+            'Dim su = FlowSheet.FlowsheetOptions.SelectedUnitSystem
 
-            Dim model = New PlotModel() With {.Subtitle = name, .Title = GraphicObject.Tag}
+            'Dim model = New PlotModel() With {.Subtitle = name, .Title = GraphicObject.Tag}
 
-            model.TitleFontSize = 11
-            model.SubtitleFontSize = 10
+            'model.TitleFontSize = 11
+            'model.SubtitleFontSize = 10
 
-            model.Axes.Add(New LinearAxis() With {
-                .MajorGridlineStyle = LineStyle.Dash,
-                .MinorGridlineStyle = LineStyle.Dot,
-                .Position = AxisPosition.Bottom,
-                .FontSize = 10
-            })
+            'model.Axes.Add(New LinearAxis() With {
+            '    .MajorGridlineStyle = LineStyle.Dash,
+            '    .MinorGridlineStyle = LineStyle.Dot,
+            '    .Position = AxisPosition.Bottom,
+            '    .FontSize = 10
+            '})
 
-            model.Axes.Add(New LinearAxis() With {
-                .MajorGridlineStyle = LineStyle.Dash,
-                .MinorGridlineStyle = LineStyle.Dot,
-                .Position = AxisPosition.Left,
-                .FontSize = 10,
-                .Title = "Stage",
-                .StartPosition = 1,
-                .EndPosition = 0,
-                .MajorStep = 1.0,
-                .MinorStep = 0.5
-            })
+            'model.Axes.Add(New LinearAxis() With {
+            '    .MajorGridlineStyle = LineStyle.Dash,
+            '    .MinorGridlineStyle = LineStyle.Dot,
+            '    .Position = AxisPosition.Left,
+            '    .FontSize = 10,
+            '    .Title = "Stage",
+            '    .StartPosition = 1,
+            '    .EndPosition = 0,
+            '    .MajorStep = 1.0,
+            '    .MinorStep = 0.5
+            '})
 
-            model.LegendFontSize = 11
-            model.LegendPlacement = LegendPlacement.Outside
-            model.LegendOrientation = LegendOrientation.Horizontal
-            model.LegendPosition = LegendPosition.BottomCenter
-            model.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView
+            'model.LegendFontSize = 11
+            'model.LegendPlacement = LegendPlacement.Outside
+            'model.LegendOrientation = LegendOrientation.Horizontal
+            'model.LegendPosition = LegendPosition.BottomCenter
+            'model.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView
 
-            Dim py = PopulateColumnData(0)
+            'Dim py = PopulateColumnData(0)
 
-            Select Case name
-                Case "Temperature Profile"
-                    model.AddLineSeries(PopulateColumnData(2), py)
-                    model.Axes(0).Title = "Temperature (" + su.temperature + ")"
-                Case "Pressure Profile"
-                    model.AddLineSeries(PopulateColumnData(1), py)
-                    model.Axes(0).Title = "Pressure (" + su.pressure + ")"
-                Case "Vapor Flow Profile"
-                    model.AddLineSeries(PopulateColumnData(3), py)
-                    model.Axes(0).Title = "Molar Flow (" + su.molarflow + ")"
-                Case "Liquid Flow Profile"
-                    model.AddLineSeries(PopulateColumnData(4), py)
-                    model.Axes(0).Title = "Molar Flow (" + su.molarflow + ")"
-            End Select
+            'Select Case name
+            '    Case "Temperature Profile"
+            '        model.AddLineSeries(PopulateColumnData(2), py)
+            '        model.Axes(0).Title = "Temperature (" + su.temperature + ")"
+            '    Case "Pressure Profile"
+            '        model.AddLineSeries(PopulateColumnData(1), py)
+            '        model.Axes(0).Title = "Pressure (" + su.pressure + ")"
+            '    Case "Vapor Flow Profile"
+            '        model.AddLineSeries(PopulateColumnData(3), py)
+            '        model.Axes(0).Title = "Molar Flow (" + su.molarflow + ")"
+            '    Case "Liquid Flow Profile"
+            '        model.AddLineSeries(PopulateColumnData(4), py)
+            '        model.Axes(0).Title = "Molar Flow (" + su.molarflow + ")"
+            'End Select
 
-            Return model
+            Return Nothing
 
         End Function
 

@@ -1670,7 +1670,7 @@ Namespace GraphicObjects
 
                             p = MSObj.GetPhase("Mixture")
 
-                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                             size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
                             If size.Width > maxL5 Then maxL5 = size.Width
@@ -1678,7 +1678,7 @@ Namespace GraphicObjects
 
                             p = MSObj.GetPhase("Vapor")
 
-                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                             size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
                             If size.Width > maxL6 Then maxL6 = size.Width
@@ -1686,7 +1686,7 @@ Namespace GraphicObjects
 
                             p = MSObj.GetPhase("Liquid1")
 
-                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                             size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
                             If size.Width > maxL7 Then maxL7 = size.Width
@@ -1694,7 +1694,7 @@ Namespace GraphicObjects
 
                             p = MSObj.GetPhase("Liquid2")
 
-                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                             size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
                             If size.Width > maxL8 Then maxL8 = size.Width
@@ -1702,7 +1702,7 @@ Namespace GraphicObjects
 
                             p = MSObj.GetPhase("Solid")
 
-                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                            bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                             size = g.MeasureString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf), New Font(Me.HeaderFont, FontStyle.Bold), New PointF(0, 0), New StringFormat(StringFormatFlags.NoClip, 0))
                             If size.Width > maxL9 Then maxL9 = size.Width
@@ -1892,7 +1892,7 @@ Namespace GraphicObjects
 
                                 p = MSObj.GetPhase("Mixture")
 
-                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                                 g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
                                              New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
@@ -1900,7 +1900,7 @@ Namespace GraphicObjects
 
                                 p = MSObj.GetPhase("Vapor")
 
-                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                                 g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
                                              New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
@@ -1908,7 +1908,7 @@ Namespace GraphicObjects
 
                                 p = MSObj.GetPhase("Liquid1")
 
-                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                                 g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
                                              New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
@@ -1916,7 +1916,7 @@ Namespace GraphicObjects
 
                                 p = MSObj.GetPhase("Liquid2")
 
-                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                                 g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
                                              New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),
@@ -1924,7 +1924,7 @@ Namespace GraphicObjects
 
                                 p = MSObj.GetPhase("Solid")
 
-                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c))
+                                bpval = p.Compounds(c).GetType.GetProperty(bprop).GetValue(p.Compounds(c), Nothing)
 
                                 g.DrawString(bpval.GetValueOrDefault.ConvertFromSI(convertfrom).ToString(nf),
                                              New Font(Me.HeaderFont, FontStyle.Regular), New SolidBrush(FontColor),

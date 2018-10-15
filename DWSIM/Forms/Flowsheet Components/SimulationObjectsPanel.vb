@@ -30,7 +30,7 @@ Public Class SimulationObjectsPanel
             If Not item.IsAbstract Then
                 Dim obj = DirectCast(Activator.CreateInstance(item), Interfaces.ISimulationObject)
                 If Not Flowsheet.MobileCompatibilityMode Then
-                    add = obj.GetType.GetProperty("Visible").GetValue(obj)
+                    add = obj.GetType.GetProperty("Visible").GetValue(obj, Nothing)
                 Else
                     add = obj.MobileCompatible
                 End If
@@ -52,7 +52,7 @@ Public Class SimulationObjectsPanel
             If Not item.IsAbstract Then
                 Dim obj = DirectCast(Activator.CreateInstance(item), Interfaces.ISimulationObject)
                 If Not Flowsheet.MobileCompatibilityMode Then
-                    add = obj.GetType.GetProperty("Visible").GetValue(obj)
+                    add = obj.GetType.GetProperty("Visible").GetValue(obj, Nothing)
                 Else
                     add = obj.MobileCompatible
                 End If

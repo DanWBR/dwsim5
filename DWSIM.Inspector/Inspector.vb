@@ -33,11 +33,10 @@ Public Class Host
 
         If GlobalSettings.Settings.InspectorEnabled Then
             If memberName <> "" Then
-                Return New Inspector.InspectorItem With {.CodePath = (fileName & "#L" & lineNumber).Replace(fileName.Substring(0, fileName.IndexOf("\dwsim5\") + 7), "https://github.com/DanWBR/dwsim5/blob/master").Replace("\", "/")}
+                Return New Inspector.InspectorItem With {.CodePath = (fileName & "#L" & lineNumber).Replace(fileName.Substring(0, fileName.IndexOf("\dwsim5\") + 7), "https://github.com/DanWBR/dwsim5/blob/windows").Replace("\", "/")}
             Else
                 Return New Inspector.InspectorItem()
             End If
-
         Else
             Return Nothing
         End If

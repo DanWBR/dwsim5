@@ -354,6 +354,15 @@ out:        Return New Object() {L, V, Vx, Vy, ecount, 0.0#, PP.RET_NullVector, 
             Hf = PP.RET_VHF 'Enthalpy of fusion
             Tc = PP.RET_VTC 'Critical Temperature
 
+            If Tf.Sum = 0.0 AndAlso PP.ForcedSolids.Count = 0 Then
+                'impossible to calculate solids. return liquid solution only.
+                L = 1
+                L_old = L
+                Vx = Vz.Clone
+                Vs = PP.RET_NullVector
+                GoTo out
+            End If
+
             IObj?.Paragraphs.Add(String.Format("<h2>Input Parameters</h2>"))
 
             IObj?.Paragraphs.Add(String.Format("Temperature: {0} K", T))
@@ -364,10 +373,10 @@ out:        Return New Object() {L, V, Vx, Vy, ecount, 0.0#, PP.RET_NullVector, 
             IObj?.Paragraphs.Add(String.Format("Fusion Temperatures: {0} K", Tf.ToMathArrayString))
             IObj?.Paragraphs.Add(String.Format("Fusion Enthalpies: {0} kJ/mol", Hf.ToMathArrayString))
 
-            If Vz.MaxY = 1.0# Then 'only a single component
+            If Vz.MaxY >= 0.999999 Then 'only a single component
                 ecount = 0
                 For i = 0 To n
-                    If Vz(i) = 1 Then
+                    If Vz(i) >= 0.999999 Then
                         If T > Tf(i) Then
                             'above melting temperature, only liquid
                             L = 1

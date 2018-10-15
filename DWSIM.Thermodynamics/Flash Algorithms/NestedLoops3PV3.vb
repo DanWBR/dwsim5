@@ -49,9 +49,9 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
         Dim Pb, Pd, Pmin, Pmax, Px, soma_x, soma_x1, soma_y, soma_x2 As Double
         Dim proppack As PropertyPackages.PropertyPackage
 
-        Dim prevres As PreviousResults
+        Public prevres As PreviousResults
 
-        Private Class PreviousResults
+        Public Class PreviousResults
             Property V As Double
             Property L1 As Double
             Property L2 As Double
@@ -391,6 +391,7 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
                     Throw New Exception(Calculator.GetLocalString("PropPack_FlashError"))
 
                 ElseIf Math.Abs(e3) < itol And (e1 + e2) < itol And ecount > 0 Then
+
                     convergiu = 1
 
                     Exit Do
@@ -412,7 +413,23 @@ Namespace PropertyPackages.Auxiliary.FlashAlgorithms
 
                     IObj2?.Paragraphs.Add(String.Format("Current value of the Rachford-Rice error function: {0}", F))
 
-                    V = -F / dF + V
+                    If Abs(F) < etol Then Exit Do
+
+                    Dim af, dfmin As Double
+
+                    If ecount = 0 Then
+                        dfmin = 0.1
+                    ElseIf ecount = 1 Then
+                        dfmin = 0.3
+                    ElseIf ecount = 2 Then
+                        dfmin = 0.5
+                    Else
+                        dfmin = 0.7
+                    End If
+
+                    af = MinimizeGibbs(dfmin, PP, T, P, L, 0, F / dF, 0, Vy, Vx, PP.RET_NullVector)
+
+                    V = -F / dF * af + V
 
                     IObj2?.Paragraphs.Add(String.Format("Updated Vapor Fraction (<math_inline>\beta</math_inline>) value: {0}", V))
 
@@ -473,50 +490,13 @@ out:
 
                 IObj?.Paragraphs.Add("We have a liquid phase. Checking its stability according to user specifications...")
 
-                Dim nt As Integer = -1
-                Dim nc As Integer = Vz.Length - 1
-                Dim ff As Integer
-
-                i = 0
-                For Each subst As Interfaces.ICompound In PP.CurrentMaterialStream.Phases(0).Compounds.Values
-                    ff = Array.IndexOf(StabSearchCompIDs, subst.Name)
-                    If ff >= 0 And Vz(i) > 0 And T < subst.ConstantProperties.Critical_Temperature Then nt += 1
-                    i += 1
-                Next
-                If nt = -1 Then nt = nc
-
-                Dim Vtrials(nt, nc) As Double
-                Dim idx(nt) As Integer
-
-                i = 0
-                j = 0
-                For Each subst As Interfaces.ICompound In PP.CurrentMaterialStream.Phases(0).Compounds.Values
-                    ff = Array.IndexOf(StabSearchCompIDs, subst.Name)
-                    If ff >= 0 And Vz(i) > 0 And T < subst.ConstantProperties.Critical_Temperature Then
-                        idx(j) = i
-                        j += 1
-                    End If
-                    i += 1
-                Next
-
-                For i = 0 To nt
-                    For j = 0 To nc
-                        If Vz(j) > 0 Then Vtrials(i, j) = 0.00001
-                    Next
-                Next
-                For j = 0 To nt
-                    Vtrials(j, idx(j)) = 1
-                Next
-
                 IObj?.Paragraphs.Add("Calling Liquid Phase Stability Test algorithm...")
-
-                IObj?.Paragraphs.Add(String.Format("Tentative compositions for the second (incipient) liquid phase: {0}", Vtrials.ToMathArrayString))
 
                 ' do a stability test in the liquid phase
 
                 IObj?.SetCurrent
 
-                Dim stresult As Object = StabTest(T, P, result(2), PP, Vtrials, Me.StabSearchSeverity)
+                Dim stresult As Object = StabTest(T, P, result(2), PP.RET_VTC, PP)
 
                 If stresult(0) = False Then
 
@@ -531,13 +511,13 @@ out:
                     If StabSearchSeverity = 2 Then
                         gli = 0
                         For j = 0 To m
-                            For i = 0 To nc
+                            For i = 0 To n
                                 vx2est(i) = stresult(1)(j, i)
                             Next
                             IObj?.SetCurrent
                             fcl = PP.DW_CalcFugCoeff(vx2est, T, P, State.Liquid)
                             gl = 0.0#
-                            For i = 0 To nc
+                            For i = 0 To n
                                 If vx2est(i) <> 0.0# Then gl += vx2est(i) * Log(fcl(i) * vx2est(i))
                             Next
                             If gl <= gli Then
@@ -845,21 +825,13 @@ out2:       d2 = Date.Now
                 IObj2?.SetCurrent()
 
                 If Settings.EnableParallelProcessing Then
-
-                    Dim task1 As Task = New Task(Sub()
-                                                     CFL1 = proppack.DW_CalcFugCoeff(Vx1, T, P, State.Liquid)
-                                                 End Sub)
-                    Dim task2 As Task = New Task(Sub()
-                                                     CFL2 = proppack.DW_CalcFugCoeff(Vx2, T, P, State.Liquid)
-                                                 End Sub)
-                    Dim task3 As Task = New Task(Sub()
-                                                     CFV = proppack.DW_CalcFugCoeff(Vy, T, P, State.Vapor)
-                                                 End Sub)
+                    Dim task1 As Task = New Task(Sub() CFL1 = proppack.DW_CalcFugCoeff(Vx1, T, P, State.Liquid))
+                    Dim task2 As Task = New Task(Sub() CFL2 = proppack.DW_CalcFugCoeff(Vx2, T, P, State.Liquid))
+                    Dim task3 As Task = New Task(Sub() CFV = proppack.DW_CalcFugCoeff(Vy, T, P, State.Vapor))
                     task1.Start()
                     task2.Start()
                     task3.Start()
                     Task.WaitAll(task1, task2, task3)
-
                 Else
                     IObj2?.SetCurrent()
                     CFL1 = proppack.DW_CalcFugCoeff(Vx1, T, P, State.Liquid)
@@ -952,7 +924,7 @@ out2:       d2 = Date.Now
                     IObj2?.Paragraphs.Add(String.Format("Equilibrium Equation 1 error: {0}", F1))
                     IObj2?.Paragraphs.Add(String.Format("Equilibrium Equation 2 error: {0}", F2))
 
-                    If Abs(F1) + Abs(F2) < etol Then Exit Do
+                    If Abs(L1 * F1) + Abs(L2 * F2) < etol Then Exit Do
 
                     Dim MA As Mapack.Matrix = New Mapack.Matrix(2, 2)
                     Dim MB As Mapack.Matrix = New Mapack.Matrix(2, 1)
@@ -975,14 +947,14 @@ out2:       d2 = Date.Now
 
                     Dim df, dfmin As Double
 
-                    If ecount = 0 Then
+                    If ecount < 5 Then
+                        dfmin = 0.0
+                    ElseIf ecount < 10 Then
                         dfmin = 0.1
-                    ElseIf ecount = 1 Then
+                    ElseIf ecount < 15 Then
                         dfmin = 0.3
-                    ElseIf ecount = 2 Then
-                        dfmin = 0.5
                     Else
-                        dfmin = 0.7
+                        dfmin = 0.5
                     End If
 
                     df = MinimizeGibbs(dfmin, PP, T, P, L1, L2, dL1, dL2, Vy, Vx1, Vx2)
@@ -1619,7 +1591,7 @@ alt:
                 Next
 
                 IObj?.SetCurrent
-                Dim stresult As Object = StabTest(T, P, result(2), PP, Vtrials, Me.StabSearchSeverity)
+                Dim stresult As Object = StabTest(T, P, result(2), PP.RET_VTC, PP)
 
                 If stresult(0) = False Then
 
@@ -1751,7 +1723,7 @@ alt:
                 Next
 
                 IObj?.SetCurrent
-                Dim stresult As Object = StabTest(T, P, result(2), PP, Vtrials, Me.StabSearchSeverity)
+                Dim stresult As Object = StabTest(T, P, result(2), PP.RET_VTC, PP)
 
                 If stresult(0) = False Then
 

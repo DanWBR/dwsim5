@@ -11,8 +11,6 @@ Imports DWSIM.Thermodynamics
 Imports DWSIM.SharedClasses
 Imports DWSIM.Interfaces.Enums.GraphicObjects
 Imports DWSIM.Interfaces
-Imports Eto.Forms
-Imports DWSIM.UI.Shared
 
 Public Class Populate
 
@@ -25,12 +23,9 @@ Public Class Populate
     Public Sub Populate(fsheet As DWSIM.Interfaces.IFlowsheet, myform As Object)
 
         Dim f_wf As Form1 = Nothing
-        Dim f_eto As Eto.Forms.Form = Nothing
 
         If TypeOf myform Is System.Windows.Forms.Form Then
             f_wf = CType(myform, Form1)
-        Else
-            f_eto = CType(myform, Eto.Forms.Form)
         End If
 
         'read data from text files
@@ -48,14 +43,7 @@ Public Class Populate
         Next
 
         If fsheet.GetSelectedFlowsheetSimulationObject(Nothing) Is Nothing Then
-            If f_eto IsNot Nothing Then
-                Dim scrollbox As Scrollable = DirectCast(f_eto.Content, Scrollable)
-                Dim container As DynamicLayout = DirectCast(scrollbox.Content, DynamicLayout)
-                container.CreateAndAddLabelRow("Calculation Results")
-                container.CreateAndAddLabelRow2("You need to select a Material Stream before opening this plugin.")
-            Else
-                fsheet.ShowMessage("Natural Gas Properties Plugin error: You need to select a Material Stream first.", IFlowsheet.MessageType.GeneralError)
-            End If
+            fsheet.ShowMessage("Natural Gas Properties Plugin error: You need to select a Material Stream first.", IFlowsheet.MessageType.GeneralError)
             Exit Sub
         End If
 
@@ -366,80 +354,6 @@ Public Class Populate
                     .ShowCustomProperties = True
 
                 End With
-
-            Else
-
-                Dim scrollbox As Scrollable = DirectCast(f_eto.Content, Scrollable)
-                Dim container As DynamicLayout = DirectCast(scrollbox.Content, DynamicLayout)
-
-                container.CreateAndAddLabelRow("Calculation Results")
-                container.CreateAndAddTwoLabelsRow2("Selected Stream", gobj.Tag)
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Molar Weight", Format(mw, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Specific Gravity", Format(d, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Compressibility Factor @ NC", Format(z0, nf))
-                container.CreateAndAddTwoLabelsRow("Compressibility Factor @ SC", Format(z15, nf))
-                container.CreateAndAddTwoLabelsRow("Compressibility Factor @ BR", Format(z20, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Specific Gravity @ NC", Format(d0, nf))
-                container.CreateAndAddTwoLabelsRow("Specific Gravity @ SC", Format(d15, nf))
-                container.CreateAndAddTwoLabelsRow("Specific Gravity @ BR", Format(d20, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Mass LHV @ 0 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, lhv0m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass LHV @ 15 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, lhv15m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass LHV @ 20 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, lhv20m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass LHV @ 25 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, lhv25m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass HHV @ 0 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, hhv0m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass HHV @ 15 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, hhv15m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass HHV @ 20 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, hhv20m), nf))
-                container.CreateAndAddTwoLabelsRow("Mass HHV @ 25 °C (" & su.enthalpy & ")", Format(Converter.ConvertFromSI(su.enthalpy, hhv25m), nf))
-                container.CreateAndAddTwoLabelsRow("Molar LHV @ 0 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, lhv0m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar LHV @ 15 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, lhv15m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar LHV @ 20 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, lhv20m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar LHV @ 25 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, lhv25m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar HHV @ 0 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, hhv0m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar HHV @ 15 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, hhv15m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar HHV @ 20 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, hhv20m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Molar HHV @ 25 °C (" & su.molar_enthalpy & ")", Format(Converter.ConvertFromSI(su.molar_enthalpy, hhv25m * mw), nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Vol. LHV @ NC (kJ/m3)", Format(lhv00v, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Vol. LHV @ SC (kJ/m3)", Format(lhv1515v, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Vol. LHV @ BR (kJ/m3)", Format(lhv2020v, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Vol. HHV @ NC (kJ/m3)", Format(hhv00v, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Vol. HHV @ SC (kJ/m3)", Format(hhv1515v, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Vol. HHV @ BR (kJ/m3)", Format(hhv2020v, nf))
-                container.CreateAndAddTwoLabelsRow("Vol. LHV @ NC (kJ/m3)", Format(lhv00vr, nf))
-                container.CreateAndAddTwoLabelsRow("Vol. LHV @ SC (kJ/m3)", Format(lhv1515vr, nf))
-                container.CreateAndAddTwoLabelsRow("Vol. LHV @ BR (kJ/m3)", Format(lhv2020vr, nf))
-                container.CreateAndAddTwoLabelsRow("Vol. HHV @ NC (kJ/m3)", Format(hhv00vr, nf))
-                container.CreateAndAddTwoLabelsRow("Vol. HHV @ SC (kJ/m3)", Format(hhv1515vr, nf))
-                container.CreateAndAddTwoLabelsRow("Vol. HHV @ BR (kJ/m3)", Format(hhv2020vr, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Wobbe Index @ NC (kJ/m3)", Format(iw0, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Wobbe Index @ SC (kJ/m3)", Format(iw15, nf))
-                container.CreateAndAddTwoLabelsRow("Ideal Gas Wobbe Index @ BR (kJ/m3)", Format(iw20, nf))
-                container.CreateAndAddTwoLabelsRow("Wobbe Index @ NC (kJ/m3)", Format(iw0r, nf))
-                container.CreateAndAddTwoLabelsRow("Wobbe Index @ SC (kJ/m3)", Format(iw15r, nf))
-                container.CreateAndAddTwoLabelsRow("Wobbe Index @ BR (kJ/m3)", Format(iw20r, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Motor Octane Number (MON)", Format(mon, nf))
-                container.CreateAndAddTwoLabelsRow("Methane Number (MN)", Format(mn, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("HC Dew Point @ P (" & su.temperature & ")", Format(Converter.ConvertFromSI(su.temperature, hdp), nf))
-                container.CreateAndAddTwoLabelsRow("Water Dew Point @ P (" & su.temperature & ")", Format(Converter.ConvertFromSI(su.temperature, wdp), nf))
-                container.CreateAndAddTwoLabelsRow("Water Dew Point (Ideal) @ P (" & su.temperature & ")", Format(Converter.ConvertFromSI(su.temperature, iwdp), nf))
-                container.CreateAndAddTwoLabelsRow("HC Dew Point @ 1 atm (" & su.temperature & ")", Format(Converter.ConvertFromSI(su.temperature, hdp1), nf))
-                container.CreateAndAddTwoLabelsRow("Water Dew Point @ 1 atm (" & su.temperature & ")", Format(Converter.ConvertFromSI(su.temperature, wdp1), nf))
-                container.CreateAndAddTwoLabelsRow("Water Dew Point (Ideal) @ 1 atm (" & su.temperature & ")", Format(Converter.ConvertFromSI(su.temperature, iwdp1), nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddTwoLabelsRow("Water Content @ NC (mg/m3)", Format(wc0, nf))
-                container.CreateAndAddTwoLabelsRow("Water Content @ SC (mg/m3)", Format(wc15, nf))
-                container.CreateAndAddTwoLabelsRow("Water Content @ BR (mg/m3)", Format(wc20, nf))
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddEmptySpace()
-                container.CreateAndAddDescriptionRow("* SC = Standard Conditions (T = 15.56 °C, P = 1 atm)")
-                container.CreateAndAddDescriptionRow("* BR = CNTP (T = 20 °C, P = 1 atm)")
-                container.CreateAndAddDescriptionRow("* NC = Normal Conditions (T = 0 °C, P = 1 atm)")
 
             End If
 

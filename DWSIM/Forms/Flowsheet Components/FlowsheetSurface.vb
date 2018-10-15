@@ -3302,8 +3302,8 @@ Public Class FlowsheetSurface
                     Dim f As New FormConfigureMasterTable() With {.Table = Me.FlowsheetDesignSurface.SelectedObject}
                     f.ShowDialog(Me)
                 Case ObjectType.GO_Chart
-                    Dim f As New FormConfigureChartObject() With {.Chart = Me.FlowsheetDesignSurface.SelectedObject}
-                    f.ShowDialog(Me)
+                    'Dim f As New FormConfigureChartObject() With {.Chart = Me.FlowsheetDesignSurface.SelectedObject}
+                    'f.ShowDialog(Me)
                 Case ObjectType.FlowsheetUO
                     Dim myobj As UnitOperations.UnitOperations.Flowsheet = Flowsheet.SimulationObjects(Flowsheet.FormSurface.FlowsheetDesignSurface.SelectedObject.Name)
                     If My.Computer.Keyboard.ShiftKeyDown Then

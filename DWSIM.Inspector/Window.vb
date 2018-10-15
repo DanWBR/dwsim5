@@ -153,5 +153,5 @@ Public Class Window
             IO.File.WriteAllText(SaveFileDialog1.FileName, currentItemViewer.DocumentText)
         End If
     End Sub
-
+        
 End Class

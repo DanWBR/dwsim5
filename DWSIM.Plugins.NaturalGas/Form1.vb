@@ -21,7 +21,6 @@ Public Class Form1
     'flowsheet reference
     Public fsheet As DWSIM.FormFlowsheet
 
-
     Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
 
         'remove SelectedObjectChanged event handler

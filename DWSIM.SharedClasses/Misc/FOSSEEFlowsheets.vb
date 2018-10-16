@@ -221,12 +221,7 @@ label0:
         AddHandler wc.DownloadProgressChanged, Sub(sender, e)
                                                    If pa IsNot Nothing Then pa.Invoke(e.ProgressPercentage)
                                                End Sub
-
-        Dim t = wc.DownloadFileTaskAsync(New Uri(address), fpath)
-
-        While Not t.IsCompleted
-            Thread.Sleep(100)
-        End While
+        wc.DownloadFile(New Uri(address), fpath)
 
         Return fpath
 

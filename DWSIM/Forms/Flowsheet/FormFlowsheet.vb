@@ -129,7 +129,7 @@ Public Class FormFlowsheet
         fa.Tag = fa.Name & " (1)"
 
         Options.FlashAlgorithms.Add(fa)
-
+          
     End Sub
 
     Private Sub FormChild_Activated(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Activated
@@ -887,7 +887,7 @@ Public Class FormFlowsheet
                 Case ObjectType.GO_Table
                     DirectCast(Me.FormSurface.FlowsheetDesignSurface.SelectedObject, TableGraphic).CopyToClipboard()
                 Case ObjectType.GO_Chart
-                    Clipboard.SetText(DirectCast(Me.FormSurface.FlowsheetDesignSurface.SelectedObject, OxyPlotGraphic).CopyToClipboard())
+                    'Clipboard.SetText(DirectCast(Me.FormSurface.FlowsheetDesignSurface.SelectedObject, OxyPlotGraphic).CopyToClipboard())
                 Case Else
                     Collections.FlowsheetObjectCollection(Me.FormSurface.FlowsheetDesignSurface.SelectedObject.Name).CopyDataToClipboard(Options.SelectedUnitSystem, Options.NumberFormat)
             End Select
@@ -3090,27 +3090,15 @@ Public Class FormFlowsheet
     End Function
 
     Private Sub GraficoToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles GraficoToolStripMenuItem.Click
-        Dim myobj As New OxyPlotGraphic(New DrawingTools.Point(-Me.FormSurface.FlowsheetDesignSurface.AutoScrollPosition.X / Me.FormSurface.FlowsheetDesignSurface.Zoom + 30,
-         -Me.FormSurface.FlowsheetDesignSurface.AutoScrollPosition.Y / Me.FormSurface.FlowsheetDesignSurface.Zoom + 30), "Chart Object")
-        myobj.Name = "CHART-" & Guid.NewGuid.ToString
-        myobj.Tag = "CHART" & ((From t As GraphicObject In Me.FormSurface.FlowsheetDesignSurface.DrawingObjects Select t Where t.ObjectType = ObjectType.GO_Chart).Count + 1).ToString
-        myobj.Height = 400
-        myobj.Width = 500
-        myobj.Flowsheet = Me
-        Me.FormSurface.FlowsheetDesignSurface.DrawingObjects.Add(myobj)
-        Me.FormSurface.FlowsheetDesignSurface.Invalidate()
-    End Sub
-
-    Private Sub AssistenteDeCriaçãoDeSubstânciasToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AssistenteDeCriaçãoDeSubstânciasToolStripMenuItem.Click
-
-        FrmStSim1.loaded = False
-
-        Dim wform As New UI.Desktop.Editors.CompoundCreatorWizard(Me)
-        wform.SetupAndDisplayPage(1)
-
-        'start dispatcher for WPF Interop
-        If Not GlobalSettings.Settings.IsRunningOnMono Then System.Windows.Threading.Dispatcher.Run()
-
+        'Dim myobj As New OxyPlotGraphic(New DrawingTools.Point(-Me.FormSurface.FlowsheetDesignSurface.AutoScrollPosition.X / Me.FormSurface.FlowsheetDesignSurface.Zoom + 30,
+        ' -Me.FormSurface.FlowsheetDesignSurface.AutoScrollPosition.Y / Me.FormSurface.FlowsheetDesignSurface.Zoom + 30), "Chart Object")
+        'myobj.Name = "CHART-" & Guid.NewGuid.ToString
+        'myobj.Tag = "CHART" & ((From t As GraphicObject In Me.FormSurface.FlowsheetDesignSurface.DrawingObjects Select t Where t.ObjectType = ObjectType.GO_Chart).Count + 1).ToString
+        'myobj.Height = 400
+        'myobj.Width = 500
+        'myobj.Flowsheet = Me
+        'Me.FormSurface.FlowsheetDesignSurface.DrawingObjects.Add(myobj)
+        'Me.FormSurface.FlowsheetDesignSurface.Invalidate()
     End Sub
 
     Private Sub ToolStripSplitButton1_ButtonClick(sender As Object, e As EventArgs)
@@ -3124,7 +3112,7 @@ Public Class FormFlowsheet
 
     Private Sub InspetorDeSolucoesToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles InspectorTSMI.Click
 
-        Dim iform = New Inspector.Window
+        Dim iform = New Inspector.Window()
         iform.Show()
 
     End Sub

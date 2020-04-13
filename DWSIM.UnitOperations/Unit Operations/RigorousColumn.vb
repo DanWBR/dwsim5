@@ -1096,11 +1096,19 @@ Namespace UnitOperations
                 Select Case propidx
 
                     Case 0
-                        'PROP_DC_0	Condenser Pressure
-                        value = SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.CondenserPressure)
+                        'PROP_DC_0	First Stage Pressure
+                        Try
+                            value = SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.Stages.First.P)
+                        Catch ex As Exception
+                            value = 0.0
+                        End Try
                     Case 1
-                        'PROP_DC_1	Reboiler Pressure
-                        value = SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.ReboilerPressure)
+                        'PROP_DC_1	Last Stage Pressure
+                        Try
+                            value = SystemsOfUnits.Converter.ConvertFromSI(su.pressure, Me.Stages.Last.P)
+                        Catch ex As Exception
+                            value = 0.0
+                        End Try
                     Case 2
                         'PROP_DC_7	Number of Stages
                         value = Me.NumberOfStages

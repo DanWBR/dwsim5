@@ -1,6 +1,6 @@
 ﻿==================================================
 DWSIM - Open Source Process Simulator
-Version 5.8 Update 10
+Version 5.8 Update 11
 Copyright (c) 2017-2020 Daniel Medeiros
 Copyright (c) 2008-2016 Daniel Medeiros, Gregor Reichert, Gustavo Leon
 ==================================================
@@ -61,6 +61,12 @@ VERSION HISTORY / CHANGELOG
 ==================================================
 
 The full changelog, including code changes and their authors can be viewed at https://github.com/DanWBR/dwsim5/commits/windows
+
+Version 5.8 Update 11
+
+- [FIX] Fixed Compressor/Expander Head calculations
+- [FIX] Fixed Compressor/Expander not being added to the flowsheet (Cross-Platform UI)
+- [FIX] Fixed display of first and last stage pressures of Absorption Columns
 
 Version 5.8 Update 10
 
